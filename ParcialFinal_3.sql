@@ -1,301 +1,315 @@
-Create database CollegeCentralAmerica_LaLibertad
+Create database CollegeCentralAmerica_LaLibertad;
 
-use CollegeCentralAmerica_LaLibertad
+use CollegeCentralAmerica_LaLibertad;
 
 
 Create table departamento(
-idDepartamento int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(100) NOT NULL,
-descripcion varchar(250) NOT NULL 
-)
+	idDepartamento int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(100) NOT NULL,
+	descripcion varchar(250) NOT NULL 
+);
 
 Create table procesos(
-idProceso int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(30) NOT NULL,
-duracion int NOT NULL,
-idDepartamento int foreign key references departamento(idDepartamento)
-)
+	idProceso int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(30) NOT NULL,
+	duracion int NOT NULL,
+	idDepartamento int foreign key references departamento(idDepartamento)
+);
 
 Create table tipoCliente(
-idTipo int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(25) NOT NULL,
-)
+	idTipo int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(25) NOT NULL,
+);
+
 Create table clientes(
-idCliente int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(35) NOT NULL,
-dui char(10) NOT NULL,
-nit char(17) NOT NULL,
-direccion varchar(150) NOT NULL,
-telefono varchar(9) NOT NULL,
-correo varchar(50) NOT NULL,
-idTipo int foreign key references tipoCliente(idTipo)
-)
+	idCliente int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(35) NOT NULL,
+	dui char(10) NOT NULL,
+	nit char(17) NOT NULL,
+	direccion varchar(150) NOT NULL,
+	telefono varchar(9) NOT NULL,
+	correo varchar(50) NOT NULL,
+	idTipo int foreign key references tipoCliente(idTipo)
+);
+
 Create table metodologia(
-idMetodologia int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(100) NOT NULL,
-)
+	idMetodologia int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(100) NOT NULL,
+);
 
 Create table modulo(
-idModulo int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(60) NOT NULL,
-cantidadProduccion int NOT NULL,
-idMetodologia int foreign key references metodologia(idMetodologia)
-)
+	idModulo int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(60) NOT NULL,
+	cantidadProduccion int NOT NULL,
+	idMetodologia int foreign key references metodologia(idMetodologia)
+);
 
 Create table factura(
-idFactura int primary key IDENTITY(1,1) NOT NULL,
-requiredDate date NOT NULL,
-orderDate date NOT NULL,
-finishedDate date NOT NULL,
-shipmentDate date NOT NULL,
-total money NOT NULL,
-descripcion varchar(250) NOT NULL,
-idCliente int foreign key references clientes(idCliente)
-)
+	idFactura int primary key IDENTITY(1,1) NOT NULL,
+	requiredDate date NOT NULL,
+	orderDate date NOT NULL,
+	finishedDate date NOT NULL,
+	shipmentDate date NOT NULL,
+	total money NOT NULL,
+	descripcion varchar(250) NOT NULL,
+	idCliente int foreign key references clientes(idCliente)
+);
+
 Create table tipoVariante(
-idVariante int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(25) NOT NULL
-)
+	idVariante int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(25) NOT NULL
+);
+
 Create table detalles(
-idDetalle int primary key IDENTITY(1,1) NOT NULL,
-descripcion varchar(200) NOT NULL,
-precio money NOT NULL,
-idProceso int foreign key references procesos(idProceso)
-)
+	idDetalle int primary key IDENTITY(1,1) NOT NULL,
+	descripcion varchar(200) NOT NULL,
+	precio money NOT NULL,
+	idProceso int foreign key references procesos(idProceso)
+);
 
 Create table detalleVarianteDetalle(
-idVariante int foreign key references tipoVariante(idVariante),
-idDetalle int foreign key references detalles(idDetalle)
-)
+	idVariante int foreign key references tipoVariante(idVariante),
+	idDetalle int foreign key references detalles(idDetalle)
+);
 
 Create table flujoTrabajo(
-idFlujo int primary key IDENTITY(1,1) NOT NULL,
-idVariante int foreign key references tipoVariante(idVariante)
-)
+	idFlujo int primary key IDENTITY(1,1) NOT NULL,
+	idVariante int foreign key references tipoVariante(idVariante)
+);
+
 Create table detalleFlujoTrabajoProcesos(
-idFlujo int foreign key references flujoTrabajo(idFlujo),
-idProceso int foreign key references procesos(idProceso)
-)
+	idFlujo int foreign key references flujoTrabajo(idFlujo),
+	idProceso int foreign key references procesos(idProceso)
+);
+
 Create table estadoSeguimiento(
-idEstadoSeguimiento int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(25) NOT NULL
-)
+	idEstadoSeguimiento int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(25) NOT NULL
+);
+
 Create table estadoOrden(
-idEstadoOrden int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(25) NOT NULL
-)
+	idEstadoOrden int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(25) NOT NULL
+);
+
 Create table prenda(
-idPrenda int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(100) NOT NULL,
-precio money NOT NULL
-)
+	idPrenda int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(100) NOT NULL,
+	precio money NOT NULL
+);
+
 Create table estilo(
-idEstilo int primary key IDENTITY(1,1) NOT NULL,
-codigo char(5) NOT NULL,
-idPrenda int foreign key references prenda(idPrenda)
-)
+	idEstilo int primary key IDENTITY(1,1) NOT NULL,
+	codigo char(5) NOT NULL,
+	idPrenda int foreign key references prenda(idPrenda)
+);
 
 Create table tipoTalla(
-idTipoTalla int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(40) NOT NULL,
-abreviacion char(4) NOT NULL
-)
+	idTipoTalla int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(40) NOT NULL,
+	abreviacion char(4) NOT NULL
+);
+
 Create table tallaUbicacion(
-idUbicacion int primary key IDENTITY(1,1) NOT NULL,
-ubicacion varchar(50) NOT NULL
-)
+	idUbicacion int primary key IDENTITY(1,1) NOT NULL,
+	ubicacion varchar(50) NOT NULL
+);
 
 Create table talla(
-idTalla int primary key IDENTITY(1,1) NOT NULL,
-cantidadTela decimal(18, 2) NOT NULL,
-idTipoTalla int foreign key references tipoTalla(idTipoTalla),
-idPrenda int foreign key references prenda(idPrenda),
-idEstilo int foreign key references estilo(idEstilo)
-)
+	idTalla int primary key IDENTITY(1,1) NOT NULL,
+	cantidadTela decimal(18, 2) NOT NULL,
+	idTipoTalla int foreign key references tipoTalla(idTipoTalla),
+	idPrenda int foreign key references prenda(idPrenda),
+	idEstilo int foreign key references estilo(idEstilo)
+);
+
 Create table medida(
-idMedida int primary key IDENTITY(1,1) NOT NULL,
-dimension decimal(18,2) NOT NULL,
-idTalla int foreign key references talla(idTalla),
-idUbicacion int foreign key references tallaUbicacion(idUbicacion)
-)
+	idMedida int primary key IDENTITY(1,1) NOT NULL,
+	dimension decimal(18,2) NOT NULL,
+	idTalla int foreign key references talla(idTalla),
+	idUbicacion int foreign key references tallaUbicacion(idUbicacion)
+);
+
 Create table color(
-idColor int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(50) NOT NULL
-)
+	idColor int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(50) NOT NULL
+);
 
 Create table ordenVenta(
-idOrdenVenta int primary key IDENTITY(1,1) NOT NULL,
-monto money NOT NULL,
-cantidad int NOT NULL,
-idFactura int foreign key references factura(idFactura),
-idEstilo int foreign key references estilo(idEstilo),
-idFlujo int foreign key references flujoTrabajo(idFlujo),
-idColor int foreign key references color(idColor),
-idEstado int foreign key references estadoOrden(idEstadoOrden)
-)
-
+	idOrdenVenta int primary key IDENTITY(1,1) NOT NULL,
+	monto money NOT NULL,
+	cantidad int NOT NULL,
+	idFactura int foreign key references factura(idFactura),
+	idEstilo int foreign key references estilo(idEstilo),
+	idFlujo int foreign key references flujoTrabajo(idFlujo),
+	idColor int foreign key references color(idColor),
+	idEstado int foreign key references estadoOrden(idEstadoOrden)
+);
 
 Create table ordenDeVentaTalla(
-idOrdenVentaTalla int primary key IDENTITY(1,1) NOT NULL,
-cantidad int NOT NULL,
-cantidadExtra int NOT NULL,
-cantidadTela decimal(18,2) NOT NULL,
-idTalla int foreign key references talla(idTalla),
-idModulo int foreign key references modulo(idModulo),
-idOrdenVenta int foreign key references ordenVenta(idOrdenVenta)
-)
+	idOrdenVentaTalla int primary key IDENTITY(1,1) NOT NULL,
+	cantidad int NOT NULL,
+	cantidadExtra int NOT NULL,
+	cantidadTela decimal(18,2) NOT NULL,
+	idTalla int foreign key references talla(idTalla),
+	idModulo int foreign key references modulo(idModulo),
+	idOrdenVenta int foreign key references ordenVenta(idOrdenVenta)
+);
+
 Create table seguimientoOrden(
-idSeguimiento int primary key IDENTITY(1,1) NOT NULL,
-idEstado int foreign key references estadoSeguimiento(idEstadoSeguimiento),
-idOrdenVenta int foreign key references ordenVenta(idOrdenVenta),
-idProceso int foreign key references procesos(idProceso)
-)
+	idSeguimiento int primary key IDENTITY(1,1) NOT NULL,
+	idEstado int foreign key references estadoSeguimiento(idEstadoSeguimiento),
+	idOrdenVenta int foreign key references ordenVenta(idOrdenVenta),
+	idProceso int foreign key references procesos(idProceso)
+);
+
 Create table tipoUnidadMedidas(
-idTipoUnidad char(6) primary key NOT NULL,
-nombre varchar(60) NOT NULL
-)
+	idTipoUnidad char(6) primary key NOT NULL,
+	nombre varchar(60) NOT NULL
+);
 
 Create Table tipoMateriaPrima(
-idTipoMateriaPrima int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(60) NOT NULL,
-idMedicion char(6) foreign key references tipoUnidadMedidas(idTipoUnidad)
-)
+	idTipoMateriaPrima int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(60) NOT NULL,
+	idMedicion char(6) foreign key references tipoUnidadMedidas(idTipoUnidad)
+);
 
 Create table estante(
-idEstante char(1) primary key NOT NULL
-)
+	idEstante char(1) primary key NOT NULL
+);
+
 Create table nivel(
-idNivel int primary key IDENTITY(1,1) NOT NULL,
-nivel int NOT NULL
-)
+	idNivel int primary key IDENTITY(1,1) NOT NULL,
+	nivel int NOT NULL
+);
+
 Create table columna(
-idColumna int primary key IDENTITY(1,1) NOT NULL,
-columna int NOT NULL
+	idColumna int primary key IDENTITY(1,1) NOT NULL,
+	columna int NOT NULL
 )
 
 Create table Compartimiento(
-idCompartimiento char(3) primary key NOT NULL,
-estado tinyint NOT NULL,
-idEstante char(1) foreign key references estante(idEstante),
-idNivel int foreign key references nivel(idNivel),
-idColumna int foreign key references columna(idColumna)
-
-)
+	idCompartimiento char(3) primary key NOT NULL,
+	estado tinyint NOT NULL,
+	idEstante char(1) foreign key references estante(idEstante),
+	idNivel int foreign key references nivel(idNivel),
+	idColumna int foreign key references columna(idColumna)
+);
 
 Create table Proveedor(
-idProveedor int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(100) NOT NULL,
-direccion varchar(200) NOT NULL,
-telefono char(9) NOT NULL,
-correo varchar(50) NOT NULL
-)
+	idProveedor int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(100) NOT NULL,
+	direccion varchar(200) NOT NULL,
+	telefono char(9) NOT NULL,
+	correo varchar(50) NOT NULL
+);
 
 Create table MateriaPrima(
-idMateriaPrima int primary key IDENTITY(1,1) NOT NULL,
-descripcion varchar(200) NOT NULL,
-existencia decimal(18,2) NOT NULL,
-stockMaximo decimal(18,2) NOT NULL,
-idTipoMateriaPrima int foreign key references tipoMateriaPrima(idTipoMateriaPrima),
-idCompartimiento char(3) foreign key references compartimiento(idCompartimiento) NOT NULL,
-idColor int foreign key references color(idColor),
-idProveedor int foreign key references proveedor(idProveedor)
-)
+	idMateriaPrima int primary key IDENTITY(1,1) NOT NULL,
+	descripcion varchar(200) NOT NULL,
+	existencia decimal(18,2) NOT NULL,
+	stockMaximo decimal(18,2) NOT NULL,
+	idTipoMateriaPrima int foreign key references tipoMateriaPrima(idTipoMateriaPrima),
+	idCompartimiento char(3) foreign key references compartimiento(idCompartimiento) NOT NULL,
+	idColor int foreign key references color(idColor),
+	idProveedor int foreign key references proveedor(idProveedor)
+);
 
 Create table estadoCompras(
-idEstadoCompras int primary key IDENTITY(1,1) NOT NULL,
-nombre varchar(25) NOT NULL
+	idEstadoCompras int primary key IDENTITY(1,1) NOT NULL,
+	nombre varchar(25) NOT NULL
 )
 
 Create Table compras(
-idCompras int primary key IDENTITY(1,1) NOT NULL,
-cantidad decimal(18,2) NOT NULL,
-idEstado int foreign key references estadoCompras(idEstadoCompras),
-idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
-)
-
+	idCompras int primary key IDENTITY(1,1) NOT NULL,
+	cantidad decimal(18,2) NOT NULL,
+	idEstado int foreign key references estadoCompras(idEstadoCompras),
+	idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
+);
 
 
  --En la tabla procesos, la duración debe ser mayor a 0 y menor a 28
-	ALTER TABLE procesos
-	ADD CONSTRAINT chkduracion
-	CHECK ((duracion > 0 ) AND (duracion < 28)) 
+ALTER TABLE procesos
+ADD CONSTRAINT chkduracion
+CHECK ((duracion > 0 ) AND (duracion < 28)); 
  --En cada campo donde posea teléfono que siga formato (XXXXXXX ó XXXX-XXX).
  
  --El campo código en Estilo debe ser: [A-Z]{2}[0-9]{3}, ademas debe ser unico
- 	ALTER TABLE [estilo] ADD CONSTRAINT chkCodigoEstilo CHECK (codigo LIKE '%[A-Z][A-Z][0-9][0-9][0-9]%')
+ ALTER TABLE [estilo] ADD CONSTRAINT chkCodigoEstilo CHECK (codigo LIKE '%[A-Z][A-Z][0-9][0-9][0-9]%');
 	
-	ALTER TABLE estilo 
-	ADD CONSTRAINT uCodigo UNIQUE (codigo)
+ALTER TABLE estilo 
+ADD CONSTRAINT uCodigo UNIQUE (codigo);
 	
 --Campos emails o de correo electrónico deben ser únicos.
-	ALTER TABLE clientes
-	ADD CONSTRAINT uCorreo UNIQUE (correo)
+ALTER TABLE clientes
+ADD CONSTRAINT uCorreo UNIQUE (correo);
 
-	ALTER TABLE proveedor
-	ADD CONSTRAINT uCorreoP UNIQUE (correo)
+ALTER TABLE proveedor
+ADD CONSTRAINT uCorreoP UNIQUE (correo);
+
 --Campo abreviacion debe ser unico
-	ALTER TABLE tipoTalla
-	ADD CONSTRAINT uAbreviacion UNIQUE (abreviacion)
+ALTER TABLE tipoTalla
+ADD CONSTRAINT uAbreviacion UNIQUE (abreviacion)
 --En todas las tabas que se tenga un total o cantidad deben ser mayores a 0.
-	ALTER TABLE modulo
-	ADD CONSTRAINT chkCantidadProduccion
-	CHECK (cantidadProduccion > 0)
+ALTER TABLE modulo
+ADD CONSTRAINT chkCantidadProduccion
+CHECK (cantidadProduccion >= 0);
 
-	ALTER TABLE factura
-	ADD CONSTRAINT chkTotal
-	CHECK (total > 0)
+ALTER TABLE factura
+ADD CONSTRAINT chkTotal
+CHECK (total >= 0);
 
-	ALTER TABLE ordenDeVentaTalla
-	ADD CONSTRAINT chkCantidad
-	CHECK (cantidad > 0)
+ALTER TABLE ordenDeVentaTalla
+ADD CONSTRAINT chkCantidad
+CHECK (cantidad >= 0);
 
-	ALTER TABLE ordenDeVentaTalla
-	ADD CONSTRAINT chkCantidadExtra
-	CHECK (cantidadExtra > 0)
+ALTER TABLE ordenDeVentaTalla
+ADD CONSTRAINT chkCantidadExtra
+CHECK (cantidadExtra >= 0);
 
-	ALTER TABLE ordenDeVentaTalla
-	ADD CONSTRAINT chkCantidadTela
-	CHECK (cantidadTela > 0)
+ALTER TABLE ordenDeVentaTalla
+ADD CONSTRAINT chkCantidadTela
+CHECK (cantidadTela >= 0);
 
-	ALTER TABLE ordenVenta
-	ADD CONSTRAINT chkCantidadSalesOrder
-	CHECK (cantidad > 0)
+ALTER TABLE ordenVenta
+ADD CONSTRAINT chkCantidadSalesOrder
+CHECK (cantidad >= 0);
 
-	ALTER TABLE materiaPrima
-	ADD CONSTRAINT chkStockMaximo
-	CHECK (stockMaximo > 0)
+ALTER TABLE materiaPrima
+ADD CONSTRAINT chkStockMaximo
+CHECK (stockMaximo >= 0);
 
-	ALTER TABLE talla
-	ADD CONSTRAINT chkCantidadTelaTalla
-	CHECK (cantidadTela > 0)
+ALTER TABLE talla
+ADD CONSTRAINT chkCantidadTelaTalla
+CHECK (cantidadTela >= 0);
 
-	ALTER TABLE compras
-	ADD CONSTRAINT chkCantidadCompra
-	CHECK (cantidad > 0)
+ALTER TABLE compras
+ADD CONSTRAINT chkCantidadCompra
+CHECK (cantidad >= 0);
 
-	--Nivel y columna (campos nivel y columna respectivamente) deben ser números mayores a 0 y únicos.
-	ALTER TABLE nivel
-	ADD CONSTRAINT chkNivel
-	CHECK (nivel > 0)
+--Nivel y columna (campos nivel y columna respectivamente) deben ser números mayores a 0 y únicos.
+ALTER TABLE nivel
+ADD CONSTRAINT chkNivel
+CHECK (nivel >= 0);
 
-	ALTER TABLE columna
-	ADD CONSTRAINT chkColumna
-	CHECK (columna > 0)
+ALTER TABLE columna
+ADD CONSTRAINT chkColumna
+CHECK (columna >= 0);
 
-	--En la tabla estante en id, solo debe aceptar de la A – Z.
-	ALTER TABLE [estante] ADD CONSTRAINT chkIdEstante CHECK (idEstante LIKE '[A-Z]')
+--En la tabla estante en id, solo debe aceptar de la A – Z.
+ALTER TABLE [estante] ADD CONSTRAINT chkIdEstante CHECK (idEstante LIKE '[A-Z]');
 
-	--En cada campo donde posea teléfono que siga formato (XXXXXXX ó XXXX-XXX).
-	ALTER TABLE clientes
-	ADD CONSTRAINT chkTelefono
-	CHECK( telefono LIKE '%[267][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9]%')
+--En cada campo donde posea teléfono que siga formato (XXXXXXX ó XXXX-XXX).
+ALTER TABLE clientes
+ADD CONSTRAINT chkTelefono
+CHECK( telefono LIKE '%[267][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9]%');
 
-	ALTER TABLE proveedor
-	ADD CONSTRAINT chkTelefonoP
-	CHECK (telefono LIKE '%[267][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9]%')
+ALTER TABLE proveedor
+ADD CONSTRAINT chkTelefonoP
+CHECK (telefono LIKE '%[267][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9]%');
 
 
-	--Creaccion de Esquemas
+--Creaccion de Esquemas
 create schema Venta;
 create schema Compra;
 create schema Produccion;
@@ -303,43 +317,43 @@ create schema Bodega;
 create schema Producto;
 
 --Asignacion de Tablas a su respectivo Esquema
-ALTER SCHEMA Venta TRANSFER object::dbo.tipoCliente
-ALTER SCHEMA Venta TRANSFER object::dbo.clientes
-ALTER SCHEMA Venta TRANSFER object::dbo.factura
+ALTER SCHEMA Venta TRANSFER object::dbo.tipoCliente;
+ALTER SCHEMA Venta TRANSFER object::dbo.clientes;
+ALTER SCHEMA Venta TRANSFER object::dbo.factura;
 
-ALTER SCHEMA Compra TRANSFER object::dbo.compras
-ALTER SCHEMA Compra TRANSFER object::dbo.estadoCompras
-ALTER SCHEMA Compra TRANSFER object::dbo.proveedor
+ALTER SCHEMA Compra TRANSFER object::dbo.compras;
+ALTER SCHEMA Compra TRANSFER object::dbo.estadoCompras;
+ALTER SCHEMA Compra TRANSFER object::dbo.proveedor;
 
-ALTER SCHEMA Produccion TRANSFER object::dbo.seguimientoOrden
-ALTER SCHEMA Produccion TRANSFER object::dbo.ordenDeVentaTalla
-ALTER SCHEMA Produccion TRANSFER object::dbo.ordenVenta
-ALTER SCHEMA Produccion TRANSFER object::dbo.estadoSeguimiento
-ALTER SCHEMA Produccion TRANSFER object::dbo.detalleFlujoTrabajoProcesos 
-ALTER SCHEMA Produccion TRANSFER object::dbo.flujoTrabajo
-ALTER SCHEMA Produccion TRANSFER object::dbo.detalleVarianteDetalle
-ALTER SCHEMA Produccion TRANSFER object::dbo.detalles
-ALTER SCHEMA Produccion TRANSFER object::dbo.tipoVariante
-ALTER SCHEMA Produccion TRANSFER object::dbo.modulo
-ALTER SCHEMA Produccion TRANSFER object::dbo.metodologia
-ALTER SCHEMA Produccion TRANSFER object::dbo.procesos
-ALTER SCHEMA Produccion TRANSFER object::dbo.departamento
-ALTER SCHEMA Produccion TRANSFER object::dbo.estadoOrden
+ALTER SCHEMA Produccion TRANSFER object::dbo.seguimientoOrden;
+ALTER SCHEMA Produccion TRANSFER object::dbo.ordenDeVentaTalla;
+ALTER SCHEMA Produccion TRANSFER object::dbo.ordenVenta;
+ALTER SCHEMA Produccion TRANSFER object::dbo.estadoSeguimiento;
+ALTER SCHEMA Produccion TRANSFER object::dbo.detalleFlujoTrabajoProcesos;
+ALTER SCHEMA Produccion TRANSFER object::dbo.flujoTrabajo;
+ALTER SCHEMA Produccion TRANSFER object::dbo.detalleVarianteDetalle;
+ALTER SCHEMA Produccion TRANSFER object::dbo.detalles;
+ALTER SCHEMA Produccion TRANSFER object::dbo.tipoVariante;
+ALTER SCHEMA Produccion TRANSFER object::dbo.modulo;
+ALTER SCHEMA Produccion TRANSFER object::dbo.metodologia;
+ALTER SCHEMA Produccion TRANSFER object::dbo.procesos;
+ALTER SCHEMA Produccion TRANSFER object::dbo.departamento;
+ALTER SCHEMA Produccion TRANSFER object::dbo.estadoOrden;
 
-ALTER SCHEMA Bodega TRANSFER object::dbo.tipoUnidadMedidas
-ALTER SCHEMA Bodega TRANSFER object::dbo.tipoMateriaPrima
-ALTER SCHEMA Bodega TRANSFER object::dbo.estante
-ALTER SCHEMA Bodega TRANSFER object::dbo.nivel
-ALTER SCHEMA Bodega TRANSFER object::dbo.compartimiento 
-ALTER SCHEMA Bodega TRANSFER object::dbo.materiaPrima
-ALTER SCHEMA Bodega TRANSFER object::dbo.columna
+ALTER SCHEMA Bodega TRANSFER object::dbo.tipoUnidadMedidas;
+ALTER SCHEMA Bodega TRANSFER object::dbo.tipoMateriaPrima;
+ALTER SCHEMA Bodega TRANSFER object::dbo.estante;
+ALTER SCHEMA Bodega TRANSFER object::dbo.nivel;
+ALTER SCHEMA Bodega TRANSFER object::dbo.compartimiento;
+ALTER SCHEMA Bodega TRANSFER object::dbo.materiaPrima;
+ALTER SCHEMA Bodega TRANSFER object::dbo.columna;
  
-ALTER SCHEMA Producto TRANSFER object::dbo.prenda
-ALTER SCHEMA Producto TRANSFER object::dbo.estilo
-ALTER SCHEMA Producto TRANSFER object::dbo.tipoTalla
-ALTER SCHEMA Producto TRANSFER object::dbo.tallaUbicacion
-ALTER SCHEMA Producto TRANSFER object::dbo.talla
-ALTER SCHEMA Producto TRANSFER object::dbo.medida
+ALTER SCHEMA Producto TRANSFER object::dbo.prenda;
+ALTER SCHEMA Producto TRANSFER object::dbo.estilo;
+ALTER SCHEMA Producto TRANSFER object::dbo.tipoTalla;
+ALTER SCHEMA Producto TRANSFER object::dbo.tallaUbicacion;
+ALTER SCHEMA Producto TRANSFER object::dbo.talla;
+ALTER SCHEMA Producto TRANSFER object::dbo.medida;
 
 --Procedure para INSERTS
 --Tabla Bodega.Columna
@@ -995,3 +1009,7 @@ AS
 		ROLLBACK TRAN
 	END
 GO
+
+-- Vistas
+-- 1. Vista completa de los productos de inventario.CREATE VIEW productos AS	SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] FROM Bodega.MateriaPrima M 	INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima;-- 2. Vista completa de los trabajos en procesoCREATE VIEW trabajosProceso AS	SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2; --Por ejemplo si en el id 2 es "proceso";-- 3. Vista de los trabajos que aún no han sido implementados.CREATE VIEW trabajosProceso AS	SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 1; --Por ejemplo si en el id 1 es "pendiente";-- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
+--    datos de contacto.CREATE VIEW productosNecesitados AS	SELECT MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	FROM Compra.compras C INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstado	INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstado != 1; -- Donde 1 es 'comprado', los otros pueden ser 'urgente'etc.;-- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.CREATE VIEW piezasModulo AS;-- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.CREATE VIEW comprasCliente AS	SELECT COUNT(*), C.idCliente FROM Venta.Factura F INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	GROUP BY F.idCliente; --Falta ser más descriptiva;-- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.-- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.-- 9. Vista de Hilos (Todos los datos junto con el nombre del proveedor) en inventario.-- 10. Vista de Cordones (Todos los datos junto con el nombre del proveedor) en inventario.-- 11. Vista de las Sales Order con categoría BLANKS.-- 12. Vista de las Sales Order con categoría SCREEN PRINTING.-- 13. Vista de las Sales Order con categoría Sublimation.-- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
