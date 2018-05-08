@@ -516,14 +516,14 @@ deberá de descontarse del inventario para evitar conflictos en los próximos pe
 --Triggers #3
 CREATE TRIGGER descontarTela
 	ON Produccion.ordenVenta
-	FOR INSERT	
+	FOR UPDATE	
 	AS
 	DECLARE @tela decimal(18,2),@color int,@id int,@existencia decimal(18,2)
 	BEGIN
 		SELECT @tela = ovt.cantidadTela FROM Produccion.ordenDeVentaTalla AS ovt INNER JOIN Produccion.ordenVenta AS odv
 		ON odv.idOrdenVenta = ovt.idOrdenVenta
 		SELECT @color = idColor FROM inserted
-		IF(@tela > 0)
+		IF(@tela > -1)
 		BEGIN
 			SELECT @existencia = existencia FROM Bodega.MateriaPrima AS mp INNER JOIN Bodega.tipoMateriaPrima AS tmp
 			ON tmp.idTipoMateriaPrima = mp.idTipoMateriaPrima WHERE tmp.nombre = 'Tela' AND mp.idColor = @color
@@ -582,10 +582,11 @@ PUEDE sobrepasar el límite del Stock Máximo que Maneja la empresa (7500 YDS pa
 CREATE TRIGGER StockMaximoCompras on Compra.compras
 AFTER INSERT
 AS 
-	DECLARE @cantidadM DECIMAL(18,2),@compra decimal(18,2),@stockmax decimal(18,2), @idM int,@bodega decimal(18,2),@sumatoria decimal(18,2)
+	DECLARE @cantidadM DECIMAL(18,2),@compra decimal(18,2),@stockmax decimal(18,2), @idM int,@bodega decimal(18,2),@sumatoria decimal(18,2),@idEstado INT
 	BEGIN
 		SELECT @compra = cantidad FROM inserted
 		SELECT @idM = idMateriaPrima FROM inserted
+		SELECT @idEstado = idEstado FROM inserted
 		SELECT @stockmax = stockMaximo FROM Bodega.MateriaPrima WHERE idMateriaPrima = @idM
 		SELECT @bodega = existencia FROM Bodega.MateriaPrima WHERE idMateriaPrima = @idM
 		SET @sumatoria = @compra + @bodega
@@ -593,6 +594,14 @@ AS
 		BEGIN
 			PRINT 'La compra sobrepasa los valores del almacenamiento máximo'
 			ROLLBACK TRAN
+		END
+		ELSE
+		BEGIN
+			IF(@idEstado = 3)
+			BEGIN
+				UPDATE Bodega.MateriaPrima SET existencia = (@bodega + @compra) WHERE idMateriaPrima = @idM
+				PRINT 'La materia prima comprada se agrego exitosamente'
+			END
 		END
 	END
 GO
@@ -1395,8 +1404,16 @@ CREATE PROCEDURE agregarCompra
 		BEGIN
 			IF (@cantidad > 0)
 			BEGIN
-				INSERT INTO Compra.compras VALUES(@cantidad,@idEstado,@idMateriaPrima)
-				PRINT 'Compra ingresada con éxito'
+				IF(@idEstado = 1)
+				BEGIN
+					INSERT INTO Compra.compras VALUES(@cantidad,@idEstado,@idMateriaPrima)
+					PRINT 'La compra se añadio a la cola'
+				END
+				ELSE IF(@idEstado = 2)
+				BEGIN
+					INSERT INTO Compra.compras VALUES(@cantidad,@idEstado,@idMateriaPrima)
+					PRINT 'La compra es urgente por favor, abastezca los recursos rapidamente'
+				END
 			END
             ELSE
             BEGIN
@@ -2568,7 +2585,8 @@ TO LeonardoEsquivel
 GO
 
 --Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
---procedimientos, tablas etc dentro de este esquema.CREATE LOGIN AdministradorCompras
+--procedimientos, tablas etc dentro de este esquema.
+CREATE LOGIN AdministradorCompras
 WITH PASSWORD = '12345'
 CREATE USER ElenilsonGuevara FOR LOGIN AdministradorCompras
 WITH DEFAULT_SCHEMA = Compra
@@ -2576,7 +2594,8 @@ GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
 TO ElenilsonGuevara
 GO
 --Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
---SUS OBJETOS.CREATE LOGIN Administrador
+--SUS OBJETOS.
+CREATE LOGIN Administrador
 WITH PASSWORD = '54321'
 CREATE USER BrandonLee FOR LOGIN Administrador
 GRANT ALTER,EXECUTE,SELECT,INSERT,UPDATE,DELETE,CONTROL,REFERENCES,VIEW DEFINITION
@@ -2641,8 +2660,10 @@ EXEC agregarFlujoTrabajo 2
 EXEC agregarFlujoProceso 1,1
 
 EXEC agregarEstadoSeguimiento 'En proceso'
+EXEC agregarEstadoSeguimiento 'Finalizado'
 
 EXEC agregarEstadoOrden 'En proceso'
+EXEC agregarEstadoOrden 'Finalizado'
 
 EXEC agregarPrenda 'Camisa',5.75
 
@@ -2679,14 +2700,15 @@ EXEC agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
 
 EXEC agregarEstadoCompras 'Normal'
 EXEC agregarEstadoCompras 'Urgente'
+EXEC agregarEstadoCompras 'Realizada'
 
 EXEC agregarCompra 50.50,1,1
 
-EXEC agregarOrdenVenta 2,1,1,1,1
+EXEC agregarOrdenVenta 1,1,1,1,1
 
-EXEC agregarOrdenVentaTalla 25,25.50,1,1,3
+EXEC agregarOrdenVentaTalla 25,25.50,1,1,1
 
-EXEC agregarOrdenVentaTalla 28,38.4,1,1,3
+EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
 
-EXEC agregarSeguimientoOrden 1,3,1
+EXEC agregarSeguimientoOrden 1,1,1
 
