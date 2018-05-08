@@ -2635,15 +2635,121 @@ EXEC agregarTipoCliente 'Empresa'
 EXEC agregarTipoCliente 'Persona'
 
 EXEC agregarClientePersona 'Juan Lionel','12345678-9','1234-123456-123-2','Calle las brisas, Av. Chinameca Condominio #4','7321-0998','juanitoLeon@hotmail.com',2
-EXEC agregarClienteEmpresa 'SIMAN','Sucursal de Metrocento, San Salvador','2542-4421','siman.metrocentro@gmail.com',1
+EXEC agregarClienteEmpresa 'SIMAN Metrocentro','Sucursal de Metrocento, San Salvador','2542-4421','siman.metrocentro@gmail.com',1
+EXEC agregarClienteEmpresa 'ST Jack´s Soyapango','Sucursal Unicentro Soyapango','2353-0983','stjacksoyapango@gmail.com',1
+EXEC agregarClienteEmpresa 'Picaras Boutique','Sucursal Metrocentro, Cerca de Adidas','2260-3444','picarasboutique@gmail.com',1
+EXEC agregarClientePersona 'Leonardo Edenilson Valle','87654321-9','4321-654231-983-5','Boulevar Constitución, atras de Papa Jonh`s','7293-9432','leoValleBoutique@gmail.com',2
+EXEC agregarClientePersona 'Fernando Roberto Lemus Lemus','01928374-5','3241-028743-876-3','Calle a Apulo, Edificio #45,parcela #40','6023-3212','fernanflores@gmail.com',2
+EXEC agregarClienteEmpresa 'Jacarandas','Metrocentro Doceava Etapa, a la par St Jack´s','2200-0332','jacarandasmetro@gmail.com',1
+EXEC agregarClienteEmpresa 'Carlos Boutique','Plaza Mundo San Salvador, local #53','2999-4322','carlosstyle@gmail.com',1
+EXEC agregarClienteEmpresa 'San Sebastian','Calle a San sebastian, condominio #55, Edificio Rojo','2303-4445','sebastianboutique@gmail.com',1
+EXEC agregarClienteEmpresa 'Aqua eco','44 calle 2 Zona 12,Guatemala','2248-6000','AquaEcho@gmail.com',1
+EXEC agregarClienteEmpresa 'Style Life','Centro comercial la cascada etapa #1,Local #12','2432-3333','stylelifecascada@gmail.com',1
+EXEC agregarClientePersona 'Erick Alberto Esquivel Cañas','65784390-2','0192-657402-543-8','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1','2222-2223','xErickaec@gmail.com',2
+EXEC agregarClienteEmpresa 'Vida Estilizada','Metrosur San Salvador, segunda planta local #99','2893-4444','vidaestilizada@gmail.com',1
+EXEC agregarClienteEmpresa 'Dora´s','Galerias San Salvador, 3º nivel, local #12','2390-3333','dorasStyle@gmail.com',1
+EXEC agregarClienteEmpresa 'Garage','Galerias San Salvador,Cerca del cine local #41','2533-3339','garageESA@gmail.com',1
+EXEC agregarClientePersona 'Ezequiel Pocho Lavezzi Hernández','65780129-8','8888-444222-443-2','Calle el estante, Cabañas, comercial maria purisima,local #47','6555-3333','ezequielpocho@gmail.com',2
+EXEC agregarClienteEmpresa 'Prisma Moda Plaza mundo','Sucursal Plaza Mundo, Etapa 2, local #43','2333-4444','prismamodaPM@gmail.com',1
+EXEC agregarClienteEmpresa 'Branson Metrocentro','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks','2333-4779','bransonmetrocentro@gmail.com',1
+EXEC agregarClienteEmpresa 'Calvin Klein Metrocentro','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro','2441-4461','calvinKleinmetroSS@gmail.com',1
+EXEC agregarClientePersona 'Jimena Abigail Sanchez Guardado','65748309-2','1432-444090-341-5','Calle a Paseo general Escalón, Edificio Verde Local #1','7442-1223','jimenaAbigail@gmail.com',2
+EXEC agregarClienteEmpresa 'Carolina´s','Metrocentro San Salvador,1º Nivel, Local #43','2309-3333','carolinas_bouti@gmail.com',1
+EXEC agregarClienteEmpresa 'Tatiana´s','Galerias San Salvador, 2º Etapa, nivel #2, local #55','7203-4452','tatiandesign@gmail.com',1
+EXEC agregarClienteEmpresa 'Colegio Don Bosco','Soyapango San Salvador, Calle a plan del pino','2000-1123','colegiodonbosco@gmail.com',1
+EXEC agregarClienteEmpresa 'Scotiabank','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines','2633-0110','scotiabankss@gmail.com',1
+EXEC agregarClientePersona 'Kevin Alexander De Bruyne Reyes','23341928-3','5432-345019-245-5','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1','6012-5145','KevinBruyne@gmail.com',2
+EXEC agregarClienteEmpresa 'Agua Cristal','San Miguel, El Salvador, Calle la Conquista Edificio Azul','2201-2910','cristalelagua@gmail.com',1
+EXEC agregarClienteEmpresa 'SIMAN Plaza Mundo','Sucursal de Plaza Muno, San Salvador','2549-4421','siman.plazamundo@gmail.com',1
+EXEC agregarClienteEmpresa 'ST Jack´s Metrocentro','Sucursal Metrocentro San Salvador','2883-0983','stjacksometrocentro@gmail.com',1
+EXEC agregarClienteEmpresa 'Local Boutique','Sucursal Metrocentro, Cerca de ADOC y MD','2940-3414','localboutique@gmail.com',1
+EXEC agregarClientePersona 'Vanessa Alexandra Carranza','87654797-1','0182-654231-983-5','Boulevar Constitución, atras de Pollo Real','7423-9432','carranzastyle@gmail.com',2
+EXEC agregarClientePersona 'Diana Alondra Canales','01928373-0','3241-651029-876-3','Calle a Apulo, Edificio #42,parcela #2','6003-3212','alondracanales@gmail.com',2
+EXEC agregarClienteEmpresa 'Las Gemas','Metrocentro Cuarta etapa, a la par de Jacarandas','2212-0342','lasgemasmetro@gmail.com',1
+EXEC agregarClienteEmpresa 'Antonella Boutique','Metrocentro San Salvador, local #23','2999-0312','antonellasalon@gmail.com',1
+EXEC agregarClienteEmpresa 'Sant France','Paseo General Escalón, condominio #15, Edificio Azul','2113-4985','santfrance@gmail.com',1
+EXEC agregarClienteEmpresa 'DollarCity Unicentro Soyapango','Unicentro Soyapango San Salvador, local #40','2093-1000','dollacitysoya@gmail.com',1
+EXEC agregarClienteEmpresa 'Gorgeous','Centro comercial la cascada etapa #6,Local #68','2098-3331','Gorgeouscascada@gmail.com',1
+EXEC agregarClientePersona 'Diego Gilberto López Lemus','01294390-2','1254-019402-543-8','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4','2999-6210','diegopresa@gmail.com',2
+EXEC agregarClienteEmpresa 'Star Style','MetroNorte San Salvador, tercera planta local #68','2084-3415','Starstyle@gmail.com',1
+EXEC agregarClienteEmpresa 'Carabana´s','Galerias San Salvador, 1º nivel, local #10','2093-7313','carabanaSS@gmail.com',1
+EXEC agregarClienteEmpresa 'Mega Variety','Plaza Mundo San Salvador, 2º etapa,local #22','2028-4218','mevarietyPM@gmail.com',1
+EXEC agregarClientePersona 'Filipe Ousmane Hernández Capilla','01829300-8','5017-444222-107-2','Calle la sucia, La unión, comercial maria santisima,local 2','7102-6666','ousmandembele@gmail.com',2
+EXEC agregarClienteEmpresa 'Prisma Moda Galerias','Sucursal Galerias, Etapa 1, local #9','2546-0002','prismamodaGAL@gmail.com',1
+EXEC agregarClienteEmpresa 'Branson La cascada','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4','2019-2019','bransoncascada@gmail.com',1
+EXEC agregarClienteEmpresa 'Calvin Klein Galerias','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal','2545-2543','calvinKleingalerias@gmail.com',1
+EXEC agregarClientePersona 'Tomas Alexander Madrid Versa','36451026-2','1432-000192-415-5','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41','6442-1302','versamadriddecima@gmail.com',2
+EXEC agregarClienteEmpresa 'Central´s','Metrocentro San Salvador,2º Nivel, Local #66','2098-4133','centralsdress@gmail.com',1
+EXEC agregarClienteEmpresa 'Dresess Karla','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung','7102-4210','dresseskarl@gmail.com',1
+EXEC agregarClienteEmpresa 'Elegance boutique','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero','2534-7356','eleganceboutiquess@gmail.com',1
+EXEC agregarClienteEmpresa 'Puma Metrocentro','Metrocentro San Salvador, A la par de Restaurante los Cebollines','2309-1221','pumasmetro@gmail.com',1
+EXEC agregarClienteEmpresa 'Elegance T-Shirt','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein','2120-3313','elegandeshirt@gmail.com',1
 
 EXEC agregarMetodologia 'Normal'
 EXEC agregarMetodologia 'Fasttrack'
 
 EXEC agregarModulo 'Módulo 1', 400,1
+EXEC agregarModulo 'Módulo 2', 300,1
+EXEC agregarModulo 'Módulo 3', 300,1
+EXEC agregarModulo 'Módulo 4', 300,1
+EXEC agregarModulo 'Módulo 5', 200,1
+EXEC agregarModulo 'Módulo 6', 250,1
+EXEC agregarModulo 'Módulo 7', 200,1
+EXEC agregarModulo 'Módulo 8', 150,1
+EXEC agregarModulo 'Módulo 9', 300,1
+EXEC agregarModulo 'Módulo 10', 300,1
 EXEC agregarModulo 'FastTrack',125,2
 
-EXEC agregarFactura '2018-06-15','2018-05-27','2018-05-31','2018-06-01','Sucursal de Metrocentro,San Salvador',2
+EXEC agregarFactura '2018-06-15','2018-05-27','2018-05-31','2018-06-01','Calle las brisas, Av. Chinameca Condominio #4',1
+EXEC agregarFactura '2018-09-21','2018-08-27','2018-09-06','2018-09-07','Sucursal de Metrocento, San Salvador',2
+EXEC agregarFactura '2018-08-22','2018-05-27','2018-08-07','2018-08-08','Sucursal Unicentro Soyapango',3
+EXEC agregarFactura '2018-07-17','2018-07-27','2018-07-02','2018-07-03','Sucursal Metrocentro, Cerca de Adidas',4
+EXEC agregarFactura '2018-01-19','2017-12-25','2018-01-04','2018-01-05','Boulevar Constitución, atras de Papa Jonh`s',5
+EXEC agregarFactura '2018-01-16','2017-12-21','2018-01-02','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
+EXEC agregarFactura '2018-02-25','2018-01-27','2018-02-10','2018-02-11','Metrocentro Doceava Etapa, a la par St Jack´s',7
+EXEC agregarFactura '2018-10-24','2018-09-27','2018-10-09','2018-10-10','Plaza Mundo San Salvador, local #53',8
+EXEC agregarFactura '2018-09-29','2018-08-27','2018-09-14','2018-09-15','Calle a San sebastian, condominio #55, Edificio Rojo',9
+EXEC agregarFactura '2018-05-26','2018-04-27','2018-05-11','2018-05-12','44 calle 2 Zona 12,Guatemala',10
+EXEC agregarFactura '2018-04-21','2018-03-27','2018-04-06','2018-04-07','Centro comercial la cascada etapa #1,Local #12',11
+EXEC agregarFactura '2018-03-20','2018-02-27','2018-03-05','2018-03-06','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1',12
+EXEC agregarFactura '2018-06-28','2018-05-27','2018-06-13','2018-06-14','Metrosur San Salvador, segunda planta local #99',13
+EXEC agregarFactura '2018-05-30','2018-04-27','2018-05-15','2018-05-16','Galerias San Salvador, 3º nivel, local #12',14
+EXEC agregarFactura '2018-03-29','2018-02-27','2018-03-14','2018-03-15','Galerias San Salvador,Cerca del cine local #41',15
+EXEC agregarFactura '2018-09-16','2018-08-27','2018-09-01','2018-09-02','Calle el estante, Cabañas, comercial maria purisima,local #47',16
+EXEC agregarFactura '2018-03-26','2018-02-27','2018-03-11','2018-03-12','Sucursal Plaza Mundo, Etapa 2, local #43',17
+EXEC agregarFactura '2018-08-31','2018-07-27','2018-08-16','2018-08-17','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks',18
+EXEC agregarFactura '2018-08-20','2018-07-27','2018-08-05','2018-08-06','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro',19
+EXEC agregarFactura '2018-05-15','2018-04-27','2018-04-30','2018-05-01','Calle a Paseo general Escalón, Edificio Verde Local #1',20
+EXEC agregarFactura '2018-04-02','2018-03-27','2018-03-18','2018-03-19','Metrocentro San Salvador,1º Nivel, Local #43',21
+EXEC agregarFactura '2018-04-22','2018-03-27','2018-04-07','2018-04-08','Galerias San Salvador, 2º Etapa, nivel #2, local #55',22
+EXEC agregarFactura '2018-03-27','2018-02-27','2018-03-12','2018-03-13','Soyapango San Salvador, Calle a plan del pino',23
+EXEC agregarFactura '2018-02-28','2018-01-27','2018-02-13','2018-02-14','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines',24
+EXEC agregarFactura '2018-01-20','2017-12-20','2018-01-05','2018-01-06','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1',25
+EXEC agregarFactura '2018-04-15','2018-03-21','2018-03-31','2018-04-01','San Miguel, El Salvador, Calle la Conquista Edificio Azul',26
+EXEC agregarFactura '2018-08-21','2018-07-23','2018-08-06','2018-08-07','Sucursal de Plaza Mundo, San Salvador',27
+EXEC agregarFactura '2018-07-22','2018-06-26','2018-07-07','2018-07-08','Sucursal Metrocentro San Salvador',28
+EXEC agregarFactura '2018-06-17','2018-05-29','2018-06-02','2018-06-03','Sucursal Metrocentro, Cerca de ADOC y MD',29
+EXEC agregarFactura '2018-02-19','2018-01-25','2018-02-04','2018-02-05','Boulevar Constitución, atras de Pollo Real',30
+EXEC agregarFactura '2018-02-16','2018-01-21','2018-02-01','2018-02-02','Calle a Apulo, Edificio #42,parcela #2',31
+EXEC agregarFactura '2018-03-25','2018-02-27','2018-03-10','2018-03-11','Metrocentro Cuarta etapa, a la par de Jacarandas',32
+EXEC agregarFactura '2018-09-24','2018-08-29','2018-09-09','2018-09-10','Metrocentro San Salvador, local #23',33
+EXEC agregarFactura '2018-08-29','2018-07-20','2018-08-14','2018-08-15','Paseo General Escalón, condominio #15, Edificio Azul',34
+EXEC agregarFactura '2018-04-26','2018-03-23','2018-04-11','2018-04-12','Unicentro Soyapango San Salvador, local #40',35
+EXEC agregarFactura '2018-03-21','2018-02-25','2018-03-06','2018-03-07','Centro comercial la cascada etapa #6,Local #68',36
+EXEC agregarFactura '2018-02-20','2018-01-27','2018-02-05','2018-02-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
+EXEC agregarFactura '2018-05-28','2018-04-26','2018-05-13','2018-05-14','MetroNorte San Salvador, tercera planta local #68',38
+EXEC agregarFactura '2018-04-30','2018-05-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
+EXEC agregarFactura '2018-02-29','2018-01-22','2018-02-14','2018-02-15','Plaza Mundo San Salvador, 2º etapa,local #22',40
+EXEC agregarFactura '2018-08-16','2018-07-20','2018-08-01','2018-08-02','Calle la sucia, La unión, comercial maria santisima,local 2',41
+EXEC agregarFactura '2018-02-26','2018-01-27','2018-02-11','2018-02-12','Sucursal Galerias, Etapa 1, local #9',42
+EXEC agregarFactura '2018-07-31','2018-06-27','2018-07-16','2018-07-17','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4',43
+EXEC agregarFactura '2018-07-20','2018-06-27','2018-07-05','2018-07-06','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal',44
+EXEC agregarFactura '2018-04-15','2018-03-27','2018-03-31','2018-04-01','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41',45
+EXEC agregarFactura '2018-03-02','2018-02-27','2018-02-16','2018-02-17','Metrocentro San Salvador,2º Nivel, Local #66',46
+EXEC agregarFactura '2018-03-22','2018-02-27','2018-03-07','2018-03-08','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung',47
+EXEC agregarFactura '2018-02-27','2018-01-27','2018-02-12','2018-02-13','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero',48
+EXEC agregarFactura '2018-01-28','2017-12-27','2018-01-13','2018-01-14','Metrocentro San Salvador, A la par de Restaurante los Cebollines',49
+EXEC agregarFactura '2018-02-20','2018-01-20','2018-02-05','2018-02-06','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein',50
 
 EXEC agregarTipoVariante 'BLANKS'
 EXEC agregarTipoVariante 'SCREEN PRINTING'
@@ -2661,9 +2767,11 @@ EXEC agregarFlujoProceso 1,1
 
 EXEC agregarEstadoSeguimiento 'En proceso'
 EXEC agregarEstadoSeguimiento 'Finalizado'
+EXEC agregarEstadoSeguimiento 'Pendiente'
 
 EXEC agregarEstadoOrden 'En proceso'
 EXEC agregarEstadoOrden 'Finalizado'
+EXEC agregarEstadoOrden 'Pendiente'
 
 EXEC agregarPrenda 'Camisa',5.75
 
