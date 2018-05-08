@@ -2546,7 +2546,41 @@ as
 go
 
 --Usuarios de la BDD //////////////////////////////////////////////////////////////////////////////////////
+--1. Usuarios del Esquema Compras:
+--a. Usuario Solamente con permisos de selección de datos.
+CREATE LOGIN ConsultorCompras
+WITH PASSWORD = '12345'
+CREATE USER MatildaFuentes FOR LOGIN ConsultorCompras
+WITH DEFAULT_SCHEMA = Compra
+GRANT SELECT,REFERENCES
+ON SCHEMA :: Compra
+TO MatildaFuentes
+GO
+--b. Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
+--(Para la parte de Inserción de datos y actualización)
+CREATE LOGIN GestorCompras
+WITH PASSWORD = '12345'
+CREATE USER LeonardoEsquivel FOR LOGIN GestorCompras
+WITH DEFAULT_SCHEMA = Compra
+GRANT EXECUTE,INSERT,UPDATE
+ON SCHEMA :: Compra
+TO LeonardoEsquivel
+GO
 
+--Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
+--procedimientos, tablas etc dentro de este esquema.CREATE LOGIN AdministradorCompras
+WITH PASSWORD = '12345'
+CREATE USER ElenilsonGuevara FOR LOGIN AdministradorCompras
+WITH DEFAULT_SCHEMA = Compra
+GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
+TO ElenilsonGuevara
+GO
+--Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
+--SUS OBJETOS.CREATE LOGIN Administrador
+WITH PASSWORD = '54321'
+CREATE USER BrandonLee FOR LOGIN Administrador
+GRANT ALTER,EXECUTE,SELECT,INSERT,UPDATE,DELETE,CONTROL,REFERENCES,VIEW DEFINITION
+TO BrandonLee WITH GRANT OPTION
 
 --Respaldo de la BDD /////////////////////////////////////////////////////////////////////////////////////
 
@@ -2655,3 +2689,4 @@ EXEC agregarOrdenVentaTalla 25,25.50,1,1,3
 EXEC agregarOrdenVentaTalla 28,38.4,1,1,3
 
 EXEC agregarSeguimientoOrden 1,3,1
+
