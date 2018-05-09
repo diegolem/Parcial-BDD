@@ -285,6 +285,14 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 	ADD CONSTRAINT chkTelefonoP
 	CHECK (telefono LIKE '%[267][0-9][0-9][0-9][-][0-9][0-9][0-9][0-9]%')
 
+	ALTER TABLE clientes
+	ADD CONSTRAINT UTelefono
+	UNIQUE(telefono)
+
+	ALTER TABLE proveedor
+	ADD CONSTRAINT UTelefonoP
+	UNIQUE(telefono)
+
 --Creaccion de Esquemas
 create schema Venta;
 create schema Compra;
@@ -332,7 +340,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.talla
 ALTER SCHEMA Producto TRANSFER object::dbo.medida
 
 -- Vistas
--- 1. Vista completa de los productos de inventario.
+--1. Vista completa de los productos de inventario.
 	CREATE VIEW productos AS	
 		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
 		FROM Bodega.MateriaPrima M 	
@@ -352,7 +360,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
 		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
 		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 3
-	; --Por ejemplo si en el id 1 es "pendiente";
+; --Por ejemplo si en el id 1 es "pendiente";
 -- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
 --    datos de contacto.
 	CREATE VIEW productosNecesitados AS	
@@ -377,7 +385,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		FROM Venta.Factura F 
 		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	
 		GROUP BY F.idCliente, C.nombre, DATEPART(yyyy, F.orderDate)
-	; 
+	;
 -- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
 	CREATE VIEW ordenModulos AS
 		SELECT M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
@@ -392,7 +400,6 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 -- 12. Vista de las Sales Order con categoría SCREEN PRINTING.
 -- 13. Vista de las Sales Order con categoría Sublimation.
 -- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
-
 -- Creacion de errores //////////////////////////////////////////////////////////////////////////////
 exec sp_addmessage 50018, 20,  N'No se puede actualizar el estado pues el proceso anterior no ha sido completado', 'us_english'
 exec sp_addmessage 50019, 21,  N'No se puede seleccionar un processo que no sea de la misma variante', 'us_english'
@@ -727,6 +734,44 @@ AS
 		END
 	END
 GO
+--TRIGGERS Extra
+CREATE TRIGGER asignarSeguimiento ON Produccion.ordenVenta
+FOR INSERT
+AS
+	DECLARE @idOrdenVenta INT,@idProceso INT,@idEstado INT
+	BEGIN
+		SELECT @idOrdenVenta = idOrdenventa FROM inserted
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,1
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,2
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,3
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,4
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,5
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,6
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,7
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,8
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,9
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,10
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,11
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,12
+		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,13
+	END
+GO
+CREATE TRIGGER verificarCompartimiento ON Bodega.MateriaPrima
+FOR INSERT
+AS
+	DECLARE @idCompartimiento INT,@idMateriaPrima INT
+	SELECT @idCompartimiento = idCompartimiento FROM inserted
+	IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 1
+	BEGIN
+		PRINT 'El compartimiento esta disponible'
+		UPDATE Bodega.Compartimiento SET estado = 2 WHERE idCompartimiento = @idCompartimiento
+	END
+	ELSE IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 2
+	BEGIN
+		PRINT 'El compartimiento ya esta ocupado'
+		ROLLBACK TRAN
+	END
+GO
 -- Funciones /////////////////////////////////////////////////////////////////////////////////////////////////
 create function dbo.getPiezasExtras(@piezas int) RETURNS int
 as
@@ -805,7 +850,7 @@ tener que deben ser creados para TODAS LAS TABLAS que se crean en la base de dat
 
 --PROCEDURE de INSERT para TODAS las tablas
 --Tabla Produccion.departamento
-CREATE PROC agregarDepartamento
+CREATE PROC Produccion.agregarDepartamento
 @nombre VARCHAR(100),@descripcion VARCHAR(250)
 AS
 	iF NOT EXISTS(SELECT * FROM Produccion.departamento WHERE nombre = @nombre AND descripcion = @descripcion)
@@ -820,7 +865,7 @@ AS
 	END
 GO
 --Tabla Produccion.procesos
-CREATE PROC agregarProcesos
+CREATE PROC Produccion.agregarProcesos
 @nombre VARCHAR(30),@duracion INT,@idDepartamento INT
 AS
 	IF(@duracion > 0)
@@ -835,7 +880,7 @@ AS
 	END
 GO
 --Tabla Venta.tipoCliente
-CREATE PROC agregarTipoCliente
+CREATE PROC Venta.agregarTipoCliente
 @nombre VARCHAR(25)
 AS
 	IF NOT EXISTS(SELECT * FROM Venta.tipoCliente WHERE nombre = @nombre)
@@ -851,7 +896,7 @@ AS
 GO
 --Tabla Venta.clientes
 --En caso de ser Tipo: Persona
-CREATE PROC agregarClientePersona
+CREATE PROC Venta.agregarClientePersona
 @nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(17),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT
 AS
@@ -902,7 +947,7 @@ AS
 	END
 GO
 --Tabla Produccion.metodologia
-CREATE PROC agregarMetodologia
+CREATE PROC Produccion.agregarMetodologia
 @nombre VARCHAR(100)
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.metodologia WHERE nombre = @nombre)
@@ -917,7 +962,7 @@ AS
 	END
 GO
 --Tabla Produccion.modulo
-CREATE PROC agregarModulo
+CREATE PROC Produccion.agregarModulo
 @nombre VARCHAR(60),@cantidadProduccion INT,@idMetodologia INT
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.modulo WHERE nombre = @nombre AND cantidadProduccion = @cantidadProduccion AND idMetodologia = @idMetodologia)
@@ -932,7 +977,7 @@ AS
 	END
 GO
 --Tabla Venta.factura
-CREATE PROC agregarFactura
+CREATE PROC Venta.agregarFactura
 @requiredDate Date,@orderDate DATE,@finishedDate DATE,@shipmentDate DATE,@direccion VARCHAR(250),@idCliente INT
 AS
 DECLARE @total MONEY
@@ -957,7 +1002,7 @@ DECLARE @total MONEY
 	END
 GO
 --Tabla Produccion.tipoVariante
-CREATE PROC agregarTipoVariante
+CREATE PROC Produccion.agregarTipoVariante
 @nombre VARCHAR(25)
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.tipoVariante WHERE nombre = @nombre)
@@ -972,27 +1017,27 @@ AS
 	END
 GO
 --Tabla Produccion.Detalles
-CREATE PROC agregarDetalles
+CREATE PROC Produccion.agregarDetalles
 @descripcion VARCHAR(200),@precio MONEY,@idProceso INT
 AS
 	    INSERT INTO Produccion.Detalles VALUES(@descripcion,@precio,@idProceso)
 		PRINT 'Detalles ingresados correctamente'
 GO
 --Tabla Produccion.detalleVarianteDetalle
-CREATE PROC agregarVarianteDetalle
+CREATE PROC Produccion.agregarVarianteDetalle
 @idVariante INT,@idDetalle INT
 AS
 	INSERT INTO Produccion.detalleVarianteDetalle VALUES(@idVariante,@idDetalle)
 GO
 --Tabla Produccion.flujoTrabajo
-CREATE PROC agregarFlujoTrabajo
+CREATE PROC Produccion.agregarFlujoTrabajo
 @idVariante INT
 AS
 	INSERT INTO Produccion.flujoTrabajo VALUES(@idVariante)
 	PRINT 'El flujo de trabajo fue asignado correctamente'
 GO
 --Tabla Produccion.detalleFlujoTrabajoProcesos
-CREATE PROC agregarFlujoProceso
+CREATE PROC Produccion.agregarFlujoProceso
 @idFlujo INT,@idProceso INT
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.detalleFlujoTrabajoProcesos WHERE idFLujo = @idFlujo AND idProceso = @idProceso)
@@ -1007,7 +1052,7 @@ AS
 	END
 GO
 --Tabla Produccion.estadoSeguimiento
-CREATE PROC agregarEstadoSeguimiento
+CREATE PROC Produccion.agregarEstadoSeguimiento
 @nombre VARCHAR(25)
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE nombre = @nombre)
@@ -1022,7 +1067,7 @@ AS
 	END
 GO
 --Tabla Produccion.estadoOrden
-CREATE PROC agregarEstadoOrden
+CREATE PROC Produccion.agregarEstadoOrden
 @nombre VARCHAR(25)
 AS
 	IF NOT EXISTS(SELECT * FROM Produccion.estadoOrden WHERE nombre = @nombre)
@@ -1037,7 +1082,7 @@ AS
 	END
 GO
 --Tabla Producto.prenda
-CREATE PROC agregarPrenda
+CREATE PROC Producto.agregarPrenda
 @nombre VARCHAR(100),@precio MONEY
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.prenda WHERE nombre = @nombre AND precio = @precio)
@@ -1060,7 +1105,7 @@ AS
 	END
 GO
 --Tabla Producto.estilo
-CREATE PROC agregarEstilo
+CREATE PROC Producto.agregarEstilo
 @codigo CHAR(5),@idPrenda INT
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.estilo WHERE codigo = @codigo)
@@ -1078,7 +1123,7 @@ AS
 	END
 GO
 -- Tabla Producto.tipoTalla
-CREATE PROC agregarTipoTalla
+CREATE PROC Producto.agregarTipoTalla
 @nombre VARCHAR(40),@abreviacion char(4)
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.tipoTalla WHERE nombre = @nombre AND abreviacion = @abreviacion)
@@ -1102,7 +1147,7 @@ AS
 GO
 
 --Tabla Producto.tallaUbicacion
-CREATE PROC agregarUbicacion
+CREATE PROC Producto.agregarUbicacion
 @ubicacion VARCHAR(50)
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.tallaUbicacion WHERE ubicacion = @ubicacion)
@@ -1117,7 +1162,7 @@ AS
 	END
 GO
 --Tabla Producto.talla
-CREATE PROC agregarTalla
+CREATE PROC Producto.agregarTalla
 @cantidadTela DECIMAL(18,2),@idTipoTalla INT,@idPrenda INT,@idEstilo INT
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.talla WHERE cantidadTela = @cantidadTela AND idTipoTalla = @idTipoTalla AND idPrenda = @idPrenda AND idEstilo = @idEstilo)
@@ -1140,7 +1185,7 @@ AS
 	END
 GO
 --Tabla Producto.medida
-CREATE PROC agregarMedida
+CREATE PROC Producto.agregarMedida
 @dimension DECIMAL(18,2),@idTalla INT,@idUbicacion INT
 AS
 	IF NOT EXISTS(SELECT * FROM Producto.medida WHERE dimension = @dimension AND idTalla = @idTalla AND idUbicacion = @idUbicacion)
@@ -1178,7 +1223,7 @@ AS
 	END
 GO
 --Tabla Produccion.ordenVenta
-CREATE PROCEDURE agregarOrdenVenta
+CREATE PROCEDURE Produccion.agregarOrdenVenta
 	@idFactura INT,@idEstilo INT,@idFlujo INT,
 	@idColor INT,@idEstado INT
 	AS
@@ -1197,7 +1242,7 @@ CREATE PROCEDURE agregarOrdenVenta
         END
 	GO
 --Tabla Produccion.ordenDeVentaTalla
-CREATE PROC agregarOrdenVentaTalla
+CREATE PROC Produccion.agregarOrdenVentaTalla
 @cantidad INT,@cantidadTela DECIMAL(18,2),@idTalla INT,@idModulo INT,@idOrdenVenta INT
 AS
 DECLARE @cantidadExtra INT
@@ -1228,14 +1273,14 @@ DECLARE @cantidadExtra INT
 	END
 GO
 --Tabla Produccion.seguimientoOrden
-CREATE PROC agregarSeguimientoOrden
+CREATE PROC Produccion.agregarSeguimientoOrden
 @idEstado INT,@idOrdenVenta INT,@idProceso INT
 AS
 	INSERT INTO Produccion.seguimientoOrden VALUES(@idEstado,@idOrdenVenta,@idProceso)
 	PRINT 'Seguimiento de la Orden ingresado correctamente'
 GO
 --Tabla tipoUnidadMedidas
-CREATE PROC agregartipoUnidadMedidas
+CREATE PROC Produccion.agregartipoUnidadMedidas
 @idTipoUnidad CHAR(6),@nombre VARCHAR(60)
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.tipoUnidadMedidas WHERE idTipoUnidad = @idTipoUnidad AND nombre = @nombre)
@@ -1258,7 +1303,7 @@ AS
 	END
 GO
 --Tabla Bodega.tipoMateriaPrima
-CREATE PROC agregarTipoMateriaPrima
+CREATE PROC Bodega.agregarTipoMateriaPrima
 @nombre VARCHAR(60),@idMedicion CHAR(6)
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.tipoMateriaPrima WHERE nombre = @nombre AND idMedicion = @idMedicion)
@@ -1281,7 +1326,7 @@ AS
 	END
 GO
 --Tabla Bodega.estante
-CREATE PROCEDURE agregarEstante
+CREATE PROCEDURE Bodega.agregarEstante
 @estante char(1)
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.estante WHERE idEstante = @estante)
@@ -1304,7 +1349,7 @@ AS
 	END
 GO
 --Tabla Bodega.Nivel
-CREATE PROC agregarNivel
+CREATE PROC Bodega.agregarNivel
 @nivel INT
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.nivel WHERE nivel = @nivel)
@@ -1327,7 +1372,7 @@ AS
 	END
 GO
 --Tabla Bodega.Columna
-CREATE PROCEDURE agregarColumna
+CREATE PROCEDURE Bodega.agregarColumna
 @columna INT
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.columna WHERE columna = @columna)
@@ -1350,7 +1395,7 @@ AS
 	END
 GO
 --Tabla Bodega.Compartimiento
-CREATE PROCEDURE agregarCompartimiento
+CREATE PROCEDURE Bodega.agregarCompartimiento
 @idCompartimiento CHAR(3),@estado TINYINT
 AS
 DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT
@@ -1385,7 +1430,7 @@ DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT
 	END
 GO
 --Tabla Compra.Proveedor
-CREATE PROC agregarProveedor
+CREATE PROC Compra.agregarProveedor
 @nombre VARCHAR(100),@direccion VARCHAR(200),@telefono CHAR(9),@correo VARCHAR(50)
 AS
 	IF NOT EXISTS (SELECT * FROM Compra.Proveedor WHERE nombre = @nombre AND direccion = @direccion AND telefono = @telefono AND correo = @correo)
@@ -1400,7 +1445,7 @@ AS
 	END
 GO
 --Tabla Bodega.MateriaPrima
-CREATE PROCEDURE agregarMateriaPrima
+CREATE PROCEDURE Bodega.agregarMateriaPrima
 @descripcion varchar(200),@existencia decimal(18,2),@stockMaximo decimal(18,2),@idTipoMateriaPrima INT,
 @idCompartimiento CHAR(3),@idColor INT,@idProveedor INT
 AS
@@ -1440,7 +1485,7 @@ AS
 	END
 GO
 --Tabla Compra.estadoCompras
-CREATE PROC agregarEstadoCompras
+CREATE PROC Compra.agregarEstadoCompras
 @nombre VARCHAR(25)
 AS
 	IF NOT EXISTS(SELECT * FROM Compra.estadoCompras WHERE nombre = @nombre)
@@ -1455,7 +1500,7 @@ AS
 	END
 GO
 --Tabla Compra.compras
-CREATE PROCEDURE agregarCompra
+CREATE PROCEDURE Compra.agregarCompra
 	@cantidad DECIMAL(18,2),@idEstado INT,@idMateriaPrima INT
 	AS
 		IF NOT EXISTS(SELECT * FROM Compra.compras WHERE cantidad = @cantidad AND idEstado = @idEstado AND idMateriaPrima = @idMateriaPrima)
@@ -1534,7 +1579,7 @@ ON Produccion.ordenDeVentaTalla
 GO
 -- Procedimientos para modificar ////////////////////////////////////////////////////////////////
 --Tabla Produccion.departamento
-CREATE PROC modificarDepartamento -- Tabla produccion
+CREATE PROC Produccion.modificarDepartamento -- Tabla produccion
 @nombre VARCHAR(100),@descripcion VARCHAR(250), @idDepartamento int
 AS
 	IF EXISTS(SELECT * FROM Produccion.departamento WHERE idDepartamento = @idDepartamento)
@@ -1556,7 +1601,7 @@ AS
 	END
 GO
 --Tabla Produccion.procesos
-CREATE PROC modificarProcesos -- Tabla proceso
+CREATE PROC Produccion.modificarProcesos -- Tabla proceso
 @nombre VARCHAR(30),@duracion INT,@idDepartamento INT, @idProceso int
 AS
 	IF EXISTS(SELECT * FROM Produccion.procesos WHERE idProceso = @idProceso)
@@ -1578,7 +1623,7 @@ AS
 	END
 GO
 --Tabla Venta.tipoCliente
-CREATE PROC modificarTipoCliente
+CREATE PROC Venta.modificarTipoCliente
 @nombre VARCHAR(25), @idTipo int
 AS
 	IF EXISTS(SELECT * FROM Venta.tipoCliente WHERE idTipo = @idTipo)
@@ -1601,7 +1646,7 @@ AS
 GO
 --Tabla Venta.clientes
 --En caso de ser Tipo: Persona
-CREATE PROC modificarClientePersona
+CREATE PROC Venta.modificarClientePersona
 @nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(14),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT, @idCliente int
 AS
@@ -1649,7 +1694,7 @@ AS
 	END
 GO
 --Tabla Produccion.metodologia
-CREATE PROC modificarMetodologia
+CREATE PROC Produccion.modificarMetodologia
 @nombre VARCHAR(100), @idMetodologia int
 AS
 	IF EXISTS(SELECT * FROM Produccion.metodologia WHERE idMetodologia = @idMetodologia)
@@ -1671,7 +1716,7 @@ AS
 	END
 GO
 --Tabla Produccion.modulo
-CREATE PROC modificarModulo
+CREATE PROC Produccion.modificarModulo
 @nombre VARCHAR(60),@cantidadProduccion INT,@idMetodologia INT, @idModulo INT
 AS
 	IF EXISTS(SELECT * FROM Produccion.modulo WHERE idModulo = @idModulo)
@@ -1693,7 +1738,7 @@ AS
 	END
 GO
 --Tabla Venta.factura
-CREATE PROC modificarFactura
+CREATE PROC Venta.modificarFactura
 @requiredDate Date,@orderDate DATE,@finishedDate DATE,@shipmentDate DATE,@direccion VARCHAR(250),@idCliente INT, @idFactura int
 AS
 	IF EXISTS(SELECT * FROM Venta.factura WHERE idFactura = @idFactura)
@@ -1723,7 +1768,7 @@ AS
 	END
 GO
 --Tabla Produccion.tipoVariante
-CREATE PROC modificarTipoVariante
+CREATE PROC Produccion.modificarTipoVariante
 @nombre VARCHAR(25), @idVariante int
 AS
 	IF EXISTS(SELECT * FROM Produccion.tipoVariante WHERE idVariante = @idVariante)
@@ -1745,7 +1790,7 @@ AS
 	END
 GO
 --Tabla Produccion.Detalles
-CREATE PROC modificarDetalles -- Tabla detalles
+CREATE PROC Produccion.modificarDetalles -- Tabla detalles
 @descripcion VARCHAR(200),@precio MONEY,@idProceso INT, @idDetalle int
 AS
 	IF EXISTS(SELECT * FROM Produccion.Detalles WHERE idDetalle = @idDetalle)
@@ -1759,7 +1804,7 @@ AS
 	END
 GO
 --Tabla Produccion.detalleVarianteDetalle
-CREATE PROC ModificarVarianteDetalle @idVariante INT, @idNuevaVariante INT,@idDetalle INT
+CREATE PROC Produccion.ModificarVarianteDetalle @idVariante INT, @idNuevaVariante INT,@idDetalle INT
 AS
 	IF EXISTS(SELECT * FROM Produccion.detalleVarianteDetalle WHERE idDetalle = @idDetalle)
 	BEGIN
@@ -1772,10 +1817,10 @@ AS
 	END
 GO
 --Tabla Produccion.flujoTrabajo
-CREATE PROC modificarFlujoTrabajo -- Flujo
+CREATE PROC Produccion.modificarFlujoTrabajo -- Flujo
 @idVariante INT, @idFlujo INT
 AS
-	IF EXISTS(SELECT * FROM roduccion.estadoSeguimiento WHERE idFlujo = @idFlujo)
+	IF EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE idFlujo = @idFlujo)
 	BEGIN
 		UPDATE Produccion.flujoTrabajo SET idVariante = @idVariante WHERE idFlujo = @idFlujo
 		PRINT 'El flujo de trabajo fue modificado correctamente'
@@ -1786,7 +1831,7 @@ AS
 	END
 GO
 --Tabla Produccion.detalleFlujoTrabajoProcesos
-CREATE PROC modificarFlujoProceso @idFlujo INT,@idProceso INT, @idNuevoProceso int
+CREATE PROC Produccion.modificarFlujoProceso @idFlujo INT,@idProceso INT, @idNuevoProceso int
 AS
 	IF EXISTS (SELECT * FROM Produccion.detalleFlujoTrabajoProcesos WHERE idFLujo = @idFlujo)
 	BEGIN
@@ -1807,7 +1852,7 @@ AS
 	END
 GO
 --Tabla Produccion.estadoSeguimiento
-CREATE PROC modificarEstadoSeguimiento -- Tabla estado seguimiento
+CREATE PROC Produccion.modificarEstadoSeguimiento -- Tabla estado seguimiento
 @nombre VARCHAR(25), @idEstadoSeguimiento int
 AS
 	IF EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE idEstadoSeguimiento = @idEstadoSeguimiento)
@@ -1829,7 +1874,7 @@ AS
 	END
 GO
 --Tabla Produccion.estadoOrden
-CREATE PROC modificarEstadoOrden -- Tabla estado orden
+CREATE PROC Produccion.modificarEstadoOrden -- Tabla estado orden
 @nombre VARCHAR(25), @idEstadoOrden int
 AS
 	IF EXISTS(SELECT * FROM Produccion.estadoOrden WHERE idEstadoOrden = @idEstadoOrden)
@@ -1851,7 +1896,7 @@ AS
 	END
 GO
 --Tabla Producto.prenda
-CREATE PROC modificarPrenda
+CREATE PROC Producto.modificarPrenda
 @nombre VARCHAR(100),@precio MONEY, @idPrenda int
 AS
 	IF EXISTS(SELECT * FROM Producto.prenda WHERE idPrenda = @idPrenda)
@@ -1881,7 +1926,7 @@ AS
 	END
 GO
 --Tabla Producto.estilo
-CREATE PROC modificarEstilo
+CREATE PROC Producto.modificarEstilo
 @codigo CHAR(5),@idPrenda INT, @idEstilo int
 AS
 	IF EXISTS(SELECT * FROM Producto.estilo WHERE idEstilo = @idEstilo)
@@ -1902,7 +1947,7 @@ AS
 	END
 GO
 -- Tabla Producto.tipoTalla
-CREATE PROC modificarTipoTalla
+CREATE PROC Producto.modificarTipoTalla
 @nombre VARCHAR(40),@abreviacion char(4), @idTipoTalla int
 AS
 	IF EXISTS(SELECT * FROM Producto.tipoTalla WHERE idTipoTalla = @idTipoTalla)
@@ -1932,7 +1977,7 @@ AS
 	END
 GO
 --Tabla Producto.tallaUbicacion
-CREATE PROC modificarUbicacion
+CREATE PROC Producto.modificarUbicacion
 @ubicacion VARCHAR(50), @idUbicacion int
 AS
 	IF EXISTS (SELECT * FROM Producto.tallaUbicacion WHERE idUbicacion = @idUbicacion)
@@ -1954,7 +1999,7 @@ AS
 	END
 GO
 --Tabla Producto.talla
-CREATE PROC modificarTalla
+CREATE PROC Producto.modificarTalla
 @cantidadTela DECIMAL(18,2),@idTipoTalla INT,@idPrenda INT,@idEstilo INT, @idTalla int
 AS
 	IF EXISTS(SELECT * FROM Producto.talla WHERE idTalla = @idTalla)
@@ -1980,7 +2025,7 @@ AS
 	END
 GO
 --Tabla Producto.medida
-CREATE PROC modificarMedida
+CREATE PROC Producto.modificarMedida
 @dimension DECIMAL(18,2),@idTalla INT,@idUbicacion INT, @idMedida int
 AS
 	IF EXISTS(SELECT * FROM Producto.medida WHERE idMedida = @idMedida)
@@ -2032,7 +2077,7 @@ AS
 	END
 GO
 --Tabla Produccion.ordenVenta
-CREATE PROCEDURE modificarOrdenVenta
+CREATE PROCEDURE Produccion.modificarOrdenVenta
 @idFactura INT,@idEstilo INT,@idFlujo INT,
 @idColor INT,@idEstado INT, @idOrdenVenta int
 AS
@@ -2056,7 +2101,7 @@ AS
 	END
 GO
 --Tabla Produccion.ordenDeVentaTalla
-CREATE PROC modificarOrdenVentaTalla
+CREATE PROC Produccion.modificarOrdenVentaTalla
 @cantidad INT,@cantidadTela DECIMAL(18,2),@idTalla INT,@idModulo INT,@idOrdenVenta INT, @idOrdenVentaTalla INT
 AS
 	IF EXISTS(SELECT * FROM Produccion.ordenDeVentaTalla WHERE idOrdenVentaTalla = @idOrdenVentaTalla)
@@ -2098,7 +2143,7 @@ AS
 	END
 GO
 --Tabla Produccion.seguimientoOrden
-CREATE PROC modificarSeguimientoOrden
+CREATE PROC Produccion.modificarSeguimientoOrden
 @idEstado INT,@idOrdenVenta INT,@idProceso INT, @idSeguimiento int
 AS
 	IF EXISTS(SELECT * FROM Produccion.seguimientoOrden WHERE idSeguimiento = @idSeguimiento)
@@ -2135,7 +2180,7 @@ AS
 	END
 GO
 --Tabla Bodega.tipoMateriaPrima
-CREATE PROC modificarTipoMateriaPrima @nombre VARCHAR(60),@idMedicion CHAR(6), @idTipoMateriaPrima int -- Tipo Materia Prima
+CREATE PROC Bodega.modificarTipoMateriaPrima @nombre VARCHAR(60),@idMedicion CHAR(6), @idTipoMateriaPrima int -- Tipo Materia Prima
 AS
 	IF EXISTS(SELECT * FROM Bodega.tipoMateriaPrima WHERE idTipoMateriaPrima = @idTipoMateriaPrima)
 	BEGIN
@@ -2157,7 +2202,7 @@ AS
 	END
 GO
 --Tabla Bodega.estante
-CREATE PROCEDURE modificarEstante @nuevo_estante char(1), @estante char(1) -- Estante
+CREATE PROCEDURE Bodega.modificarEstante @nuevo_estante char(1), @estante char(1) -- Estante
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.estante WHERE idEstante = @nuevo_estante and idEstante != @estante)
 	BEGIN
@@ -2179,7 +2224,7 @@ AS
 	END
 GO
 --Tabla Bodega.Nivel
-CREATE PROC modificarNivel @nivel INT, @idNivel INT -- Tabla Nivel
+CREATE PROC Bodega.modificarNivel @nivel INT, @idNivel INT -- Tabla Nivel
 AS
 	IF EXISTS(SELECT * FROM Bodega.nivel WHERE idNivel = @idNivel)
 	BEGIN
@@ -2207,7 +2252,7 @@ AS
 	END
 GO
 --Tabla Bodega.Columna
-CREATE PROCEDURE modificarColumna @columna int, @idColumna int -- Modificar columnas
+CREATE PROCEDURE Bodega.modificarColumna @columna int, @idColumna int -- Modificar columnas
 AS
 	IF NOT EXISTS(SELECT * FROM Bodega.columna WHERE columna = @columna and idColumna != @idColumna)
 	BEGIN
@@ -2228,7 +2273,7 @@ AS
 	END
 GO
 --Tabla Bodega.Compartimiento
-CREATE PROCEDURE modificarCompartimiento --Compartimiento
+CREATE PROCEDURE Bodega.modificarCompartimiento --Compartimiento
 @estado TINYINT,@idEstante CHAR(1),@idNivel INT,@idColumna INT, @idCompartimiento CHAR(3)
 AS
 	IF EXISTS(SELECT * FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento)
@@ -2272,7 +2317,7 @@ AS
 	END
 GO
 --Tabla Compra.Proveedor
-CREATE PROC modificarProveedor -- Tabla proveedores
+CREATE PROC Compra.modificarProveedor -- Tabla proveedores
 @nombre VARCHAR(100),@direccion VARCHAR(200),@telefono CHAR(9),@correo VARCHAR(50), @idProveedor int
 AS
 	IF EXISTS(SELECT * FROM Compra.Proveedor WHERE idProveedor = @idProveedor)
@@ -2294,7 +2339,7 @@ AS
 	END
 GO
 --Tabla Bodega.MateriaPrima
-CREATE PROCEDURE modificarMateriaPrima -- Tabla MateriaPrima
+CREATE PROCEDURE Bodega.modificarMateriaPrima -- Tabla MateriaPrima
 @descripcion varchar(200), @existencia decimal(18,2), @stockMaximo decimal(18,2), @idTipoMateriaPrima INT, @idCompartimiento INT,@idColor INT, @idProveedor INT, @idMateriaPrima INT
 AS
 	IF EXISTS(SELECT * FROM Bodega.MateriaPrima WHERE idMateriaPrima = @idMateriaPrima)
@@ -2340,7 +2385,7 @@ AS
 	END
 GO
 --Tabla Compra.estadoCompras
-CREATE PROC modificarEstadoCompras -- Tabla del estado de compra
+CREATE PROC Compra.modificarEstadoCompras -- Tabla del estado de compra
 @nombre VARCHAR(25), @idEstadoCompras int
 AS
 	IF EXISTS (SELECT * FROM Compra.estadoCompras WHERE idEstadoCompras = @idEstadoCompras)
@@ -2362,7 +2407,7 @@ AS
 	END
 GO
 --Tabla Compra.compras
-CREATE PROCEDURE modificarCompra @cantidad DECIMAL(18,2),@idEstado INT,@idMateriaPrima INT, @idCompras int -- Tabla compra
+CREATE PROCEDURE Compra.modificarCompra @cantidad DECIMAL(18,2),@idEstado INT,@idMateriaPrima INT, @idCompras int -- Tabla compra
 AS
 	IF exists (SELECT * FROM Compra.compras WHERE idCompras = @idCompras)
 	BEGIN
@@ -2679,16 +2724,16 @@ go
 
 --Usuarios de la BDD //////////////////////////////////////////////////////////////////////////////////////
 --1. Usuarios del Esquema Compras:
---a. Usuario Solamente con permisos de selección de datos.
+--1.1 Usuario Solamente con permisos de selección de datos.
 CREATE LOGIN ConsultorCompras
 WITH PASSWORD = '12345'
 CREATE USER MatildaFuentes FOR LOGIN ConsultorCompras
 WITH DEFAULT_SCHEMA = Compra
-GRANT SELECT,REFERENCES
+GRANT SELECT
 ON SCHEMA :: Compra
 TO MatildaFuentes
 GO
---b. Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
+--1.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
 --(Para la parte de Inserción de datos y actualización)
 CREATE LOGIN GestorCompras
 WITH PASSWORD = '12345'
@@ -2699,7 +2744,7 @@ ON SCHEMA :: Compra
 TO LeonardoEsquivel
 GO
 
---Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
+--1.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
 --procedimientos, tablas etc dentro de este esquema.
 CREATE LOGIN AdministradorCompras
 WITH PASSWORD = '12345'
@@ -2708,13 +2753,73 @@ WITH DEFAULT_SCHEMA = Compra
 GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
 TO ElenilsonGuevara
 GO
---Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
+--2. Usuarios del Esquema Produccion:
+--2.1 Usuario Solamente con permisos de selección de datos.
+CREATE LOGIN ConsultorProduccion
+WITH PASSWORD = '12345'
+CREATE USER AlvaroTorres FOR LOGIN ConsultorProduccion
+WITH DEFAULT_SCHEMA = Produccion
+GRANT SELECT
+ON SCHEMA :: Produccion
+TO AlvaroTorres
+GO
+--2.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
+--(Para la parte de Inserción de datos y actualización)
+CREATE LOGIN GestorProduccion
+WITH PASSWORD = '12345'
+CREATE USER FranklinVelasquez FOR LOGIN GestorProduccion
+WITH DEFAULT_SCHEMA = Produccion
+GRANT EXECUTE,INSERT,UPDATE
+ON SCHEMA :: Produccion
+TO FranklinVelasquez
+GO
+--2.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
+--procedimientos, tablas etc dentro de este esquema.
+CREATE LOGIN AdministradorProduccion
+WITH PASSWORD = '12345'
+CREATE USER FernandaValle FOR LOGIN AdministradorProduccion
+WITH DEFAULT_SCHEMA = Produccion
+GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
+TO FernandaValle
+GO
+--3. Usuarios del Esquema Bodega:
+--3.1 Usuario Solamente con permisos de selección de datos.
+CREATE LOGIN ConsultorBodega
+WITH PASSWORD = '12345'
+CREATE USER FelixCanales FOR LOGIN ConsultorBodega
+WITH DEFAULT_SCHEMA = Bodega
+GRANT SELECT
+ON SCHEMA :: Bodega
+TO FelixCanales
+GO
+--3.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
+--(Para la parte de Inserción de datos y actualización)
+CREATE LOGIN GestorBodega
+WITH PASSWORD = '12345'
+CREATE USER KarlaChavez FOR LOGIN GestorBodega
+WITH DEFAULT_SCHEMA = Bodega
+GRANT EXECUTE,INSERT,UPDATE
+ON SCHEMA :: Bodega
+TO KarlaChavez
+GO
+--2.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
+--procedimientos, tablas etc dentro de este esquema.
+CREATE LOGIN AdministradorBodega
+WITH PASSWORD = '12345'
+CREATE USER DiegoDiaz FOR LOGIN AdministradorBodega
+WITH DEFAULT_SCHEMA = Bodega
+GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
+TO DiegoDiaz
+GO
+--4. Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
 --SUS OBJETOS.
 CREATE LOGIN Administrador
 WITH PASSWORD = '54321'
 CREATE USER BrandonLee FOR LOGIN Administrador
 GRANT ALTER,EXECUTE,SELECT,INSERT,UPDATE,DELETE,CONTROL,REFERENCES,VIEW DEFINITION
 TO BrandonLee WITH GRANT OPTION
+
+
 
 --Respaldo de la BDD /////////////////////////////////////////////////////////////////////////////////////
 
@@ -2901,79 +3006,9 @@ EXEC agregarTalla 1.00,1,1,1 --Aqui debe coincidir con los registro del PDF
 EXEC agregarMedida 30.5,1,1
 
 EXEC agregarColor 'Azul'
-
-EXEC agregartipoUnidadMedidas 'YDS','Yardas'
-EXEC agregartipoUnidadMedidas 'GAL','Galones'
-EXEC agregartipoUnidadMedidas 'LTR','Litros'
-EXEC agregartipoUnidadMedidas 'UDS','Unidades'
-
-EXEC agregarTipoMateriaPrima 'Tela','YDS'
-
-EXEC agregarEstante 'A'
-
-EXEC agregarNivel 1
-
-EXEC agregarColumna 1
-
-EXEC agregarCompartimiento A11,1
-
-EXEC agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-
-EXEC agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
-
-EXEC agregarEstadoCompras 'Normal'
-EXEC agregarEstadoCompras 'Urgente'
-EXEC agregarEstadoCompras 'Realizada'
-
-EXEC agregarCompra 50.50,1,1
-
-EXEC agregarOrdenVenta 1,1,1,1,1
-
-EXEC agregarOrdenVentaTalla 25,25.50,1,1,1
-
-EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
-
-EXEC agregarSeguimientoOrden 1,1,1
-
--- Tipo Materia Prima
-EXEC agregarTipoMateriaPrima 'Hilo', 'YDS'
-EXEC agregarTipoMateriaPrima 'Cordones', 'YDS'
-EXEC agregarTipoMateriaPrima 'Viñetas', 'UDS'
-EXEC agregarTipoMateriaPrima 'Tintas', 'LTR'
-
--- Estante
-EXEC agregarEstante 'B'
-EXEC agregarEstante 'C'
-EXEC agregarEstante 'D'
-EXEC agregarEstante 'E'
-EXEC agregarEstante 'F'
-EXEC agregarEstante 'G'
-EXEC agregarEstante 'H'
-
--- Nivel
-EXEC agregarNivel 2
-EXEC agregarNivel 3
-EXEC agregarNivel 4
-EXEC agregarNivel 5
-EXEC agregarNivel 6
-EXEC agregarNivel 7
-EXEC agregarNivel 8
-
--- Columna
-EXEC agregarColumna 2
-EXEC agregarColumna 3
-EXEC agregarColumna 4
-EXEC agregarColumna 5
-EXEC agregarColumna 6
-EXEC agregarColumna 7
-EXEC agregarColumna 8
-EXEC agregarColumna 9
-
--- Colores
 EXEC agregarColor 'Amarillo'
 EXEC agregarColor 'Ámbar'
 EXEC agregarColor 'Añil'
--- EXEC agregarColor 'Azul'
 EXEC agregarColor 'Beige'
 EXEC agregarColor 'Blanco'
 EXEC agregarColor 'Café'
@@ -3019,4 +3054,62 @@ EXEC agregarColor 'Pistacho'
 EXEC agregarColor 'Verde Musgo'
 EXEC agregarColor 'Ciruela'
 
--- Compartimiento
+EXEC agregartipoUnidadMedidas 'YDS','Yardas'
+EXEC agregartipoUnidadMedidas 'GAL','Galones'
+EXEC agregartipoUnidadMedidas 'LTR','Litros'
+EXEC agregartipoUnidadMedidas 'UDS','Unidades'
+
+EXEC agregarTipoMateriaPrima 'Tela','YDS'
+EXEC agregarTipoMateriaPrima 'Hilo', 'YDS'
+EXEC agregarTipoMateriaPrima 'Cordones', 'YDS'
+EXEC agregarTipoMateriaPrima 'Viñetas', 'UDS'
+EXEC agregarTipoMateriaPrima 'Tintas', 'LTR'
+
+EXEC agregarEstante 'A'
+EXEC agregarEstante 'B'
+EXEC agregarEstante 'C'
+EXEC agregarEstante 'D'
+EXEC agregarEstante 'E'
+EXEC agregarEstante 'F'
+EXEC agregarEstante 'G'
+EXEC agregarEstante 'H'
+
+EXEC agregarNivel 1
+EXEC agregarNivel 2
+EXEC agregarNivel 3
+EXEC agregarNivel 4
+EXEC agregarNivel 5
+EXEC agregarNivel 6
+EXEC agregarNivel 7
+EXEC agregarNivel 8
+
+EXEC agregarColumna 1
+EXEC agregarColumna 2
+EXEC agregarColumna 3
+EXEC agregarColumna 4
+EXEC agregarColumna 5
+EXEC agregarColumna 6
+EXEC agregarColumna 7
+EXEC agregarColumna 8
+EXEC agregarColumna 9
+
+EXEC agregarCompartimiento A11,1
+
+EXEC agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+
+EXEC agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
+
+EXEC agregarEstadoCompras 'Normal'
+EXEC agregarEstadoCompras 'Urgente'
+EXEC agregarEstadoCompras 'Realizada'
+
+EXEC agregarCompra 50.50,1,1
+
+EXEC agregarOrdenVenta 1,1,1,1,1
+
+EXEC agregarOrdenVentaTalla 25,25.50,1,1,1
+
+EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
+
+EXEC agregarSeguimientoOrden 1,1,1
+
