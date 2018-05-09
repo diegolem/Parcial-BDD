@@ -453,7 +453,7 @@ on Produccion.SeguimientoOrden
 after update
 as
 	-- Informacion sobre la fila a modificar
-	declare @id int, @id_orden int, @primer_proceso bit, @ultimo_proceso bit, @proceso_completado bit = 0, @completo varchar(25) = 'Completado'
+	declare @id int, @id_orden int, @primer_proceso bit, @ultimo_proceso bit, @proceso_completado bit = 0, @completo varchar(25) = 'Finalizado'
 	
 	select @id = inserted.idSeguimiento, @id_orden = inserted.idOrdenVenta 
 	from inserted
@@ -2360,7 +2360,7 @@ LAS CONSIDERACIONES QUE SE HAN ESPECIFICADO ANTERIORMENTE EN ESTE PROCESO.*/
 create procedure asignarModuloOrdenVenta @idOrdenVenta int, @idTalla int, @cantidad int
 as
 	-- cantidad de talla extra
-	declare @extra_talla int, @completo varchar(25) = 'Completado'
+	declare @extra_talla int, @completo varchar(25) = 'Finalizado'
 	exec @extra_talla = obtenerPiezasExtras @piezas = @cantidad
 
 	-- Cantidad de tela especifica
@@ -2374,36 +2374,85 @@ as
 	declare  @cantidadTela decimal(18, 2)
 	set @cantidadTela = ((@extra_talla + @cantidad) * @cantidad_tela)
 
+	declare @pendiente bit = 0
+
+	select @pendiente = ( case when Produccion.estadoOrden.nombre = 'Pendiente' then 1 else 0 end) from Produccion.ordenVenta inner join Produccion.estadoOrden on Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado where Produccion.ordenVenta.idEstado.idOrdenVenta = @idOrdenVenta
+
 	-- Obtenemos todos los modulos que soporten la cantidad de tela
 	declare @modelo int = -1
-	-- El primer modelo
-	select top 1 @modelo = modelos.modelo
-	from
-	(
-		select top 1 ordenDeVentaTalla.idModulo as modelo, count(*) as cantidad_ordern 
-		from Produccion.modulo 
-		full join Produccion.ordenDeVentaTalla 
-		on Produccion.ordenDeVentaTalla.idModulo = Produccion.modulo.idModulo 
-		full join Produccion.ordenVenta 
-		on Produccion.ordenVenta.idOrdenVenta = Produccion.ordenDeVentaTalla.idOrdenVenta 
-		inner join Produccion.estadoOrden
-		ON Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado
-		where Produccion.modulo.cantidadProduccion >= @cantidadTela
-		and Produccion.estadoOrden.nombre != @completo -- Mientras no este terminado
-		group by Produccion.ordenDeVentaTalla.idModulo
-		order by cantidad_ordern asc
-	) as modelos
 
-	if	(isnull(@modelo, -1) > 0)
+	if (@pendiente = 1)
 	begin
-		-- Asignamos el modulo
-		insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
+		-- El primer modelo
+		select top 1 @modelo = modelos.modelo
+		from
+		(
+			select top 1 Produccion.ordenDeVentaTalla.idModulo as modelo, count(*) as cantidad_ordern 
+			from Produccion.modulo 
+			full join Produccion.ordenDeVentaTalla 
+			on Produccion.ordenDeVentaTalla.idModulo = Produccion.modulo.idModulo 
+			full join Produccion.ordenVenta 
+			on Produccion.ordenVenta.idOrdenVenta = Produccion.ordenDeVentaTalla.idOrdenVenta 
+			inner join Produccion.estadoOrden
+			ON Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado
+			where Produccion.modulo.cantidadProduccion >= @cantidadTela
+			and Produccion.estadoOrden.nombre != @completo -- Mientras no este terminado
+			group by Produccion.ordenDeVentaTalla.idModulo
+			order by cantidad_ordern asc
+		) as modelos
+
+		if	(isnull(@modelo, -1) > 0)
+		begin
+			-- Asignamos el modulo
+			insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
+		end
+		else
+		begin
+			update Produccion.ordenVenta set idEstado = (SELECT TOP 1 idEstadoOrden FROM Produccion.estadoOrden WHERE nombre = 'Pendiente') WHERE idOrdenVenta = @idOrdenVenta
+		
+			select top 1 @modelo = modelos.modelo
+			from
+			(
+				select top 1 ordenDeVentaTalla.idModulo as modelo, count(*) as cantidad_ordern 
+				from Produccion.modulo 
+				full join Produccion.ordenDeVentaTalla 
+				on Produccion.ordenDeVentaTalla.idModulo = Produccion.modulo.idModulo 
+				full join Produccion.ordenVenta 
+				on Produccion.ordenVenta.idOrdenVenta = Produccion.ordenDeVentaTalla.idOrdenVenta 
+				inner join Produccion.estadoOrden
+				ON Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado
+				and Produccion.estadoOrden.nombre != @completo -- Mientras no este terminado
+				group by Produccion.ordenDeVentaTalla.idModulo
+				order by cantidad_ordern asc
+			) as modelos
+		
+			insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
+			print 'La orden ha quedado como pendiente por la falta de un sector que labore con el pedido'
+		end
 	end
 	else
 	begin
-		update Produccion.ordenVenta set idEstado = (SELECT TOP 1 idEstadoOrden FROM Produccion.estadoOrden WHERE nombre = 'Pendiente') WHERE idOrdenVenta = @idOrdenVenta
+		select top 1 @modelo = modelos.modelo
+		from
+		(
+			select top 1 ordenDeVentaTalla.idModulo as modelo, count(*) as cantidad_ordern 
+			from Produccion.modulo 
+			full join Produccion.ordenDeVentaTalla 
+			on Produccion.ordenDeVentaTalla.idModulo = Produccion.modulo.idModulo 
+			full join Produccion.ordenVenta 
+			on Produccion.ordenVenta.idOrdenVenta = Produccion.ordenDeVentaTalla.idOrdenVenta 
+			inner join Produccion.estadoOrden
+			ON Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado
+			and Produccion.estadoOrden.nombre != @completo -- Mientras no este terminado
+			group by Produccion.ordenDeVentaTalla.idModulo
+			order by cantidad_ordern asc
+		) as modelos
+		
+		insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
 		print 'La orden ha quedado como pendiente por la falta de un sector que labore con el pedido'
 	end
+
+	
 go
 
 /*
