@@ -332,8 +332,66 @@ ALTER SCHEMA Producto TRANSFER object::dbo.talla
 ALTER SCHEMA Producto TRANSFER object::dbo.medida
 
 -- Vistas
--- 1. Vista completa de los productos de inventario.CREATE VIEW productos AS	SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] FROM Bodega.MateriaPrima M 	INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima;-- 2. Vista completa de los trabajos en procesoCREATE VIEW trabajosProceso AS	SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2; --Por ejemplo si en el id 2 es "proceso";-- 3. Vista de los trabajos que aún no han sido implementados.CREATE VIEW trabajosProceso AS	SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 1; --Por ejemplo si en el id 1 es "pendiente";-- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
---    datos de contacto.CREATE VIEW productosNecesitados AS	SELECT MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	FROM Compra.compras C INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstado	INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstado != 1; -- Donde 1 es 'comprado', los otros pueden ser 'urgente'etc.;-- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.CREATE VIEW piezasModulo AS;-- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.CREATE VIEW comprasCliente AS	SELECT COUNT(*), C.idCliente FROM Venta.Factura F INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	GROUP BY F.idCliente; --Falta ser más descriptiva;-- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.-- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.-- 9. Vista de Hilos (Todos los datos junto con el nombre del proveedor) en inventario.-- 10. Vista de Cordones (Todos los datos junto con el nombre del proveedor) en inventario.-- 11. Vista de las Sales Order con categoría BLANKS.-- 12. Vista de las Sales Order con categoría SCREEN PRINTING.-- 13. Vista de las Sales Order con categoría Sublimation.-- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
+-- 1. Vista completa de los productos de inventario.
+	CREATE VIEW productos AS	
+		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
+		FROM Bodega.MateriaPrima M 	
+		INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima
+	;
+-- 2. Vista completa de los trabajos en proceso.
+	CREATE VIEW trabajosProceso AS	
+		SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, F.idFactura AS [Factura (ID)]
+		FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2
+	; --Por ejemplo si en el id 2 es "En proceso";
+-- 3. Vista de los trabajos que aún no han sido implementados.
+	CREATE VIEW trabajosProceso AS	
+		SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	
+		FROM Produccion.OrdenVenta O 
+		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 3
+	; --Por ejemplo si en el id 1 es "pendiente";
+-- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
+--    datos de contacto.
+	CREATE VIEW productosNecesitados AS	
+		SELECT MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	
+		FROM Compra.compras C 
+		INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstadoCompras	
+		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima 
+		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstadoCompras != 3
+	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.;
+-- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.
+	CREATE VIEW piezasModulo AS
+		SELECT P.idPrenda, P.nombre AS [Categoría], M.nombre AS [Módulo], COUNT(*) AS [Cantidad] 
+		FROM Produccion.ordenDeVentaTalla OT 
+		INNER JOIN Produccion.modulo M ON OT.idModulo = M.idModulo
+		INNER JOIN Producto.talla T ON OT.idTalla = T.idTalla 
+		INNER JOIN Producto.prenda P ON P.idPrenda = T.idPrenda
+		GROUP BY P.idPrenda, P.nombre, M.nombre
+	;
+-- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.
+	CREATE VIEW comprasCliente AS	
+		SELECT F.idCliente, C.nombre, COUNT(*) AS [Compras], DATEPART(yyyy, F.orderDate) AS [Año]
+		FROM Venta.Factura F 
+		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	
+		GROUP BY F.idCliente, C.nombre, DATEPART(yyyy, F.orderDate)
+	; 
+-- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
+	CREATE VIEW ordenModulos AS
+		SELECT M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
+		INNER JOIN Produccion.ordenDeVentaTalla OVT ON OV.idOrdenVenta = OVT.idOrdenVentaTalla
+		INNER JOIN Produccion.modulo M ON OVT.idModulo = M.idModulo
+		GROUP BY M.idModulo, M.nombre
+	;
+-- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.
+-- 9. Vista de Hilos (Todos los datos junto con el nombre del proveedor) en inventario.
+-- 10. Vista de Cordones (Todos los datos junto con el nombre del proveedor) en inventario.
+-- 11. Vista de las Sales Order con categoría BLANKS.
+-- 12. Vista de las Sales Order con categoría SCREEN PRINTING.
+-- 13. Vista de las Sales Order con categoría Sublimation.
+-- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
 
 -- Creacion de errores //////////////////////////////////////////////////////////////////////////////
 exec sp_addmessage 50018, 20,  N'No se puede actualizar el estado pues el proceso anterior no ha sido completado', 'us_english'
@@ -2877,3 +2935,88 @@ EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
 
 EXEC agregarSeguimientoOrden 1,1,1
 
+-- Tipo Materia Prima
+EXEC agregarTipoMateriaPrima 'Hilo', 'YDS'
+EXEC agregarTipoMateriaPrima 'Cordones', 'YDS'
+EXEC agregarTipoMateriaPrima 'Viñetas', 'UDS'
+EXEC agregarTipoMateriaPrima 'Tintas', 'LTR'
+
+-- Estante
+EXEC agregarEstante 'B'
+EXEC agregarEstante 'C'
+EXEC agregarEstante 'D'
+EXEC agregarEstante 'E'
+EXEC agregarEstante 'F'
+EXEC agregarEstante 'G'
+EXEC agregarEstante 'H'
+
+-- Nivel
+EXEC agregarNivel 2
+EXEC agregarNivel 3
+EXEC agregarNivel 4
+EXEC agregarNivel 5
+EXEC agregarNivel 6
+EXEC agregarNivel 7
+EXEC agregarNivel 8
+
+-- Columna
+EXEC agregarColumna 2
+EXEC agregarColumna 3
+EXEC agregarColumna 4
+EXEC agregarColumna 5
+EXEC agregarColumna 6
+EXEC agregarColumna 7
+EXEC agregarColumna 8
+EXEC agregarColumna 9
+
+-- Colores
+EXEC agregarColor 'Amarillo'
+EXEC agregarColor 'Ámbar'
+EXEC agregarColor 'Añil'
+-- EXEC agregarColor 'Azul'
+EXEC agregarColor 'Beige'
+EXEC agregarColor 'Blanco'
+EXEC agregarColor 'Café'
+EXEC agregarColor 'Celeste'
+EXEC agregarColor 'Caqui'
+EXEC agregarColor 'Ámbar'
+EXEC agregarColor 'Carmesí'
+EXEC agregarColor 'Castaño'
+EXEC agregarColor 'Cobre'
+EXEC agregarColor 'Colores'
+EXEC agregarColor 'Fucsia'
+EXEC agregarColor 'Gris'
+EXEC agregarColor 'Hueso'
+EXEC agregarColor 'Magenta'
+EXEC agregarColor 'Marrón'
+EXEC agregarColor 'Negro'
+EXEC agregarColor 'Naranja'
+EXEC agregarColor 'Ocre'
+EXEC agregarColor 'Morado'
+EXEC agregarColor 'Plata'
+EXEC agregarColor 'Púrpura'
+EXEC agregarColor 'Rojo'
+EXEC agregarColor 'Rosa'
+EXEC agregarColor 'Salmón'
+EXEC agregarColor 'Verde'
+EXEC agregarColor 'Verde Lima'
+EXEC agregarColor 'Verde Esmeralda'
+EXEC agregarColor 'Violeta'
+EXEC agregarColor 'Vino'
+EXEC agregarColor 'Champán'
+EXEC agregarColor 'Blanco Márfil'
+EXEC agregarColor 'Azul Claro'
+EXEC agregarColor 'Azul Eléctrico'
+EXEC agregarColor 'Bermellón'
+EXEC agregarColor 'Cereza'
+EXEC agregarColor 'Gris Perla'
+EXEC agregarColor 'Lila'
+EXEC agregarColor 'Rojo Carmín'
+EXEC agregarColor 'Turquesa'
+EXEC agregarColor 'Oliva'
+EXEC agregarColor 'Verde Esmeralda'
+EXEC agregarColor 'Pistacho'
+EXEC agregarColor 'Verde Musgo'
+EXEC agregarColor 'Ciruela'
+
+-- Compartimiento
