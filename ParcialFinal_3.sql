@@ -2376,7 +2376,7 @@ as
 
 	declare @pendiente bit = 0
 
-	select @pendiente = ( case when Produccion.estadoOrden.nombre = 'Pendiente' then 1 else 0 end) from Produccion.ordenVenta inner join Produccion.estadoOrden on Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado where Produccion.ordenVenta.idEstado.idOrdenVenta = @idOrdenVenta
+	select @pendiente = ( case when Produccion.estadoOrden.nombre = 'Pendiente' then 1 else 0 end) from Produccion.ordenVenta inner join Produccion.estadoOrden on Produccion.estadoOrden.idEstadoOrden = Produccion.ordenVenta.idEstado where Produccion.ordenVenta.idOrdenVenta = @idOrdenVenta
 
 	-- Obtenemos todos los modulos que soporten la cantidad de tela
 	declare @modelo int = -1
@@ -2831,16 +2831,82 @@ EXEC agregarEstadoOrden 'Finalizado'
 EXEC agregarEstadoOrden 'Pendiente'
 
 EXEC agregarPrenda 'Camisa',5.75
+EXEC agregarPrenda 'Pantalon',8.75
+EXEC agregarPrenda 'Suéter',11.75
+EXEC agregarPrenda 'Sudadera',11.75
 
 EXEC agregarEstilo 'CH350',1
 
-EXEC agregarTipoTalla 'Pequeña','S'
+EXEC agregarTipoTalla 'small','S'
+exec agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
+exec agregarTipoTalla @nombre = 'Large', @abreviacion = 'L'
+exec agregarTipoTalla @nombre = 'Extra large', @abreviacion = 'XL'
+exec agregarTipoTalla @nombre = 'Extra extra small', @abreviacion = '2XS'
+exec agregarTipoTalla @nombre = 'Extra small', @abreviacion = 'XS'
+exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '2XL'
+exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '3XL'
+exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '4XL'
 
 EXEC agregarUbicacion 'Cintura'
+exec agregarUbicacion @ubicacion = 'Pecho'
+exec agregarUbicacion @ubicacion = 'Cintura'
+exec agregarUbicacion @ubicacion = 'Trasero'
+exec agregarUbicacion @ubicacion = 'Tiro'
+exec agregarUbicacion @ubicacion = 'Manga'
+exec agregarUbicacion @ubicacion = 'Costura interior'
+exec agregarUbicacion @ubicacion = 'Largo pantalon'
+exec agregarUbicacion @ubicacion = 'Ancho espalda'
+exec agregarUbicacion @ubicacion = 'Talle espalda'
+exec agregarUbicacion @ubicacion = 'Cuello'
+exec agregarUbicacion @ubicacion = 'Entrepierna'
+exec agregarUbicacion @ubicacion = 'Manga corta'
+exec agregarUbicacion @ubicacion = 'Largo rodilla'
+exec agregarUbicacion @ubicacion = 'Contorno rodilla'
+exec agregarUbicacion @ubicacion = 'Cadera'
+exec agregarUbicacion @ubicacion = 'Largo camisa'
+exec agregarUbicacion @ubicacion = 'Manga larga'
 
 EXEC agregarTalla 1.00,1,1,1 --Aqui debe coincidir con los registro del PDF
+exec agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 1
 
-EXEC agregarMedida 30.5,1,1
+exec agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 1
+exec agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 1
+
+exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
+exec agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 1
+exec agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 1
+
+exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
+exec agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
+exec agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 1
+exec agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 1
+
+-- Camisa --
+EXEC agregarMedida 86.5,1,1
+exec agregarMedida @dimension = 36, @idTalla = 1, @idUbicacion = 10
+exec agregarMedida @dimension = 72, @idTalla = 1, @idUbicacion = 16
+exec agregarMedida @dimension = 25, @idTalla = 1, @idUbicacion = 17
+
+-- Pantalon --
+EXEC agregarMedida 30.5,2,1
+exec agregarMedida @dimension = 40, @idTalla = 2, @idUbicacion = 15
+exec agregarMedida @dimension = 80, @idTalla = 2, @idUbicacion = 7
+exec agregarMedida @dimension = 53, @idTalla = 2, @idUbicacion = 12
+
+-- Sueter--
+exec agregarMedida @dimension = 38, @idTalla = 3, @idUbicacion = 17
+exec agregarMedida @dimension = 54, @idTalla = 3, @idUbicacion = 16
+exec agregarMedida @dimension = 48, @idTalla = 3, @idUbicacion = 15
+
+-- Sudadera--
+exec agregarMedida @dimension = 51, @idTalla = 4, @idUbicacion = 17
+exec agregarMedida @dimension = 70, @idTalla = 4, @idUbicacion = 16
+exec agregarMedida @dimension = 60, @idTalla = 4, @idUbicacion = 15
 
 EXEC agregarColor 'Azul'
 
@@ -2876,4 +2942,3 @@ EXEC agregarOrdenVentaTalla 25,25.50,1,1,1
 EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
 
 EXEC agregarSeguimientoOrden 1,1,1
-
