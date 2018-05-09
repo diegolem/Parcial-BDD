@@ -2394,8 +2394,16 @@ as
 		order by cantidad_ordern asc
 	) as modelos
 
-	-- Asignamos el modulo
-	insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
+	if	(isnull(@modelo, -1) > 0)
+	begin
+		-- Asignamos el modulo
+		insert into Produccion.ordenDeVentaTalla (cantidad, cantidadExtra, cantidadTela, idTalla, idModulo, idOrdenVenta) values (@cantidad, @extra_talla, @idTalla, @cantidadTela, @modelo ,@idOrdenVenta)
+	end
+	else
+	begin
+		update Produccion.ordenVenta set idEstado = (SELECT TOP 1 idEstadoOrden FROM Produccion.estadoOrden WHERE nombre = 'Pendiente') WHERE idOrdenVenta = @idOrdenVenta
+		print 'La orden ha quedado como pendiente por la falta de un sector que labore con el pedido'
+	end
 go
 
 /*
