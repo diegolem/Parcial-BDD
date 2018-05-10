@@ -3932,6 +3932,42 @@ EXEC Produccion.agregarOrdenVenta 1,1,1,1,1
 EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
 EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
 
+EXEC Produccion.agregarFlujoProceso 1, 2
+EXEC Produccion.agregarFlujoProceso 1, 3
+EXEC Produccion.agregarFlujoProceso 1, 4
+EXEC Produccion.agregarFlujoProceso 1, 5
+EXEC Produccion.agregarFlujoProceso 1, 6
+EXEC Produccion.agregarFlujoProceso 1, 7
+EXEC Produccion.agregarFlujoProceso 1, 10
+EXEC Produccion.agregarFlujoProceso 1, 11
+EXEC Produccion.agregarFlujoProceso 1, 12
+EXEC Produccion.agregarFlujoProceso 1, 13
+EXEC Produccion.agregarFlujoProceso 1, 14
+EXEC Produccion.agregarFlujoProceso 2, 2
+EXEC Produccion.agregarFlujoProceso 2, 3
+EXEC Produccion.agregarFlujoProceso 2, 4
+EXEC Produccion.agregarFlujoProceso 2, 5
+EXEC Produccion.agregarFlujoProceso 2, 6
+EXEC Produccion.agregarFlujoProceso 2, 7
+EXEC Produccion.agregarFlujoProceso 2, 8
+EXEC Produccion.agregarFlujoProceso 2, 10
+EXEC Produccion.agregarFlujoProceso 2, 11
+EXEC Produccion.agregarFlujoProceso 2, 12
+EXEC Produccion.agregarFlujoProceso 2, 13
+EXEC Produccion.agregarFlujoProceso 2, 14
+EXEC Produccion.agregarFlujoProceso 3, 2
+EXEC Produccion.agregarFlujoProceso 3, 3
+EXEC Produccion.agregarFlujoProceso 3, 4
+EXEC Produccion.agregarFlujoProceso 3, 5
+EXEC Produccion.agregarFlujoProceso 3, 6
+EXEC Produccion.agregarFlujoProceso 3, 7
+EXEC Produccion.agregarFlujoProceso 3, 9
+EXEC Produccion.agregarFlujoProceso 3, 10
+EXEC Produccion.agregarFlujoProceso 3, 11
+EXEC Produccion.agregarFlujoProceso 3, 12
+EXEC Produccion.agregarFlujoProceso 3, 13
+EXEC Produccion.agregarFlujoProceso 3, 14
+
 CREATE PROCEDURE CrearBackup --BDD
 AS
     DECLARE @fecha DATE
