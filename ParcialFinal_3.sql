@@ -1015,7 +1015,15 @@ GO
 CREATE PROC Produccion.agregarVarianteDetalle
 @idVariante INT,@idDetalle INT
 AS
-	INSERT INTO Produccion.detalleVarianteDetalle VALUES(@idVariante,@idDetalle)
+	IF(@idVariante = 1)
+	BEGIN
+		PRINT 'La categoría Blanks no incluye ningun estampado ni sublimado'
+		ROLLBACK TRAN
+	END
+	ELSE
+	BEGIN
+		INSERT INTO Produccion.detalleVarianteDetalle VALUES(@idVariante,@idDetalle)
+	END
 GO
 --Tabla Produccion.flujoTrabajo
 CREATE PROC Produccion.agregarFlujoTrabajo
@@ -1569,22 +1577,58 @@ GO
 CREATE TRIGGER asignarSeguimiento ON Produccion.ordenVenta
 FOR INSERT
 AS
-	DECLARE @idOrdenVenta INT,@idProceso INT,@idEstado INT
+	DECLARE @idOrdenVenta INT,@idProceso INT,@idVariante INT,@idFlujo INT
 	BEGIN
 		SELECT @idOrdenVenta = idOrdenventa FROM inserted
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,8
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,9
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+		SELECT @idFlujo = idFlujo FROM inserted
+		SELECT @idVariante = idVariante FROM Produccion.flujoTrabajo INNER JOIN Produccion.ordenVenta ON Produccion.ordenVenta.idFlujo = Produccion.flujoTrabajo.idFlujo
+		IF(@idVariante = 1)
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
+		ELSE IF(@idVariante = 2)
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,8
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
+		ELSE
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,9
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
 	END
 GO
 -- Procedimientos para modificar ////////////////////////////////////////////////////////////////
@@ -2873,6 +2917,7 @@ EXEC Produccion.agregarProcesos 'Sewing line',10,4
 EXEC Produccion.agregarProcesos 'Out of Sewing Line',15,4
 EXEC Produccion.agregarProcesos 'Ironing',15,4
 EXEC Produccion.agregarProcesos 'Screen Printing',15,7
+EXEC Produccion.agregarProcesos 'Sublimation',15,7
 EXEC Produccion.agregarProcesos 'Quality Assurance',15,9
 EXEC Produccion.agregarProcesos 'Ready for Packing',10,9
 EXEC Produccion.agregarProcesos 'Packing Ready',10,8
@@ -3006,10 +3051,20 @@ EXEC Produccion.agregarTipoVariante 'SUBLIMATION'
 EXEC Produccion.agregarDetalles 'Pecho Completo',0.75,8 
 EXEC Produccion.agregarDetalles 'Pecho Derecho',0.55,8
 EXEC Produccion.agregarDetalles 'Manga Derecha',0.55,8
+EXEC Produccion.agregarDetalles 'Manga Izquierda',0.55,8
+EXEC Produccion.agregarDetalles 'Espalda',0.75,8
+EXEC Produccion.agregarDetalles 'Sublimado',2.25,9
 --revisar
 EXEC Produccion.agregarVarianteDetalle 2,1
+EXEC Produccion.agregarVarianteDetalle 2,2
+EXEC Produccion.agregarVarianteDetalle 2,3
+EXEC Produccion.agregarVarianteDetalle 2,4
+EXEC Produccion.agregarVarianteDetalle 2,5
+EXEC Produccion.agregarVarianteDetalle 3,6
 
+EXEC Produccion.agregarFlujoTrabajo 1
 EXEC Produccion.agregarFlujoTrabajo 2
+EXEC Produccion.agregarFlujoTrabajo 3
 
 EXEC Produccion.agregarFlujoProceso 1,1
 
