@@ -2621,108 +2621,93 @@ se tienen dentro de ella, el reporte debe ser generado con la siguiente estructu
 create type db_factura AS TABLE(nombre varchar(100), cantidad int, cantidadExtra int, precioUnitario decimal(18, 2), descripcion varchar(255), precioTotal decimal(18, 2));  
 GO
 
-create procedure Produccion.crearReporte @idFactura int
+create procedure Produccion.crearReporte @idFactura int, @JSON VARCHAR(MAX) OUTPUT
 as
 
-	IF EXISTS(SELECT * FROM factura.ordenVenta WHERE factura.idFactura = @idFactura)
+	IF EXISTS(SELECT * FROM venta.factura WHERE venta.factura.idFactura = @idFactura)
 	BEGIN
-		-- Variables de la factura
-		declare @id_factura int, @direccion varchar(250), @cliente varchar(150), @fecha_actual date = getdate()
+		IF EXISTS (select * from Venta.factura inner join Produccion.ordenVenta on Venta.factura.idFactura = Produccion.ordenVenta.idFactura inner join Produccion.ordenDeVentaTalla on Produccion.ordenDeVentaTalla.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta where Venta.factura.idFactura = @idFactura)
+		BEGIN
+			-- Variables de la factura
+			declare @id_factura int, @direccion varchar(250), @cliente varchar(150), @fecha_actual date = getdate()
+			select @id_factura = @idFactura
 
-		-- Obtenemos la informacion de la factura
-		select top 1 @direccion = Venta.factura.direccion, @id_factura = Venta.factura.idFactura, @cliente = Venta.clientes.nombre
-		from Venta.factura
-		inner join Venta.clientes
-		on Venta.clientes.idCliente = Venta.factura.idCliente
-		where Venta.factura.idFactura = @idFactura
+			-- Obtenemos la informacion de la factura
+			select top 1 @direccion = Venta.factura.direccion, @id_factura = Venta.factura.idFactura, @cliente = Venta.clientes.nombre
+			from Venta.factura
+			inner join Venta.clientes
+			on Venta.clientes.idCliente = Venta.factura.idCliente
+			where Venta.factura.idFactura = @idFactura
 
-		-- Informacion del monto total
-		DECLARE @Flujos TABLE ( precio_flujo decimal(18, 2), idOrdenVenta int )
-		
-		declare @precio_flujo decimal(18, 2)
+			-- Informacion del monto total
+			declare @tbl_factura db_factura
 
-		-- Obtenemos el precio de todos los detalles
-		insert into @Flujos
-		select sum(Produccion.detalles.precio), Produccion.ordenVenta.idOrdenVenta
-		from Venta.factura
-		inner join Produccion.ordenVenta
-		on Venta.factura.idFactura = Produccion.ordenVenta.idFactura
-		inner join Produccion.flujoTrabajo
-		on Produccion.flujoTrabajo.idFlujo = Produccion.ordenVenta.idFlujo
-		inner join Produccion.detalleFlujoTrabajoProcesos
-		on Produccion.detalleFlujoTrabajoProcesos.idFlujo = Produccion.flujoTrabajo.idFlujo
-		inner join Produccion.procesos
-		on Produccion.procesos.idProceso = Produccion.detalleFlujoTrabajoProcesos.idProceso
-		inner join Produccion.detalles
-		on Produccion.detalles.idProceso = Produccion.procesos.idProceso
-		where Venta.factura.idFactura = @idFactura
-		group by Produccion.ordenVenta.idOrdenVenta
+			-- Obtenemos la informacion de las prenda
+			insert into @tbl_factura
+			select Producto.prenda.nombre, Produccion.ordenDeVentaTalla.cantidad, Produccion.ordenDeVentaTalla.cantidadExtra, Producto.prenda.precio, 
+			STUFF(  
+				(  
+					SELECT concat(', medida', Producto.medida.dimension, ' en la ubicacion ', Producto.tallaUbicacion.ubicacion)
+					FROM Producto.medida
+					inner join Producto.tallaUbicacion
+					on Producto.tallaUbicacion.idUbicacion = Producto.medida.idUbicacion
+					WHERE Producto.medida.idTalla = Producto.talla.idTalla 
+					FOR XML PATH ('')
+				),1,1,''), 
+			Produccion.ordenDeVentaTalla.cantidad*Producto.prenda.precio
+			from venta.factura
+			inner join Produccion.ordenVenta
+			on Venta.factura.idFactura = Produccion.ordenVenta.idFactura
+			inner join Produccion.ordenDeVentaTalla
+			on Produccion.ordenDeVentaTalla.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta
+			inner join Producto.talla
+			on Producto.talla.idTalla = Produccion.ordenDeVentaTalla.idTalla
+			inner join Producto.prenda
+			on Producto.prenda.idPrenda = Producto.talla.idPrenda
+			where venta.factura.idFactura = @idFactura
+			--group by Producto.prenda.nombre, Produccion.ordenDeVentaTalla.cantidad, Produccion.ordenDeVentaTalla.cantidadExtra, Producto.prenda.precio
 
-		declare @tbl_factura db_factura
+			-- Calcular el total
+			declare @total decimal(18, 2) = 0
+			select @total = (@total + tbl.precioTotal) from @tbl_factura as tbl
+			declare @iva decimal(18, 2) = @total * 0.13
+			declare @total_iva decimal(18, 2) = @total + @iva
 
-		-- Obtenemos la informacion de las prenda
-		insert into @tbl_factura
-		select Producto.prenda.nombre, Produccion.ordenDeVentaTalla.cantidad, Produccion.ordenDeVentaTalla.cantidadExtra, (Producto.prenda.precio + (select flujos.precio_flujo from @Flujos as flujos where flujos.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta)), 
-		STUFF(  
-			(  
-				SELECT concat(', medida', Producto.medida.dimension, ' en la ubicacion ', Producto.tallaUbicacion.ubicacion)
-				FROM Producto.medida
-				inner join Producto.tallaUbicacion
-				on Producto.tallaUbicacion.idUbicacion = Producto.medida.idUbicacion
-				WHERE Producto.medida.idTalla = Producto.talla.idTalla 
-				FOR XML PATH ('')
-			),1,1,'')
-		, ((Producto.prenda.precio + (select flujos.precio_flujo from @Flujos as flujos where flujos.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta)) * Produccion.ordenDeVentaTalla.cantidad)
-		from Venta.factura
-		inner join Produccion.ordenVenta
-		on Venta.factura.idFactura = Produccion.ordenVenta.idFactura
-		inner join Produccion.ordenDeVentaTalla
-		on Produccion.ordenDeVentaTalla.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta
-		inner join Producto.talla
-		on talla.idTalla = ordenDeVentaTalla.idTalla
-		inner join Producto.prenda
-		on Producto.prenda.idPrenda = Producto.talla.idPrenda
-		where Venta.factura.idFactura = @idFactura
-		--group by Producto.prenda.nombre, Produccion.ordenDeVentaTalla.cantidad, Produccion.ordenDeVentaTalla.cantidadExtra, Producto.prenda.precio
+			declare @factura varchar(max)
 
-		-- Calcular el total
-		declare @total decimal(18, 2) = 0
-		select @total = (@total + tbl.precioTotal) from @tbl_factura as tbl
-		declare @iva decimal(18, 2) = @total * 0.13
-		declare @total_iva decimal(18, 2) = @total + @iva
-
-		declare @factura varchar(max)
-
-		select @factura = '{"id":' + cast(@id_factura as varchar(max)) + ',' +
-						   '"direccion":"' + @direccion + '",' +
-						   '"cliente":"' + @cliente + '",' +
-						   '"fecha":"' + cast(@fecha_actual as varchar(max)) + '",' +
-						   '"items": [' 
-						   + STUFF(
-								(
-									select 
-										',{' + 
-										'"nombre":"' + nombre + '",' +
-										'"cantidad":"' + cast(cantidad as varchar(max)) + ',' +
-										'"extra":' + cast(cantidadExtra as varchar(max)) + ',' +
-										'"precio":' + cast(precioUnitario as varchar(max)) + ',' +
-										'"descripcion":"' + descripcion + '",' +
-										'"total":' + cast(precioTotal as varchar(max)) +
-										'}'
-									from @tbl_factura t1
-									for xml path(''), type
-								).value('.', 'varchar(max)'), 1, 1, ''
-							) + '],' + 
-							'"total":' + cast(@total as varchar(max)) + ',' +
-							'"ival":' + cast(@iva as varchar(max)) + ',' +
-							'"total_completo":' + cast(@total_iva as varchar(max)) +
-							'}'
-
-		return @factura
+			select @JSON = '{"id":' + cast(@id_factura as varchar(max)) + ',' +
+							   '"direccion":"' + @direccion + '",' +
+							   '"cliente":"' + @cliente + '",' +
+							   '"fecha":"' + cast(@fecha_actual as varchar(max)) + '",' +
+							   '"items": [' 
+							   + STUFF(
+									(
+										select 
+											',{' + 
+											'"nombre":"' + nombre + '",' +
+											'"cantidad":"' + cast(cantidad as varchar(max)) + ',' +
+											'"extra":' + cast(cantidadExtra as varchar(max)) + ',' +
+											'"precio":' + cast(precioUnitario as varchar(max)) + ',' +
+											'"descripcion":"' + descripcion + '",' +
+											'"total":' + cast(precioTotal as varchar(max)) +
+											'}'
+										from @tbl_factura t1
+										for xml path(''), type
+									).value('.', 'varchar(max)'), 1, 1, ''
+								) + '],' + 
+								'"total":' + cast(@total as varchar(max)) + ',' +
+								'"ival":' + cast(@iva as varchar(max)) + ',' +
+								'"total_completo":' + cast(@total_iva as varchar(max)) +
+								'}'
+		END
+		ELSE
+		BEGIN
+			select @JSON =  cast('{ "Error":"La factura no posee pedidos" }' as varchar)
+		END
 	END
 	ELSE
 	BEGIN
-		return '{ "Error":"El registro no existe" }'
+		select @JSON =  cast('{ "Error":"El registro no existe" }' as varchar)
 	END
 go
 
@@ -3021,6 +3006,9 @@ EXEC Producto.agregarPrenda 'Suéter',11.75
 EXEC Producto.agregarPrenda 'Sudadera',11.75
 
 EXEC Producto.agregarEstilo 'CH350',1
+EXEC Producto.agregarEstilo 'HM300',2
+EXEC Producto.agregarEstilo 'LT600',3
+EXEC Producto.agregarEstilo 'LT210',4
 
 EXEC Producto.agregarTipoTalla 'small','S'
 exec Producto.agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
@@ -3055,20 +3043,20 @@ exec Producto.agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1,
 exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
 exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 1
 
-exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 2
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 2
+exec Producto.agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 2
+exec Producto.agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 2
 
-exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 3
+exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 3
+exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 3
+exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 3
 
-exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 1
-exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 4
+exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 4
+exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 4
+exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 4
 
 -- Camisa --
 EXEC Producto.agregarMedida 86.5,1,1
@@ -3835,3 +3823,4 @@ EXEC Produccion.agregarOrdenVenta 1,1,1,1,1
 
 EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
 EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
+select * from Produccion.ordenVenta
