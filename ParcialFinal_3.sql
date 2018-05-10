@@ -3823,7 +3823,57 @@ EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edifi
 EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
 
 
-EXEC Bodega.agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Velvetón',450,750,1,A11,1,1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Damasco', 500, 500, 1, A12, 1, 1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Lona', 600, 650, 1, A13, 2, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 200, 500, 1, A14, 3, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 200, 500, 1, A15, 5, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 200, 500, 1, A16, 1, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A17, 6, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A18, 8, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A19, 5, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A21, 5, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A22, 8, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A23, 12, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A24, 25, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A25, 27, 3
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A26, 1, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A27, 2, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A28, 3, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A29, 4, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A31, 5, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A32, 40, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A33, 7, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A34, 6, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A35, 25, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A36, 6, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A37, 12, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A38, 13, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A39, 14, 11
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A41, 1, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A42, 2, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A43, 42, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A44, 5, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A45, 7, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A46, 3, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A47, 18, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A48, 19, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A49, 21, 5
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A51, 1, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A52, 2, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A53, 3, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A54, 5, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A55, 25, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A55, 28, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A56, 29, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A57, 7, 6
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A58, 1, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A59, 2, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A61, 3, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A62, 4, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A63, 5, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A64, 6, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A65, 7, 50
 
 EXEC Compra.agregarEstadoCompras 'Normal'
 EXEC Compra.agregarEstadoCompras 'Urgente'
