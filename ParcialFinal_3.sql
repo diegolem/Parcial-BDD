@@ -1,3 +1,9 @@
+USE master;
+GO
+
+IF EXISTS(SELECT * FROM sys.databases WHERE name='CollegeCentralAmerica_LaLibertad')
+DROP DATABASE CollegeCentralAmerica_LaLibertad
+
 --Creacion de la BDD
 create database CollegeCentralAmerica_LaLibertad
 
@@ -229,9 +235,11 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 --Campos emails o de correo electrónico deben ser únicos.
 	ALTER TABLE clientes
 	ADD CONSTRAINT uCorreo UNIQUE (correo)
+	ALTER TABLE clientes ADD CONSTRAINT CHK_Cliente_Correo CHECK (correo LIKE '%_@__%.__%');
 
 	ALTER TABLE proveedor
 	ADD CONSTRAINT uCorreoP UNIQUE (correo)
+	ALTER TABLE proveedor ADD CONSTRAINT CHK_Proveedor_Correo CHECK (correo LIKE '%_@__%.__%');
 --Campo abreviacion debe ser unico
 	ALTER TABLE tipoTalla
 	ADD CONSTRAINT uAbreviacion UNIQUE (abreviacion)
@@ -292,6 +300,36 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 	ALTER TABLE proveedor
 	ADD CONSTRAINT UTelefonoP
 	UNIQUE(telefono)
+
+-- Nombres
+
+	ALTER TABLE departamento
+	ADD CONSTRAINT CHK_departamento_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE tipoCliente
+	ADD CONSTRAINT CHK_tipocliente_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE metodologia
+	ADD CONSTRAINT CHK_metodologia_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE estadoOrden
+	ADD CONSTRAINT CHK_estadoOrden_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE tipoVariante
+	ADD CONSTRAINT CHK_tipoVariante_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE estadoCompras
+	ADD CONSTRAINT CHK_estadoCompras_nombre
+	CHECK (nombre NOT LIKE  '%[^a-z]%');
+
+	ALTER TABLE estadoSeguimiento
+	ADD CONSTRAINT CHK_estadoSeguimiento_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
 
 --Creaccion de Esquemas
 create schema Venta;
@@ -1009,7 +1047,15 @@ GO
 CREATE PROC Produccion.agregarVarianteDetalle
 @idVariante INT,@idDetalle INT
 AS
-	INSERT INTO Produccion.detalleVarianteDetalle VALUES(@idVariante,@idDetalle)
+	IF(@idVariante = 1)
+	BEGIN
+		PRINT 'La categoría Blanks no incluye ningun estampado ni sublimado'
+		ROLLBACK TRAN
+	END
+	ELSE
+	BEGIN
+		INSERT INTO Produccion.detalleVarianteDetalle VALUES(@idVariante,@idDetalle)
+	END
 GO
 --Tabla Produccion.flujoTrabajo
 CREATE PROC Produccion.agregarFlujoTrabajo
@@ -1563,22 +1609,58 @@ GO
 CREATE TRIGGER asignarSeguimiento ON Produccion.ordenVenta
 FOR INSERT
 AS
-	DECLARE @idOrdenVenta INT,@idProceso INT,@idEstado INT
+	DECLARE @idOrdenVenta INT,@idProceso INT,@idVariante INT,@idFlujo INT
 	BEGIN
 		SELECT @idOrdenVenta = idOrdenventa FROM inserted
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,8
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,9
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
-		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+		SELECT @idFlujo = idFlujo FROM inserted
+		SELECT @idVariante = idVariante FROM Produccion.flujoTrabajo INNER JOIN Produccion.ordenVenta ON Produccion.ordenVenta.idFlujo = Produccion.flujoTrabajo.idFlujo
+		IF(@idVariante = 1)
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
+		ELSE IF(@idVariante = 2)
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,8
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
+		ELSE
+		BEGIN
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,9
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+			EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,14
+		END
 	END
 GO
 -- Procedimientos para modificar ////////////////////////////////////////////////////////////////
@@ -2732,7 +2814,7 @@ CREATE LOGIN GestorCompras
 WITH PASSWORD = '12345'
 CREATE USER LeonardoEsquivel FOR LOGIN GestorCompras
 WITH DEFAULT_SCHEMA = Compra
-GRANT EXECUTE,INSERT,UPDATE
+GRANT EXECUTE
 ON SCHEMA :: Compra
 TO LeonardoEsquivel
 GO
@@ -2768,7 +2850,7 @@ CREATE LOGIN GestorProduccion
 WITH PASSWORD = '12345'
 CREATE USER FranklinVelasquez FOR LOGIN GestorProduccion
 WITH DEFAULT_SCHEMA = Produccion
-GRANT EXECUTE,INSERT,UPDATE
+GRANT EXECUTE
 ON SCHEMA :: Produccion
 TO FranklinVelasquez
 GO
@@ -2803,7 +2885,7 @@ CREATE LOGIN GestorBodega
 WITH PASSWORD = '12345'
 CREATE USER KarlaChavez FOR LOGIN GestorBodega
 WITH DEFAULT_SCHEMA = Bodega
-GRANT EXECUTE,INSERT,UPDATE
+GRANT EXECUTE
 ON SCHEMA :: Bodega
 TO KarlaChavez
 GO
@@ -2852,6 +2934,7 @@ EXEC Produccion.agregarProcesos 'Sewing line',10,4
 EXEC Produccion.agregarProcesos 'Out of Sewing Line',15,4
 EXEC Produccion.agregarProcesos 'Ironing',15,4
 EXEC Produccion.agregarProcesos 'Screen Printing',15,7
+EXEC Produccion.agregarProcesos 'Sublimation',15,7
 EXEC Produccion.agregarProcesos 'Quality Assurance',15,9
 EXEC Produccion.agregarProcesos 'Ready for Packing',10,9
 EXEC Produccion.agregarProcesos 'Packing Ready',10,8
@@ -2985,10 +3068,20 @@ EXEC Produccion.agregarTipoVariante 'SUBLIMATION'
 EXEC Produccion.agregarDetalles 'Pecho Completo',0.75,8 
 EXEC Produccion.agregarDetalles 'Pecho Derecho',0.55,8
 EXEC Produccion.agregarDetalles 'Manga Derecha',0.55,8
+EXEC Produccion.agregarDetalles 'Manga Izquierda',0.55,8
+EXEC Produccion.agregarDetalles 'Espalda',0.75,8
+EXEC Produccion.agregarDetalles 'Sublimado',2.25,9
 --revisar
 EXEC Produccion.agregarVarianteDetalle 2,1
+EXEC Produccion.agregarVarianteDetalle 2,2
+EXEC Produccion.agregarVarianteDetalle 2,3
+EXEC Produccion.agregarVarianteDetalle 2,4
+EXEC Produccion.agregarVarianteDetalle 2,5
+EXEC Produccion.agregarVarianteDetalle 3,6
 
+EXEC Produccion.agregarFlujoTrabajo 1
 EXEC Produccion.agregarFlujoTrabajo 2
+EXEC Produccion.agregarFlujoTrabajo 3
 
 EXEC Produccion.agregarFlujoProceso 1,1
 
@@ -3004,11 +3097,60 @@ EXEC Producto.agregarPrenda 'Camisa',5.75
 EXEC Producto.agregarPrenda 'Pantalon',8.75
 EXEC Producto.agregarPrenda 'Suéter',11.75
 EXEC Producto.agregarPrenda 'Sudadera',11.75
+EXEC Producto.agregarPrenda 'Corbata',3.75
+EXEC Producto.agregarPrenda 'Camisa sin Manga',5.25
+EXEC Producto.agregarPrenda 'Camisa de Vestir Manga Larga',10.00
+EXEC Producto.agregarPrenda 'Pantalones Cortos',8.50
 
-EXEC Producto.agregarEstilo 'CH350',1
-EXEC Producto.agregarEstilo 'HM300',2
-EXEC Producto.agregarEstilo 'LT600',3
-EXEC Producto.agregarEstilo 'LT210',4
+EXEC Producto.agregarEstilo 'HJ320',1
+EXEC Producto.agregarEstilo 'AD560',1
+EXEC Producto.agregarEstilo 'FG200',1
+EXEC Producto.agregarEstilo 'CL120',1
+EXEC Producto.agregarEstilo 'KL620',1
+EXEC Producto.agregarEstilo 'PO200',1
+EXEC Producto.agregarEstilo 'JK690',1
+EXEC Producto.agregarEstilo 'MN470',1
+EXEC Producto.agregarEstilo 'HY650',1
+EXEC Producto.agregarEstilo 'DE589',2
+EXEC Producto.agregarEstilo 'ZA894',2
+EXEC Producto.agregarEstilo 'BG659',2
+EXEC Producto.agregarEstilo 'UI895',2
+EXEC Producto.agregarEstilo 'NH123',2
+EXEC Producto.agregarEstilo 'MJ698',2
+EXEC Producto.agregarEstilo 'BG548',2
+EXEC Producto.agregarEstilo 'NH698',2
+EXEC Producto.agregarEstilo 'GH548',2
+EXEC Producto.agregarEstilo 'JK659',2
+EXEC Producto.agregarEstilo 'VP548',3
+EXEC Producto.agregarEstilo 'AE781',3
+EXEC Producto.agregarEstilo 'SW453',3
+EXEC Producto.agregarEstilo 'DP890',3
+EXEC Producto.agregarEstilo 'WN751',3
+EXEC Producto.agregarEstilo 'IK587',3
+EXEC Producto.agregarEstilo 'TY548',3
+EXEC Producto.agregarEstilo 'ER321',3
+EXEC Producto.agregarEstilo 'HY985',3
+EXEC Producto.agregarEstilo 'CF489',3
+EXEC Producto.agregarEstilo 'QP501',4
+EXEC Producto.agregarEstilo 'PB283',4
+EXEC Producto.agregarEstilo 'CU348',4
+EXEC Producto.agregarEstilo 'QL569',4
+EXEC Producto.agregarEstilo 'PB582',4
+EXEC Producto.agregarEstilo 'AL573',4
+EXEC Producto.agregarEstilo 'MU891',4
+EXEC Producto.agregarEstilo 'KV528',4
+EXEC Producto.agregarEstilo 'RG243',4
+EXEC Producto.agregarEstilo 'LP189',4
+EXEC Producto.agregarEstilo 'MI854',5
+EXEC Producto.agregarEstilo 'NJ128',5
+EXEC Producto.agregarEstilo 'OP589',5
+EXEC Producto.agregarEstilo 'GT548',5
+EXEC Producto.agregarEstilo 'OV259',5
+EXEC Producto.agregarEstilo 'ER028',5
+EXEC Producto.agregarEstilo 'BHT58',5
+EXEC Producto.agregarEstilo 'NQ145',5
+EXEC Producto.agregarEstilo 'UD574',5
+EXEC Producto.agregarEstilo 'QD147',5
 
 EXEC Producto.agregarTipoTalla 'small','S'
 exec Producto.agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
@@ -3746,81 +3888,360 @@ EXEC Bodega.agregarCompartimiento H88,0
 EXEC Bodega.agregarCompartimiento H89,0
 
 EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades Margarita','Mercado central, San Salvador puesto #44','2643-3241','margaritahilos@gmail.com'
+EXEC Compra.agregarProveedor 'Dinora´s Tela','Paseo General el escalón edificio #4, contiguo a pollo campero','2908-3221','dinotelas@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles la fina','Boulevard los procesores, Edificio #23, local #2','2451-4312','textilesFina@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades el cartel','Calle a el puerto de la libertad, en centro comercial la libertad, local #24','2241-2536','varietycartel@gmail.com'
+EXEC Compra.agregarProveedor 'Tintas PrintLN','Metrocento,San Salvador contiguo a Raf, local #234','2013-2013','printLnesa@outlook.com'
+EXEC Compra.agregarProveedor 'Textufil La libertad','Ciudad Merliot, calle el dolar,Centro comercial Merliot, local #32','2416-2413','textufilLibertad@gmail.com'
+EXEC Compra.agregarProveedor 'Textufil San Miguel','Calle de Hotel Florencia, contiguo a Pizza Hut','2416-3215','textufilSanMiguel@gmail.com'
+EXEC Compra.agregarProveedor 'Hilo y aguja','Avenida bernal, San Salvador enfrente de COSASE','2361-7513','hiloagujabernal@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Fine','Paseo general Escalón edificio #2, local #654','2163-2451','finetextilescalon@gmail.com'
+EXEC Compra.agregarProveedor 'Fabric Fine','Boulevard constitucion, por gasolinera PUMA, edificio #1','2411-2014','fabricfine@gmail.com'
+EXEC Compra.agregarProveedor 'Diamond Fabric','Boulevard de los procesores, frente a banco Scotiabank','2383-1234','diamondFabric@gmail.com'
+EXEC Compra.agregarProveedor 'Platinum Fabric','Boulevard los soldados, Edificio #4 Poligono #45','2743-3241','platinumgabric@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Salutaris','Boulevard los procesores, Edificio #7 Poligono #48','2523-4335','salutaristela@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Linaza','Boulevard los procesores, Edificio #12 Poligono #54','2341-2555','textileslinaza@gmail.com'
+EXEC Compra.agregarProveedor 'Threads Gold','Galerias San Salvador, Edificio #1 Poligono #40, 1º Nivel','2111-1112','theadsgolds@gmail.com'
+EXEC Compra.agregarProveedor 'Threads Bold','Soyapango San Salvador,Calle La comunal Poligono #40','7622-1122','hilosgruesos@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Armario','Boulevard los procesores, Edificio #8 Poligono #50','2012-2022','armariotextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles conacastes','Boulevard la constitucion, Edificio #9 Poligono #2','2432-8032','los_conacastestextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Imperio','Galerias Escalón, local #21','2321-4452','textilesImperio@gmail.com'
+EXEC Compra.agregarProveedor 'Imperio Real','Las Cascadas, Santa Tecla, local #21','2323-2231','imperiorial@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Unique','Plaza Mundo San Salvador, Local #21, 2º Nivel','2149-2117','txtilUnique@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Dembele','Galerias Escalón, frente a Pollo Real, poligono #2','2789-2122','textildembele@gmail.com'
+EXEC Compra.agregarProveedor 'Needle Gold','Ciudad Delgado, calle la brisa edificio verde #12','2721-3221','needlegold@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Sweet','Boulevard la constitucion, Edificio #10, local #1','6751-2121','sweetneedle@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Don Bosco','Boulevard los procesores, Edificio #31 Poligono #21','2123-3212','donBoscoTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades Imperio','Mercado central, San Salvador puesto #12','7610-2123','imperiosusa@gmail.com'
+EXEC Compra.agregarProveedor 'Dora´s Tela','Paseo General el escalón edificio #7, contiguo a pizza hut','2113-2232','dorastela@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Josefina','Boulevard los procesores, Edificio #99, local #12','6712-4342','textilesjosefina@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades la Tenchis','Calle a Cuscatlán, Kilometro #66, Edificio Blanco #89','2692-2556','latenchistelas@gmail.com'
+EXEC Compra.agregarProveedor 'Tintas Fortaleza','Metrocento,San Salvador contiguo a panaderia el rosario, local #124','2050-2013','fortaleztinta@outlook.com'
+EXEC Compra.agregarProveedor 'Textufil La paz','Ciudad Nuevo Mundo, calle speakers,edificio #90','2098-2086','textufilPaz@gmail.com'
+EXEC Compra.agregarProveedor 'Needle and Style','Calle de Hotel Juventus contiguo a Papa John´s','2314-3257','needlestyle@gmail.com'
+EXEC Compra.agregarProveedor 'Sant Patricia','Avenida la vega, San Salvador enfrente de China Work','2000-2136','santpatricia@gmail.com'
+EXEC Compra.agregarProveedor 'Pintura Fine','Paseo general Escalón Nivel #1, local #98','2190-3246','pinturafine@gmail.com'
+EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2014','fabricfine@gmail.com'
+EXEC Compra.agregarProveedor 'Needle and Fabric','Boulevard de los procesores, frente a banco Davivienda','2426-3234','needlefabric@gmail.com'
+EXEC Compra.agregarProveedor 'Lightning Fabric','Boulevard los soldados, Edificio #72 Poligono #09','6823-3215','lighningfabricESA@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades Jeltrudis','Mercado Zacamil,Mejicanos, puesto #55','2983-4343','jeltrudisvariety@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Guzman','Boulevard los procesores, Edificio #64 Poligono #32','2641-2555','textileslinaza@gmail.com'
+EXEC Compra.agregarProveedor 'Threads Prime','Galerias San Salvador, Nivel #3 local #42','6109-1112','theadsprime@gmail.com'
+EXEC Compra.agregarProveedor 'Threads Falcon','Soyapango San Salvador,Calle hacia Plaza mundo Poligono #48','2083-4321','hilosfalconmaster@gmail.com'
+EXEC Compra.agregarProveedor 'Master Textiles','Boulevard los almendros, Edificio #10 Poligono #2','2042-4202','mastertelas@gmail.com'
+EXEC Compra.agregarProveedor 'Variedades la Esquinita','Mercado central San salvador, puesto #65','2803-4351','variedadeslaesquinita@gmail.com'
+EXEC Compra.agregarProveedor 'Telas Lemus','Galerias Escalón, local #68','2225-4355','telaslemus@gmail.com'
+EXEC Compra.agregarProveedor 'El imperio de los hilos','Las Cascadas, Santa Tecla, local #29','6023-3221','imperiothreads@gmail.com'
+EXEC Compra.agregarProveedor 'Pinturas la unica','Plaza Mundo San Salvador, Local #29, 1º Nivel','2808-2997','pinturaslaunica@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Coutinho','Galerias Escalón, frente a Pollo bonanza, poligono #7','2942-2563','textilcoutinho@gmail.com'
+EXEC Compra.agregarProveedor 'Needle Miguel','Ciudad Delgado, calle el sol edificio amarillo #12','2934-3424','needlemigueESA@gmail.com'
+EXEC Compra.agregarProveedor 'Pinturas el Bucanero','Boulevard la constitucion,a tres cuadras despues de Walmart Edificio #10','2314-2319','elbucaneroesa@gmail.com'
 
-
-EXEC Bodega.agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Velvetón',450,750,1,A11,1,1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Damasco', 500, 500, 1, A12, 1, 1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Lona', 600, 650, 1, A13, 2, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 200, 500, 1, A14, 3, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 200, 500, 1, A15, 5, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 200, 500, 1, A16, 1, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A17, 6, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A18, 8, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 300, 500, 1, A19, 5, 2
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A21, 5, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A22, 8, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A23, 12, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A24, 25, 3
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 600, 800, 1, A25, 27, 3
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A26, 1, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A27, 2, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A28, 3, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A29, 4, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A31, 5, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Nylon', 1200, 8000, 2, A32, 40, 10
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A33, 7, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A34, 6, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A35, 25, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A36, 6, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A37, 12, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A38, 13, 11
+EXEC Bodega.agregarMateriaPrima 'Hilo de Poliester', 1500, 8000, 2, A39, 14, 11
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A41, 1, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A42, 2, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A43, 42, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A44, 5, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A45, 7, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A46, 3, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A47, 18, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A48, 19, 5
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Tul', 2000, 2400, 1, A49, 21, 5
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A51, 1, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A52, 2, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A53, 3, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A54, 5, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A55, 25, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A55, 28, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A56, 29, 6
+EXEC Bodega.agregarMateriaPrima 'Cordón tipo natuico', 1000, 1400, 3, A57, 7, 6
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A58, 1, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A59, 2, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A61, 3, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A62, 4, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A63, 5, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A64, 6, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A65, 7, 50
 
 EXEC Compra.agregarEstadoCompras 'Normal'
 EXEC Compra.agregarEstadoCompras 'Urgente'
 EXEC Compra.agregarEstadoCompras 'Realizada'
 
-EXEC Compra.agregarCompra 50.50,1,1
+EXEC Compra.agregarCompra 600, 1, 1;
+EXEC Compra.agregarCompra 300, 1, 2;
+EXEC Compra.agregarCompra 200, 1, 3;
+EXEC Compra.agregarCompra 100, 1, 4;
+EXEC Compra.agregarCompra 400, 1, 5;
+EXEC Compra.agregarCompra 300, 1, 6;
+EXEC Compra.agregarCompra 100, 1, 7;
+EXEC Compra.agregarCompra 450, 1, 8;
+EXEC Compra.agregarCompra 200, 1, 9;
+EXEC Compra.agregarCompra 520, 1, 10;
+EXEC Compra.agregarCompra 600, 1, 11;
+EXEC Compra.agregarCompra 700, 1, 12;
+EXEC Compra.agregarCompra 250, 1, 13;
+EXEC Compra.agregarCompra 300, 1, 14;
+EXEC Compra.agregarCompra 3500, 1, 15;
+EXEC Compra.agregarCompra 5500, 1, 16;
+EXEC Compra.agregarCompra 1520, 1, 17;
+EXEC Compra.agregarCompra 6850, 1, 18;
+EXEC Compra.agregarCompra 1650, 1, 19;
+EXEC Compra.agregarCompra 6520, 1, 20;
+EXEC Compra.agregarCompra 7650, 1, 21;
+EXEC Compra.agregarCompra 6520, 1, 22;
+EXEC Compra.agregarCompra 157, 1, 23;
+EXEC Compra.agregarCompra 870, 1, 24;
+EXEC Compra.agregarCompra 6080, 1, 25;
+EXEC Compra.agregarCompra 7500, 1, 26;
+EXEC Compra.agregarCompra 606, 1, 27;
+EXEC Compra.agregarCompra 666, 1, 28;
+EXEC Compra.agregarCompra 1950, 1, 29;
+EXEC Compra.agregarCompra 2000, 1, 30;
+EXEC Compra.agregarCompra 180, 1, 31;
+EXEC Compra.agregarCompra 607, 1, 32;
+EXEC Compra.agregarCompra 1250, 1, 33;
+EXEC Compra.agregarCompra 2050, 1, 34;
+EXEC Compra.agregarCompra 2300, 1, 35;
+EXEC Compra.agregarCompra 900, 1, 36;
+EXEC Compra.agregarCompra 1000, 1, 37;
+EXEC Compra.agregarCompra 150, 1, 38;
+EXEC Compra.agregarCompra 698, 1, 39;
+EXEC Compra.agregarCompra 784, 1, 40;
+EXEC Compra.agregarCompra 685, 1, 41;
+EXEC Compra.agregarCompra 1000, 1, 42;
+EXEC Compra.agregarCompra 1350, 1, 43;
+EXEC Compra.agregarCompra 600, 1, 44;
+EXEC Compra.agregarCompra 800, 1, 45;
+EXEC Compra.agregarCompra 150, 1, 46;
+EXEC Compra.agregarCompra 250, 1, 47;
+EXEC Compra.agregarCompra 600, 1, 48;
+EXEC Compra.agregarCompra 1000, 1, 49;
+EXEC Compra.agregarCompra 1250, 1, 50;
 
-EXEC Produccion.agregarOrdenVenta 1,1,1,1,1
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 20, 1;
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 4, 1;
+EXEC Produccion.agregarOrdenVenta 3, 10, 2, 4, 1;
+EXEC Produccion.agregarOrdenVenta 4, 28, 3, 6, 1;
+EXEC Produccion.agregarOrdenVenta 5, 47, 1, 8, 1;
+EXEC Produccion.agregarOrdenVenta 5, 47, 2, 5, 1;
+EXEC Produccion.agregarOrdenVenta 7, 30, 2, 6, 1;
+EXEC Produccion.agregarOrdenVenta 8, 24, 2, 8, 1;
+EXEC Produccion.agregarOrdenVenta 9, 46, 1, 2, 1;
+EXEC Produccion.agregarOrdenVenta 10, 18, 1, 20, 1;
+EXEC Produccion.agregarOrdenVenta 11, 19, 3, 3, 1;
+EXEC Produccion.agregarOrdenVenta 12, 1, 2, 2, 1;
+EXEC Produccion.agregarOrdenVenta 13, 19, 1, 45, 1;
+EXEC Produccion.agregarOrdenVenta 14, 8, 2, 50, 1;
+EXEC Produccion.agregarOrdenVenta 15, 9, 1, 30, 1;
+EXEC Produccion.agregarOrdenVenta 16, 7, 1, 5, 1;
+EXEC Produccion.agregarOrdenVenta 16, 7, 1, 6, 1;
+EXEC Produccion.agregarOrdenVenta 16, 7, 2, 8, 1;
+EXEC Produccion.agregarOrdenVenta 19, 25, 2, 6, 1;
+EXEC Produccion.agregarOrdenVenta 20, 7, 2, 7, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 40, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 15, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 2, 20, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 1, 18, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 2, 5, 1;
+EXEC Produccion.agregarOrdenVenta 26, 7, 1, 8, 1;
+EXEC Produccion.agregarOrdenVenta 27, 8, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 28, 15, 3, 7, 1;
+EXEC Produccion.agregarOrdenVenta 29, 21, 1, 20, 1;
+EXEC Produccion.agregarOrdenVenta 30, 41, 2, 23, 1;
+EXEC Produccion.agregarOrdenVenta 31, 49, 3, 12, 1;
+EXEC Produccion.agregarOrdenVenta 32, 15, 1, 40, 1;
+EXEC Produccion.agregarOrdenVenta 33, 18, 2, 25, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 1, 27, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 3, 50, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 1, 2, 1;
+EXEC Produccion.agregarOrdenVenta 37, 6, 2, 8, 1;
+EXEC Produccion.agregarOrdenVenta 38, 7, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 39, 20, 2, 8, 1;
+EXEC Produccion.agregarOrdenVenta 39, 20, 1, 15, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 3, 26, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 2, 37, 1;
+EXEC Produccion.agregarOrdenVenta 43, 37, 1, 18, 1;
+EXEC Produccion.agregarOrdenVenta 44, 38, 3, 19, 1;
+EXEC Produccion.agregarOrdenVenta 45, 14, 2, 50, 1;
+EXEC Produccion.agregarOrdenVenta 46, 17, 3, 49, 1;
+EXEC Produccion.agregarOrdenVenta 47, 7, 2, 5, 1;
+EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
+EXEC Produccion.agregarOrdenVenta 49, 26, 2, 6, 1;
+EXEC Produccion.agregarOrdenVenta 50, 29, 3, 5, 1;
 
+EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, idTalla, 5, 1;
+EXEC Produccion.agregarOrdenVentaTalla 20, 50, idTalla, 1, 2;
+EXEC Produccion.agregarOrdenVentaTalla 26, 47.8, idTalla, 2, 3;
+EXEC Produccion.agregarOrdenVentaTalla 25, 9, idTalla, 6, 4;
+EXEC Produccion.agregarOrdenVentaTalla 14, 50.6, idTalla, 4, 5;
+EXEC Produccion.agregarOrdenVentaTalla 26, 40, idTalla, 8, 6;
+EXEC Produccion.agregarOrdenVentaTalla 10, 10, idTalla, 9, 7;
+EXEC Produccion.agregarOrdenVentaTalla 40, 74, idTalla, 1, 8;
+EXEC Produccion.agregarOrdenVentaTalla 16, 50, idTalla, 2, 9;
+EXEC Produccion.agregarOrdenVentaTalla 25, 6.5, idTalla, 11, 10;
+EXEC Produccion.agregarOrdenVentaTalla 16, 45.6, idTalla, 11, 11;
+EXEC Produccion.agregarOrdenVentaTalla 14, 80.5, idTalla, 6, 12;
+EXEC Produccion.agregarOrdenVentaTalla 29, 40.5, idTalla, 3, 13;
+EXEC Produccion.agregarOrdenVentaTalla 9, 10, idTalla, 5, 14;
+EXEC Produccion.agregarOrdenVentaTalla 7, 84.5, idTalla, 7, 15;
+EXEC Produccion.agregarOrdenVentaTalla 15, 46, idTalla, 8, 16;
+EXEC Produccion.agregarOrdenVentaTalla 16, 35, idTalla, 6, 17;
+EXEC Produccion.agregarOrdenVentaTalla 31, 28, idTalla, 1, 18;
+EXEC Produccion.agregarOrdenVentaTalla 17, 36, idTalla, 10, 19;
+EXEC Produccion.agregarOrdenVentaTalla 29, 17, idTalla, 11, 20;
+EXEC Produccion.agregarOrdenVentaTalla 8, 25, idTalla, 4, 21;
+EXEC Produccion.agregarOrdenVentaTalla 17, 18, idTalla, 5, 22;
+EXEC Produccion.agregarOrdenVentaTalla 16, 26, idTalla, 6, 23;
+EXEC Produccion.agregarOrdenVentaTalla 32, 18, idTalla, 5, 24;
+EXEC Produccion.agregarOrdenVentaTalla 17, 17, idTalla, 8, 25;
+EXEC Produccion.agregarOrdenVentaTalla 16, 9.01, idTalla, 9, 26;
+EXEC Produccion.agregarOrdenVentaTalla 17, 8.8, idTalla, 8, 27;
+EXEC Produccion.agregarOrdenVentaTalla 16, 19.6, idTalla, 9, 28;
+EXEC Produccion.agregarOrdenVentaTalla 19, 29.6, idTalla, 8, 29;
+EXEC Produccion.agregarOrdenVentaTalla 27, 38.8, idTalla, 4, 30;
+EXEC Produccion.agregarOrdenVentaTalla 18, 25, idTalla, 5, 31;
+EXEC Produccion.agregarOrdenVentaTalla 19, 27, idTalla, 6, 32;
+EXEC Produccion.agregarOrdenVentaTalla 25, 19.8, idTalla, 4, 33;
+EXEC Produccion.agregarOrdenVentaTalla 26, 15.4, idTalla, 3, 34;
+EXEC Produccion.agregarOrdenVentaTalla 9, 16.3, idTalla, 2, 35;
+EXEC Produccion.agregarOrdenVentaTalla 7, 9.5, idTalla, 1, 36;
+EXEC Produccion.agregarOrdenVentaTalla 46, 18.6, idTalla, 7, 37;
+EXEC Produccion.agregarOrdenVentaTalla 8, 34.3, idTalla, 8, 38;
+EXEC Produccion.agregarOrdenVentaTalla 9, 38.4, idTalla, 9, 39;
+EXEC Produccion.agregarOrdenVentaTalla 8, 45.8, idTalla, 11, 40;
+EXEC Produccion.agregarOrdenVentaTalla 7, 6, idTalla, 1, 41;
+EXEC Produccion.agregarOrdenVentaTalla 20, 48, idTalla, 9, 42;
+EXEC Produccion.agregarOrdenVentaTalla 20, 25, idTalla, 8, 43;
+EXEC Produccion.agregarOrdenVentaTalla 16, 14, idTalla, 7, 44;
+EXEC Produccion.agregarOrdenVentaTalla 17, 16, idTalla, 9, 45;
+EXEC Produccion.agregarOrdenVentaTalla 26, 18.6, idTalla, 6, 46;
+EXEC Produccion.agregarOrdenVentaTalla 47, 25.6, idTalla, 7, 47;
+EXEC Produccion.agregarOrdenVentaTalla 59, 14.3, idTalla, 5, 48;
+EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, idTalla, 6, 49;
+EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, idTalla, 4, 50;
+
+EXEC Produccion.agregarFlujoProceso 1, 2
+EXEC Produccion.agregarFlujoProceso 1, 3
+EXEC Produccion.agregarFlujoProceso 1, 4
+EXEC Produccion.agregarFlujoProceso 1, 5
+EXEC Produccion.agregarFlujoProceso 1, 6
+EXEC Produccion.agregarFlujoProceso 1, 7
+EXEC Produccion.agregarFlujoProceso 1, 10
+EXEC Produccion.agregarFlujoProceso 1, 11
+EXEC Produccion.agregarFlujoProceso 1, 12
+EXEC Produccion.agregarFlujoProceso 1, 13
+EXEC Produccion.agregarFlujoProceso 1, 14
+EXEC Produccion.agregarFlujoProceso 2, 2
+EXEC Produccion.agregarFlujoProceso 2, 3
+EXEC Produccion.agregarFlujoProceso 2, 4
+EXEC Produccion.agregarFlujoProceso 2, 5
+EXEC Produccion.agregarFlujoProceso 2, 6
+EXEC Produccion.agregarFlujoProceso 2, 7
+EXEC Produccion.agregarFlujoProceso 2, 8
+EXEC Produccion.agregarFlujoProceso 2, 10
+EXEC Produccion.agregarFlujoProceso 2, 11
+EXEC Produccion.agregarFlujoProceso 2, 12
+EXEC Produccion.agregarFlujoProceso 2, 13
+EXEC Produccion.agregarFlujoProceso 2, 14
+EXEC Produccion.agregarFlujoProceso 3, 2
+EXEC Produccion.agregarFlujoProceso 3, 3
+EXEC Produccion.agregarFlujoProceso 3, 4
+EXEC Produccion.agregarFlujoProceso 3, 5
+EXEC Produccion.agregarFlujoProceso 3, 6
+EXEC Produccion.agregarFlujoProceso 3, 7
+EXEC Produccion.agregarFlujoProceso 3, 9
+EXEC Produccion.agregarFlujoProceso 3, 10
+EXEC Produccion.agregarFlujoProceso 3, 11
+EXEC Produccion.agregarFlujoProceso 3, 12
+EXEC Produccion.agregarFlujoProceso 3, 13
+EXEC Produccion.agregarFlujoProceso 3, 14
+
+CREATE PROCEDURE CrearBackup --BDD
+AS
+    DECLARE @fecha DATE
+    DECLARE @name VARCHAR(100)
+
+    SET @fecha = GETDATE()
+    SET @name  = 'C:\Backup\Proyecto-'+CONVERT(VARCHAR(MAX),@fecha, 105)+'.bak'
+
+	BACKUP DATABASE Fedisal TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
+	WITH INIT;
+
+<<<<<<< HEAD
 EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
 EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
 select * from Produccion.ordenVenta
+=======
+    BACKUP DATABASE Fedisal TO DISK = @name
+    WITH DIFFERENTIAL;
+;
+GO
+
+USE msdb;
+GO
+
+CREATE PROCEDURE CreandoJob
+AS
+	DECLARE @fecha DATE
+	SET @fecha = GETDATE()
+
+	-- Creando trabajo
+	EXEC dbo.sp_add_job
+		@job_name = 'BackupProyectoBDDFinal'
+	;
+
+	-- Agregando el paso al trabajo
+	EXEC dbo.sp_add_jobstep
+		@job_name = 'BackupProyectoBDDFinal',
+		@database_name = 'CollegeCentralAmerica_LaLibertad',
+		@step_name = 'Ejecutar_Backup',
+		@subsystem = 'TSQL',
+		@command = 'EXEC CrearBackup',
+		@retry_attempts = 0,  
+		@retry_interval = 0 ;  
+	;
+
+	-- Programando Trabajo
+	EXEC dbo.sp_add_jobschedule @job_name = 'BackupProyectoBDDFinal',
+		@name = 'Base_Backup',
+		@freq_type= 4,
+		@freq_interval = 1, 
+		@active_start_date = 'CONVERT(date, CURRENT_TIMESTAMP)',
+		@active_start_time = '202500'
+	;
+
+	-- Agregando el trabajo al servidor
+	EXEC dbo.sp_add_jobserver
+		@job_name = 'BackupProyectoBDDFinal',
+		@server_name = @@Servername
+	;
+;
+EXEC CreandoJob;
+>>>>>>> d414bbd95ad1e6d2299ab796f378ed7d3907defd
