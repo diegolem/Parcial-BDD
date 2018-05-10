@@ -3876,3 +3876,60 @@ EXEC Produccion.agregarOrdenVenta 1,1,1,1,1
 
 EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
 EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
+
+CREATE PROCEDURE CrearBackup --BDD
+AS
+    DECLARE @fecha DATE
+    DECLARE @name VARCHAR(100)
+
+    SET @fecha = GETDATE()
+    SET @name  = 'C:\Backup\Proyecto-'+CONVERT(VARCHAR(MAX),@fecha, 105)+'.bak'
+
+	BACKUP DATABASE Fedisal TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
+	WITH INIT;
+
+    BACKUP DATABASE Fedisal TO DISK = @name
+    WITH DIFFERENTIAL;
+;
+GO
+
+USE msdb;
+GO
+
+CREATE PROCEDURE CreandoJob
+AS
+	DECLARE @fecha DATE
+	SET @fecha = GETDATE()
+
+	-- Creando trabajo
+	EXEC dbo.sp_add_job
+		@job_name = 'BackupProyectoBDDFinal'
+	;
+
+	-- Agregando el paso al trabajo
+	EXEC dbo.sp_add_jobstep
+		@job_name = 'BackupProyectoBDDFinal',
+		@database_name = 'CollegeCentralAmerica_LaLibertad',
+		@step_name = 'Ejecutar_Backup',
+		@subsystem = 'TSQL',
+		@command = 'EXEC CrearBackup',
+		@retry_attempts = 0,  
+		@retry_interval = 0 ;  
+	;
+
+	-- Programando Trabajo
+	EXEC dbo.sp_add_jobschedule @job_name = 'BackupProyectoBDDFinal',
+		@name = 'Base_Backup',
+		@freq_type= 4,
+		@freq_interval = 1, 
+		@active_start_date = 'CONVERT(date, CURRENT_TIMESTAMP)',
+		@active_start_time = '202500'
+	;
+
+	-- Agregando el trabajo al servidor
+	EXEC dbo.sp_add_jobserver
+		@job_name = 'BackupProyectoBDDFinal',
+		@server_name = @@Servername
+	;
+;
+EXEC CreandoJob;
