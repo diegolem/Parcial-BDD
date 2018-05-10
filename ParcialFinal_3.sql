@@ -738,11 +738,10 @@ AS
 		END
 	END
 GO
-
 CREATE TRIGGER verificarCompartimiento ON Bodega.MateriaPrima
 FOR INSERT
 AS
-	DECLARE @idCompartimiento INT,@idMateriaPrima INT
+	DECLARE @idCompartimiento CHAR(3),@idMateriaPrima INT
 	SELECT @idCompartimiento = idCompartimiento FROM inserted
 	IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 0
 	BEGIN
@@ -2948,7 +2947,7 @@ EXEC Venta.agregarFactura '2018-09-21','2018-08-27','2018-09-06','2018-09-07','S
 EXEC Venta.agregarFactura '2018-08-22','2018-05-27','2018-08-07','2018-08-08','Sucursal Unicentro Soyapango',3
 EXEC Venta.agregarFactura '2018-07-17','2018-07-27','2018-07-02','2018-07-03','Sucursal Metrocentro, Cerca de Adidas',4
 EXEC Venta.agregarFactura '2018-01-19','2017-12-25','2018-01-04','2018-01-05','Boulevar Constitución, atras de Papa Jonh`s',5
-EXEC Venta.agregarFactura '2018-01-16','2017-12-21','2018-01-02','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
+EXEC Venta.agregarFactura '2018-01-16','2017-12-21','2018-01-01','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
 EXEC Venta.agregarFactura '2018-02-25','2018-01-27','2018-02-10','2018-02-11','Metrocentro Doceava Etapa, a la par St Jack´s',7
 EXEC Venta.agregarFactura '2018-10-24','2018-09-27','2018-10-09','2018-10-10','Plaza Mundo San Salvador, local #53',8
 EXEC Venta.agregarFactura '2018-09-29','2018-08-27','2018-09-14','2018-09-15','Calle a San sebastian, condominio #55, Edificio Rojo',9
@@ -2981,7 +2980,7 @@ EXEC Venta.agregarFactura '2018-04-26','2018-03-23','2018-04-11','2018-04-12','U
 EXEC Venta.agregarFactura '2018-03-21','2018-02-25','2018-03-06','2018-03-07','Centro comercial la cascada etapa #6,Local #68',36
 EXEC Venta.agregarFactura '2018-02-20','2018-01-27','2018-02-05','2018-02-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
 EXEC Venta.agregarFactura '2018-05-28','2018-04-26','2018-05-13','2018-05-14','MetroNorte San Salvador, tercera planta local #68',38
-EXEC Venta.agregarFactura '2018-04-30','2018-05-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
+EXEC Venta.agregarFactura '2018-04-30','2018-03-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
 EXEC Venta.agregarFactura '2018-02-29','2018-01-22','2018-02-14','2018-02-15','Plaza Mundo San Salvador, 2º etapa,local #22',40
 EXEC Venta.agregarFactura '2018-08-16','2018-07-20','2018-08-01','2018-08-02','Calle la sucia, La unión, comercial maria santisima,local 2',41
 EXEC Venta.agregarFactura '2018-02-26','2018-01-27','2018-02-11','2018-02-12','Sucursal Galerias, Etapa 1, local #9',42
@@ -3759,6 +3758,70 @@ EXEC Bodega.agregarCompartimiento H88,0
 EXEC Bodega.agregarCompartimiento H89,0
 
 EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+
 
 EXEC Bodega.agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
 
