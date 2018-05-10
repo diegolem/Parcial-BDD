@@ -354,7 +354,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2
 	; --Por ejemplo si en el id 2 es "En proceso";
 -- 3. Vista de los trabajos que aún no han sido implementados.
-	CREATE VIEW trabajosProceso AS	
+	CREATE VIEW trabajosPendientes AS	
 		SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	
 		FROM Produccion.OrdenVenta O 
 		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
@@ -738,46 +738,25 @@ AS
 		END
 	END
 GO
---TRIGGERS Extra
-CREATE TRIGGER asignarSeguimiento ON Produccion.ordenVenta
-FOR INSERT
-AS
-	DECLARE @idOrdenVenta INT,@idProceso INT,@idEstado INT
-	BEGIN
-		SELECT @idOrdenVenta = idOrdenventa FROM inserted
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,1
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,2
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,3
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,4
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,5
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,6
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,7
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,8
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,9
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,10
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,11
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,12
-		EXEC agregarSeguimientoOrden 3,@idOrdenVenta,13
-	END
-GO
+
 CREATE TRIGGER verificarCompartimiento ON Bodega.MateriaPrima
 FOR INSERT
 AS
 	DECLARE @idCompartimiento INT,@idMateriaPrima INT
 	SELECT @idCompartimiento = idCompartimiento FROM inserted
-	IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 1
+	IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 0
 	BEGIN
 		PRINT 'El compartimiento esta disponible'
 		UPDATE Bodega.Compartimiento SET estado = 2 WHERE idCompartimiento = @idCompartimiento
 	END
-	ELSE IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 2
+	ELSE IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 1
 	BEGIN
 		PRINT 'El compartimiento ya esta ocupado'
 		ROLLBACK TRAN
 	END
 GO
 -- Funciones /////////////////////////////////////////////////////////////////////////////////////////////////
-create function dbo.getPiezasExtras(@piezas int) RETURNS int
+create function Produccion.getPiezasExtras(@piezas int) RETURNS int
 as
 begin
 	declare @count int = 0
@@ -814,7 +793,7 @@ begin
 	return @count
 end
 GO
-create procedure obtenerPiezasExtras @piezas int
+create procedure Produccion.obtenerPiezasExtras @piezas int
 as
 	if @piezas < 0
 	begin
@@ -932,7 +911,7 @@ AS
 	END
 GO
 --En caso de ser Tipo: Empresa
-CREATE PROC agregarClienteEmpresa
+CREATE PROC Venta.agregarClienteEmpresa
 @nombre VARCHAR(35),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT
 AS
@@ -1407,7 +1386,7 @@ DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT
 	BEGIN
 		IF (@idCompartimiento LIKE '%[A-H][1-8][1-9]%')
 		BEGIN
-			IF(@estado > 0)
+			IF(@estado > -1)
 			BEGIN
                 SET @idEstante = SUBSTRING(@idCompartimiento,1,1)
                 SET @idNivel = SUBSTRING(@idCompartimiento,2,1)
@@ -1581,6 +1560,28 @@ ON Produccion.ordenDeVentaTalla
 	SET @suma = @precio * @cantidad
 	UPDATE Produccion.ordenVenta SET monto = (@montoAnterior + @suma),cantidad = (@cantidadAnterior + @cantidad) WHERE idOrdenVenta = @idOrdenVenta
 GO
+--TRIGGERS Extra
+CREATE TRIGGER asignarSeguimiento ON Produccion.ordenVenta
+FOR INSERT
+AS
+	DECLARE @idOrdenVenta INT,@idProceso INT,@idEstado INT
+	BEGIN
+		SELECT @idOrdenVenta = idOrdenventa FROM inserted
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,1
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,2
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,3
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,4
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,5
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,6
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,7
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,8
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,9
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,10
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,11
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,12
+		EXEC Produccion.agregarSeguimientoOrden 3,@idOrdenVenta,13
+	END
+GO
 -- Procedimientos para modificar ////////////////////////////////////////////////////////////////
 --Tabla Produccion.departamento
 CREATE PROC Produccion.modificarDepartamento -- Tabla produccion
@@ -1682,7 +1683,7 @@ AS
 	END
 GO
 --En caso de ser Tipo: Empresa
-CREATE PROC modificarClienteEmpresa
+CREATE PROC Venta.modificarClienteEmpresa
 @nombre VARCHAR(35),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT, @idCliente int
 AS
@@ -1824,7 +1825,7 @@ GO
 CREATE PROC Produccion.modificarFlujoTrabajo -- Flujo
 @idVariante INT, @idFlujo INT
 AS
-	IF EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE idFlujo = @idFlujo)
+	IF EXISTS(SELECT * FROM Produccion.flujoTrabajo WHERE idFlujo = @idFlujo)
 	BEGIN
 		UPDATE Produccion.flujoTrabajo SET idVariante = @idVariante WHERE idFlujo = @idFlujo
 		PRINT 'El flujo de trabajo fue modificado correctamente'
@@ -2161,7 +2162,7 @@ AS
 	END
 GO
 --Tabla tipoUnidadMedidas
-CREATE PROC modificarTipoUnidadMedidas
+CREATE PROC Produccion.modificarTipoUnidadMedidas
 @nombre VARCHAR(60), @idTipoUnidad CHAR(6)
 AS
 	IF EXISTS(SELECT * FROM Bodega.tipoUnidadMedidas WHERE idTipoUnidad = @idTipoUnidad)
@@ -2282,7 +2283,7 @@ CREATE PROCEDURE Bodega.modificarCompartimiento --Compartimiento
 AS
 	IF EXISTS(SELECT * FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento)
 	BEGIN
-		IF(@estado > 0)
+		IF(@estado > -1)
 		BEGIN
 			IF (@idEstante LIKE '%[A-H]%')
 			BEGIN
@@ -2439,7 +2440,7 @@ AS
 	END	
 GO
 --PROCEDURE #2
-CREATE PROCEDURE verificarTela @idColor INT, @cantidadTela DECIMAL(18,2)
+CREATE PROCEDURE Produccion.verificarTela @idColor INT, @cantidadTela DECIMAL(18,2)
 AS
 	DECLARE @tela DECIMAL(18,2),@respue BIT
 	
@@ -2464,11 +2465,11 @@ que tenga la capacidad de realizar este proceso de forma correcta TENIENDO EN CU
 LAS CONSIDERACIONES QUE SE HAN ESPECIFICADO ANTERIORMENTE EN ESTE PROCESO.*/
 
 --PROCEDURE #3
-create procedure asignarModuloOrdenVenta @idOrdenVenta int, @idTalla int, @cantidad int
+create procedure Produccion.asignarModuloOrdenVenta @idOrdenVenta int, @idTalla int, @cantidad int
 as
 	-- cantidad de talla extra
 	declare @extra_talla int, @completo varchar(25) = 'Finalizado'
-	exec @extra_talla = obtenerPiezasExtras @piezas = @cantidad
+	exec @extra_talla = Produccion.obtenerPiezasExtras @piezas = @cantidad
 
 	-- Cantidad de tela especifica
 	declare @cantidad_tela decimal(18, 2)
@@ -2572,7 +2573,7 @@ go
 create type db_tallas AS TABLE(id_talla int, cantidad int);  
 GO
 
-create procedure proTallaModuloAutomatico @idOrdenVenta int, @idModulo int, @tallas db_tallas readonly
+create procedure Produccion.proTallaModuloAutomatico @idOrdenVenta int, @idModulo int, @tallas db_tallas readonly
 as
 	-- En caso que haya suficiente tela para lo que queremos hacer
 	declare @suficienteTela bit = 0
@@ -2580,7 +2581,7 @@ as
 	-- Obtenemos la cantidad total de las telas
 	declare @cantidad_total decimal(18, 2) = 0, @count int = 0
 
-	select @count = (@count + 1), @cantidad_total = (@cantidad_total + ((tp_talla.cantidad + dbo.getPiezasExtras(tp_talla.cantidad)) * tbl_talla.cantidadTela)) 
+	select @count = (@count + 1), @cantidad_total = (@cantidad_total + ((tp_talla.cantidad + Produccion.getPiezasExtras(tp_talla.cantidad)) * tbl_talla.cantidadTela)) 
 	from Producto.talla as tbl_talla ,@tallas as tp_talla 
 	where tbl_talla.idTalla = tp_talla.id_talla
 
@@ -2590,7 +2591,7 @@ as
 	from Produccion.ordenVenta
 	where idOrdenVenta = @idOrdenVenta
 
-	exec @suficienteTela = verificarTela @idColor = @idColor, @cantidadTela = @cantidad_total
+	exec @suficienteTela = Produccion.verificarTela @idColor = @idColor, @cantidadTela = @cantidad_total
 
 	-- En caso que haya suficiente tela
 	if @suficienteTela = 1
@@ -2604,7 +2605,7 @@ as
 			-- Aumentamos el indice
 			set @i = @i + 1
 			-- Ejecutamos la asignacion de modelos
-			exec asignarModuloOrdenVenta @idOrdenVenta = @idOrdenVenta, @idTalla = @idTalla, @cantidad = @cantidad
+			exec Produccion.asignarModuloOrdenVenta @idOrdenVenta = @idOrdenVenta, @idTalla = @idTalla, @cantidad = @cantidad
 		end
 		
 	end
@@ -2621,10 +2622,10 @@ se tienen dentro de ella, el reporte debe ser generado con la siguiente estructu
 create type db_factura AS TABLE(nombre varchar(100), cantidad int, cantidadExtra int, precioUnitario decimal(18, 2), descripcion varchar(255), precioTotal decimal(18, 2));  
 GO
 
-create procedure crearReporte @idFactura int
+create procedure Produccion.crearReporte @idFactura int
 as
 
-	IF EXISTS(SELECT * FROM Venta.factura.ordenVenta WHERE Venta.factura.idFactura = @idFactura)
+	IF EXISTS(SELECT * FROM factura.ordenVenta WHERE factura.idFactura = @idFactura)
 	BEGIN
 		-- Variables de la factura
 		declare @id_factura int, @direccion varchar(250), @cliente varchar(150), @fecha_actual date = getdate()
@@ -2729,6 +2730,8 @@ go
 --Usuarios de la BDD //////////////////////////////////////////////////////////////////////////////////////
 --1. Usuarios del Esquema Compras:
 --1.1 Usuario Solamente con permisos de selección de datos.
+DROP LOGIN ConsultorCompras
+DROP USER MatildaFuentes
 CREATE LOGIN ConsultorCompras
 WITH PASSWORD = '12345'
 CREATE USER MatildaFuentes FOR LOGIN ConsultorCompras
@@ -2739,6 +2742,8 @@ TO MatildaFuentes
 GO
 --1.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
 --(Para la parte de Inserción de datos y actualización)
+DROP LOGIN GestorCompras
+DROP USER LeonardoEsquivel
 CREATE LOGIN GestorCompras
 WITH PASSWORD = '12345'
 CREATE USER LeonardoEsquivel FOR LOGIN GestorCompras
@@ -2750,6 +2755,8 @@ GO
 
 --1.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
 --procedimientos, tablas etc dentro de este esquema.
+DROP LOGIN AdministradorCompras
+DROP USER ElenilsonGuevara
 CREATE LOGIN AdministradorCompras
 WITH PASSWORD = '12345'
 CREATE USER ElenilsonGuevara FOR LOGIN AdministradorCompras
@@ -2759,6 +2766,8 @@ TO ElenilsonGuevara
 GO
 --2. Usuarios del Esquema Produccion:
 --2.1 Usuario Solamente con permisos de selección de datos.
+DROP LOGIN ConsultorProduccion
+DROP USER AlvaroTorres
 CREATE LOGIN ConsultorProduccion
 WITH PASSWORD = '12345'
 CREATE USER AlvaroTorres FOR LOGIN ConsultorProduccion
@@ -2769,6 +2778,8 @@ TO AlvaroTorres
 GO
 --2.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
 --(Para la parte de Inserción de datos y actualización)
+DROP LOGIN GestorProduccion
+DROP USER FranklinVelasquez
 CREATE LOGIN GestorProduccion
 WITH PASSWORD = '12345'
 CREATE USER FranklinVelasquez FOR LOGIN GestorProduccion
@@ -2779,6 +2790,8 @@ TO FranklinVelasquez
 GO
 --2.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
 --procedimientos, tablas etc dentro de este esquema.
+DROP LOGIN AdministradorProduccion
+DROP LOGIN FernandaValle
 CREATE LOGIN AdministradorProduccion
 WITH PASSWORD = '12345'
 CREATE USER FernandaValle FOR LOGIN AdministradorProduccion
@@ -2788,6 +2801,8 @@ TO FernandaValle
 GO
 --3. Usuarios del Esquema Bodega:
 --3.1 Usuario Solamente con permisos de selección de datos.
+DROP LOGIN ConsultorBodega
+DROP USER FelixCanales
 CREATE LOGIN ConsultorBodega
 WITH PASSWORD = '12345'
 CREATE USER FelixCanales FOR LOGIN ConsultorBodega
@@ -2798,6 +2813,8 @@ TO FelixCanales
 GO
 --3.2 Usuario Solamente con permisos de ejecución de procedimientos Almacenados de datos
 --(Para la parte de Inserción de datos y actualización)
+DROP LOGIN GestorBodega
+DROP USER KarlaChavez
 CREATE LOGIN GestorBodega
 WITH PASSWORD = '12345'
 CREATE USER KarlaChavez FOR LOGIN GestorBodega
@@ -2808,6 +2825,8 @@ TO KarlaChavez
 GO
 --2.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
 --procedimientos, tablas etc dentro de este esquema.
+DROP LOGIN AdministradorBodega
+DROP USER DiegoDiaz
 CREATE LOGIN AdministradorBodega
 WITH PASSWORD = '12345'
 CREATE USER DiegoDiaz FOR LOGIN AdministradorBodega
@@ -2817,263 +2836,262 @@ TO DiegoDiaz
 GO
 --4. Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
 --SUS OBJETOS.
+DROP LOGIN Administrador
+DROP USER BrandonLee
 CREATE LOGIN Administrador
 WITH PASSWORD = '54321'
 CREATE USER BrandonLee FOR LOGIN Administrador
 GRANT ALTER,EXECUTE,SELECT,INSERT,UPDATE,DELETE,CONTROL,REFERENCES,VIEW DEFINITION
 TO BrandonLee WITH GRANT OPTION
 
-
-
 --Respaldo de la BDD /////////////////////////////////////////////////////////////////////////////////////
 
 --INSERT de las tablas
-EXEC agregarDepartamento 'Planificacion', 'En encarga de verificar cada una de las órdenes de trabajo que han ingresado a la empresa, y como su nombre lo dice, planificar todo el proceso productivo de la empresa, esto incluye, verificar el trabajo en proceso en toda la planta, con el objetivo de no asignar más cargas de trabajo de la que se puede tener'
-EXEC agregarDepartamento 'CAD','Este departamento se encarga principalmente de generar los diferentes patrones de marcadores para cada talla y estilo que se produce dentro de la planta, así como de imprimirlos y hacerlos llegar al departamento de corte para el inicio del ciclo productivo.'
-EXEC agregarDepartamento 'Corte','Este departamento se encarga directamente de recibir los marcadores impresos generados por CAD para procesarlos, cortar la tela y enviar los paquetes de piezas listas para que sean costuradas.'
-EXEC agregarDepartamento 'Costura','Se encargan directamente del costurado de las piezas, cabe mencionar que algunas piezas pueden ser costuradas antes o después de algún proceso como el sublimado o el estampado.'
-EXEC agregarDepartamento 'Bodega','Se encargan de la recepción y el almacenaje de la materia prima utilizada en la producción de las prendas, estos pueden considerarse en dos grandes categorías, Fabric (Tela), y Supplies (Hilos, Cordones, Tintas, etc.)'
-EXEC agregarDepartamento 'Sublimado','Area de Printing en Tela, este proceso se lleva a cabo en ciertas prendas y estilos seleccionados'
-EXEC agregarDepartamento 'Serigrafia', 'Área de Estampado en Tela, este proceso se lleva a cabo en ciertas prendas y estilos seleccionado'
-EXEC agregarDepartamento 'Empaque','Se encarga directamente de la recepción total de las prendas para el embalaje y preparación para el envío, a los clientes, en este paso, se hace la rotulación de los paquetes de acuerdo a la compañía logística que se encargará del transporte de los mismos'
-EXEC agregarDepartamento 'Control de Calidad','De forma segmentada y casi por cada uno de los procesos, se hace un control de calidad para que la orden pueda ser llevada al siguiente paso del proceso productivo.'
-EXEC agregarDepartamento 'Recursos Humanos','Se encarga del manejo de la información relativa a los empleados, tiempos de entrada y salida, datos generales, etc'
-EXEC agregarDepartamento 'Contabilidad','Datos relativos al pago y la autorización de cada una de las transacciones y pagos de salarios, etc'
-EXEC agregarDepartamento 'Compras','Se encarga de generar y realizar las compras de los insumos para todo el proceso productivo y también de los procesos administrativos en general.'
+EXEC Produccion.agregarDepartamento 'Planificacion', 'En encarga de verificar cada una de las órdenes de trabajo que han ingresado a la empresa, y como su nombre lo dice, planificar todo el proceso productivo de la empresa, esto incluye, verificar el trabajo en proceso en toda la planta, con el objetivo de no asignar más cargas de trabajo de la que se puede tener'
+EXEC Produccion.agregarDepartamento 'CAD','Este departamento se encarga principalmente de generar los diferentes patrones de marcadores para cada talla y estilo que se produce dentro de la planta, así como de imprimirlos y hacerlos llegar al departamento de corte para el inicio del ciclo productivo.'
+EXEC Produccion.agregarDepartamento 'Corte','Este departamento se encarga directamente de recibir los marcadores impresos generados por CAD para procesarlos, cortar la tela y enviar los paquetes de piezas listas para que sean costuradas.'
+EXEC Produccion.agregarDepartamento 'Costura','Se encargan directamente del costurado de las piezas, cabe mencionar que algunas piezas pueden ser costuradas antes o después de algún proceso como el sublimado o el estampado.'
+EXEC Produccion.agregarDepartamento 'Bodega','Se encargan de la recepción y el almacenaje de la materia prima utilizada en la producción de las prendas, estos pueden considerarse en dos grandes categorías, Fabric (Tela), y Supplies (Hilos, Cordones, Tintas, etc.)'
+EXEC Produccion.agregarDepartamento 'Sublimado','Area de Printing en Tela, este proceso se lleva a cabo en ciertas prendas y estilos seleccionados'
+EXEC Produccion.agregarDepartamento 'Serigrafia', 'Área de Estampado en Tela, este proceso se lleva a cabo en ciertas prendas y estilos seleccionado'
+EXEC Produccion.agregarDepartamento 'Empaque','Se encarga directamente de la recepción total de las prendas para el embalaje y preparación para el envío, a los clientes, en este paso, se hace la rotulación de los paquetes de acuerdo a la compañía logística que se encargará del transporte de los mismos'
+EXEC Produccion.agregarDepartamento 'Control de Calidad','De forma segmentada y casi por cada uno de los procesos, se hace un control de calidad para que la orden pueda ser llevada al siguiente paso del proceso productivo.'
+EXEC Produccion.agregarDepartamento 'Recursos Humanos','Se encarga del manejo de la información relativa a los empleados, tiempos de entrada y salida, datos generales, etc'
+EXEC Produccion.agregarDepartamento 'Contabilidad','Datos relativos al pago y la autorización de cada una de las transacciones y pagos de salarios, etc'
+EXEC Produccion.agregarDepartamento 'Compras','Se encarga de generar y realizar las compras de los insumos para todo el proceso productivo y también de los procesos administrativos en general.'
 
-EXEC agregarProcesos 'Order Ready',10,1
-EXEC agregarProcesos 'Printing Marker',5,2
-EXEC agregarProcesos 'Marker Ready',15,2
-EXEC agregarProcesos 'Cutting',5,3 
-EXEC agregarProcesos 'Sewing line',10,4
-EXEC agregarProcesos 'Out of Sewing Line',15,4
-EXEC agregarProcesos 'Ironing',15,4
-EXEC agregarProcesos 'Screen Printing',15,7
-EXEC agregarProcesos 'Quality Assurance',15,9
-EXEC agregarProcesos 'Ready for Packing',10,9
-EXEC agregarProcesos 'Packing Ready',10,8
-EXEC agregarProcesos 'Ready for Shipment',10,8
-EXEC agregarProcesos 'Shipped',10,8
+EXEC Produccion.agregarProcesos 'Order Ready',10,1
+EXEC Produccion.agregarProcesos 'Printing Marker',5,2
+EXEC Produccion.agregarProcesos 'Marker Ready',15,2
+EXEC Produccion.agregarProcesos 'Cutting',5,3 
+EXEC Produccion.agregarProcesos 'Sewing line',10,4
+EXEC Produccion.agregarProcesos 'Out of Sewing Line',15,4
+EXEC Produccion.agregarProcesos 'Ironing',15,4
+EXEC Produccion.agregarProcesos 'Screen Printing',15,7
+EXEC Produccion.agregarProcesos 'Quality Assurance',15,9
+EXEC Produccion.agregarProcesos 'Ready for Packing',10,9
+EXEC Produccion.agregarProcesos 'Packing Ready',10,8
+EXEC Produccion.agregarProcesos 'Ready for Shipment',10,8
+EXEC Produccion.agregarProcesos 'Shipped',10,8
 
-EXEC agregarTipoCliente 'Empresa'
-EXEC agregarTipoCliente 'Persona'
+EXEC Venta.agregarTipoCliente 'Empresa'
+EXEC Venta.agregarTipoCliente 'Persona'
 
-EXEC agregarClientePersona 'Juan Lionel','12345678-9','1234-123456-123-2','Calle las brisas, Av. Chinameca Condominio #4','7321-0998','juanitoLeon@hotmail.com',2
-EXEC agregarClienteEmpresa 'SIMAN Metrocentro','Sucursal de Metrocento, San Salvador','2542-4421','siman.metrocentro@gmail.com',1
-EXEC agregarClienteEmpresa 'ST Jack´s Soyapango','Sucursal Unicentro Soyapango','2353-0983','stjacksoyapango@gmail.com',1
-EXEC agregarClienteEmpresa 'Picaras Boutique','Sucursal Metrocentro, Cerca de Adidas','2260-3444','picarasboutique@gmail.com',1
-EXEC agregarClientePersona 'Leonardo Edenilson Valle','87654321-9','4321-654231-983-5','Boulevar Constitución, atras de Papa Jonh`s','7293-9432','leoValleBoutique@gmail.com',2
-EXEC agregarClientePersona 'Fernando Roberto Lemus Lemus','01928374-5','3241-028743-876-3','Calle a Apulo, Edificio #45,parcela #40','6023-3212','fernanflores@gmail.com',2
-EXEC agregarClienteEmpresa 'Jacarandas','Metrocentro Doceava Etapa, a la par St Jack´s','2200-0332','jacarandasmetro@gmail.com',1
-EXEC agregarClienteEmpresa 'Carlos Boutique','Plaza Mundo San Salvador, local #53','2999-4322','carlosstyle@gmail.com',1
-EXEC agregarClienteEmpresa 'San Sebastian','Calle a San sebastian, condominio #55, Edificio Rojo','2303-4445','sebastianboutique@gmail.com',1
-EXEC agregarClienteEmpresa 'Aqua eco','44 calle 2 Zona 12,Guatemala','2248-6000','AquaEcho@gmail.com',1
-EXEC agregarClienteEmpresa 'Style Life','Centro comercial la cascada etapa #1,Local #12','2432-3333','stylelifecascada@gmail.com',1
-EXEC agregarClientePersona 'Erick Alberto Esquivel Cañas','65784390-2','0192-657402-543-8','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1','2222-2223','xErickaec@gmail.com',2
-EXEC agregarClienteEmpresa 'Vida Estilizada','Metrosur San Salvador, segunda planta local #99','2893-4444','vidaestilizada@gmail.com',1
-EXEC agregarClienteEmpresa 'Dora´s','Galerias San Salvador, 3º nivel, local #12','2390-3333','dorasStyle@gmail.com',1
-EXEC agregarClienteEmpresa 'Garage','Galerias San Salvador,Cerca del cine local #41','2533-3339','garageESA@gmail.com',1
-EXEC agregarClientePersona 'Ezequiel Pocho Lavezzi Hernández','65780129-8','8888-444222-443-2','Calle el estante, Cabañas, comercial maria purisima,local #47','6555-3333','ezequielpocho@gmail.com',2
-EXEC agregarClienteEmpresa 'Prisma Moda Plaza mundo','Sucursal Plaza Mundo, Etapa 2, local #43','2333-4444','prismamodaPM@gmail.com',1
-EXEC agregarClienteEmpresa 'Branson Metrocentro','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks','2333-4779','bransonmetrocentro@gmail.com',1
-EXEC agregarClienteEmpresa 'Calvin Klein Metrocentro','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro','2441-4461','calvinKleinmetroSS@gmail.com',1
-EXEC agregarClientePersona 'Jimena Abigail Sanchez Guardado','65748309-2','1432-444090-341-5','Calle a Paseo general Escalón, Edificio Verde Local #1','7442-1223','jimenaAbigail@gmail.com',2
-EXEC agregarClienteEmpresa 'Carolina´s','Metrocentro San Salvador,1º Nivel, Local #43','2309-3333','carolinas_bouti@gmail.com',1
-EXEC agregarClienteEmpresa 'Tatiana´s','Galerias San Salvador, 2º Etapa, nivel #2, local #55','7203-4452','tatiandesign@gmail.com',1
-EXEC agregarClienteEmpresa 'Colegio Don Bosco','Soyapango San Salvador, Calle a plan del pino','2000-1123','colegiodonbosco@gmail.com',1
-EXEC agregarClienteEmpresa 'Scotiabank','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines','2633-0110','scotiabankss@gmail.com',1
-EXEC agregarClientePersona 'Kevin Alexander De Bruyne Reyes','23341928-3','5432-345019-245-5','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1','6012-5145','KevinBruyne@gmail.com',2
-EXEC agregarClienteEmpresa 'Agua Cristal','San Miguel, El Salvador, Calle la Conquista Edificio Azul','2201-2910','cristalelagua@gmail.com',1
-EXEC agregarClienteEmpresa 'SIMAN Plaza Mundo','Sucursal de Plaza Muno, San Salvador','2549-4421','siman.plazamundo@gmail.com',1
-EXEC agregarClienteEmpresa 'ST Jack´s Metrocentro','Sucursal Metrocentro San Salvador','2883-0983','stjacksometrocentro@gmail.com',1
-EXEC agregarClienteEmpresa 'Local Boutique','Sucursal Metrocentro, Cerca de ADOC y MD','2940-3414','localboutique@gmail.com',1
-EXEC agregarClientePersona 'Vanessa Alexandra Carranza','87654797-1','0182-654231-983-5','Boulevar Constitución, atras de Pollo Real','7423-9432','carranzastyle@gmail.com',2
-EXEC agregarClientePersona 'Diana Alondra Canales','01928373-0','3241-651029-876-3','Calle a Apulo, Edificio #42,parcela #2','6003-3212','alondracanales@gmail.com',2
-EXEC agregarClienteEmpresa 'Las Gemas','Metrocentro Cuarta etapa, a la par de Jacarandas','2212-0342','lasgemasmetro@gmail.com',1
-EXEC agregarClienteEmpresa 'Antonella Boutique','Metrocentro San Salvador, local #23','2999-0312','antonellasalon@gmail.com',1
-EXEC agregarClienteEmpresa 'Sant France','Paseo General Escalón, condominio #15, Edificio Azul','2113-4985','santfrance@gmail.com',1
-EXEC agregarClienteEmpresa 'DollarCity Unicentro Soyapango','Unicentro Soyapango San Salvador, local #40','2093-1000','dollacitysoya@gmail.com',1
-EXEC agregarClienteEmpresa 'Gorgeous','Centro comercial la cascada etapa #6,Local #68','2098-3331','Gorgeouscascada@gmail.com',1
-EXEC agregarClientePersona 'Diego Gilberto López Lemus','01294390-2','1254-019402-543-8','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4','2999-6210','diegopresa@gmail.com',2
-EXEC agregarClienteEmpresa 'Star Style','MetroNorte San Salvador, tercera planta local #68','2084-3415','Starstyle@gmail.com',1
-EXEC agregarClienteEmpresa 'Carabana´s','Galerias San Salvador, 1º nivel, local #10','2093-7313','carabanaSS@gmail.com',1
-EXEC agregarClienteEmpresa 'Mega Variety','Plaza Mundo San Salvador, 2º etapa,local #22','2028-4218','mevarietyPM@gmail.com',1
-EXEC agregarClientePersona 'Filipe Ousmane Hernández Capilla','01829300-8','5017-444222-107-2','Calle la sucia, La unión, comercial maria santisima,local 2','7102-6666','ousmandembele@gmail.com',2
-EXEC agregarClienteEmpresa 'Prisma Moda Galerias','Sucursal Galerias, Etapa 1, local #9','2546-0002','prismamodaGAL@gmail.com',1
-EXEC agregarClienteEmpresa 'Branson La cascada','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4','2019-2019','bransoncascada@gmail.com',1
-EXEC agregarClienteEmpresa 'Calvin Klein Galerias','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal','2545-2543','calvinKleingalerias@gmail.com',1
-EXEC agregarClientePersona 'Tomas Alexander Madrid Versa','36451026-2','1432-000192-415-5','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41','6442-1302','versamadriddecima@gmail.com',2
-EXEC agregarClienteEmpresa 'Central´s','Metrocentro San Salvador,2º Nivel, Local #66','2098-4133','centralsdress@gmail.com',1
-EXEC agregarClienteEmpresa 'Dresess Karla','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung','7102-4210','dresseskarl@gmail.com',1
-EXEC agregarClienteEmpresa 'Elegance boutique','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero','2534-7356','eleganceboutiquess@gmail.com',1
-EXEC agregarClienteEmpresa 'Puma Metrocentro','Metrocentro San Salvador, A la par de Restaurante los Cebollines','2309-1221','pumasmetro@gmail.com',1
-EXEC agregarClienteEmpresa 'Elegance T-Shirt','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein','2120-3313','elegandeshirt@gmail.com',1
+EXEC Venta.agregarClientePersona 'Juan Lionel','12345678-9','1234-123456-123-2','Calle las brisas, Av. Chinameca Condominio #4','7321-0998','juanitoLeon@hotmail.com',2
+EXEC Venta.agregarClienteEmpresa 'SIMAN Metrocentro','Sucursal de Metrocento, San Salvador','2542-4421','siman.metrocentro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'ST Jack´s Soyapango','Sucursal Unicentro Soyapango','2353-0983','stjacksoyapango@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Picaras Boutique','Sucursal Metrocentro, Cerca de Adidas','2260-3444','picarasboutique@gmail.com',1
+EXEC Venta.agregarClientePersona 'Leonardo Edenilson Valle','87654321-9','4321-654231-983-5','Boulevar Constitución, atras de Papa Jonh`s','7293-9432','leoValleBoutique@gmail.com',2
+EXEC Venta.agregarClientePersona 'Fernando Roberto Lemus Lemus','01928374-5','3241-028743-876-3','Calle a Apulo, Edificio #45,parcela #40','6023-3212','fernanflores@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Jacarandas','Metrocentro Doceava Etapa, a la par St Jack´s','2200-0332','jacarandasmetro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Carlos Boutique','Plaza Mundo San Salvador, local #53','2999-4322','carlosstyle@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'San Sebastian','Calle a San sebastian, condominio #55, Edificio Rojo','2303-4445','sebastianboutique@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Aqua eco','44 calle 2 Zona 12,Guatemala','2248-6000','AquaEcho@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Style Life','Centro comercial la cascada etapa #1,Local #12','2432-3333','stylelifecascada@gmail.com',1
+EXEC Venta.agregarClientePersona 'Erick Alberto Esquivel Cañas','65784390-2','0192-657402-543-8','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1','2222-2223','xErickaec@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Vida Estilizada','Metrosur San Salvador, segunda planta local #99','2893-4444','vidaestilizada@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Dora´s','Galerias San Salvador, 3º nivel, local #12','2390-3333','dorasStyle@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Garage','Galerias San Salvador,Cerca del cine local #41','2533-3339','garageESA@gmail.com',1
+EXEC Venta.agregarClientePersona 'Ezequiel Pocho Lavezzi Hernández','65780129-8','8888-444222-443-2','Calle el estante, Cabañas, comercial maria purisima,local #47','6555-3333','ezequielpocho@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Prisma Moda Plaza mundo','Sucursal Plaza Mundo, Etapa 2, local #43','2333-4444','prismamodaPM@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Branson Metrocentro','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks','2333-4779','bransonmetrocentro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Calvin Klein Metrocentro','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro','2441-4461','calvinKleinmetroSS@gmail.com',1
+EXEC Venta.agregarClientePersona 'Jimena Abigail Sanchez Guardado','65748309-2','1432-444090-341-5','Calle a Paseo general Escalón, Edificio Verde Local #1','7442-1223','jimenaAbigail@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Carolina´s','Metrocentro San Salvador,1º Nivel, Local #43','2309-3333','carolinas_bouti@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Tatiana´s','Galerias San Salvador, 2º Etapa, nivel #2, local #55','7203-4452','tatiandesign@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Colegio Don Bosco','Soyapango San Salvador, Calle a plan del pino','2000-1123','colegiodonbosco@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Scotiabank','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines','2633-0110','scotiabankss@gmail.com',1
+EXEC Venta.agregarClientePersona 'Kevin Alexander De Bruyne Reyes','23341928-3','5432-345019-245-5','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1','6012-5145','KevinBruyne@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Agua Cristal','San Miguel, El Salvador, Calle la Conquista Edificio Azul','2201-2910','cristalelagua@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'SIMAN Plaza Mundo','Sucursal de Plaza Muno, San Salvador','2549-4421','siman.plazamundo@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'ST Jack´s Metrocentro','Sucursal Metrocentro San Salvador','2883-0983','stjacksometrocentro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Local Boutique','Sucursal Metrocentro, Cerca de ADOC y MD','2940-3414','localboutique@gmail.com',1
+EXEC Venta.agregarClientePersona 'Vanessa Alexandra Carranza','87654797-1','0182-654231-983-5','Boulevar Constitución, atras de Pollo Real','7423-9432','carranzastyle@gmail.com',2
+EXEC Venta.agregarClientePersona 'Diana Alondra Canales','01928373-0','3241-651029-876-3','Calle a Apulo, Edificio #42,parcela #2','6003-3212','alondracanales@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Las Gemas','Metrocentro Cuarta etapa, a la par de Jacarandas','2212-0342','lasgemasmetro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Antonella Boutique','Metrocentro San Salvador, local #23','2999-0312','antonellasalon@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Sant France','Paseo General Escalón, condominio #15, Edificio Azul','2113-4985','santfrance@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'DollarCity Unicentro Soyapango','Unicentro Soyapango San Salvador, local #40','2093-1000','dollacitysoya@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Gorgeous','Centro comercial la cascada etapa #6,Local #68','2098-3331','Gorgeouscascada@gmail.com',1
+EXEC Venta.agregarClientePersona 'Diego Gilberto López Lemus','01294390-2','1254-019402-543-8','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4','2999-6210','diegopresa@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Star Style','MetroNorte San Salvador, tercera planta local #68','2084-3415','Starstyle@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Carabana´s','Galerias San Salvador, 1º nivel, local #10','2093-7313','carabanaSS@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Mega Variety','Plaza Mundo San Salvador, 2º etapa,local #22','2028-4218','mevarietyPM@gmail.com',1
+EXEC Venta.agregarClientePersona 'Filipe Ousmane Hernández Capilla','01829300-8','5017-444222-107-2','Calle la sucia, La unión, comercial maria santisima,local 2','7102-6666','ousmandembele@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Prisma Moda Galerias','Sucursal Galerias, Etapa 1, local #9','2546-0002','prismamodaGAL@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Branson La cascada','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4','2019-2019','bransoncascada@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Calvin Klein Galerias','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal','2545-2543','calvinKleingalerias@gmail.com',1
+EXEC Venta.agregarClientePersona 'Tomas Alexander Madrid Versa','36451026-2','1432-000192-415-5','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41','6442-1302','versamadriddecima@gmail.com',2
+EXEC Venta.agregarClienteEmpresa 'Central´s','Metrocentro San Salvador,2º Nivel, Local #66','2098-4133','centralsdress@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Dresess Karla','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung','7102-4210','dresseskarl@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Elegance boutique','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero','2534-7356','eleganceboutiquess@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Puma Metrocentro','Metrocentro San Salvador, A la par de Restaurante los Cebollines','2309-1221','pumasmetro@gmail.com',1
+EXEC Venta.agregarClienteEmpresa 'Elegance T-Shirt','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein','2120-3313','elegandeshirt@gmail.com',1
 
-EXEC agregarMetodologia 'Normal'
-EXEC agregarMetodologia 'Fasttrack'
+EXEC Produccion.agregarMetodologia 'Normal'
+EXEC Produccion.agregarMetodologia 'Fasttrack'
 
-EXEC agregarModulo 'Módulo 1', 400,1
-EXEC agregarModulo 'Módulo 2', 300,1
-EXEC agregarModulo 'Módulo 3', 300,1
-EXEC agregarModulo 'Módulo 4', 300,1
-EXEC agregarModulo 'Módulo 5', 200,1
-EXEC agregarModulo 'Módulo 6', 250,1
-EXEC agregarModulo 'Módulo 7', 200,1
-EXEC agregarModulo 'Módulo 8', 150,1
-EXEC agregarModulo 'Módulo 9', 300,1
-EXEC agregarModulo 'Módulo 10', 300,1
-EXEC agregarModulo 'FastTrack',125,2
+EXEC Produccion.agregarModulo 'Módulo 1', 400,1
+EXEC Produccion.agregarModulo 'Módulo 2', 300,1
+EXEC Produccion.agregarModulo 'Módulo 3', 300,1
+EXEC Produccion.agregarModulo 'Módulo 4', 300,1
+EXEC Produccion.agregarModulo 'Módulo 5', 200,1
+EXEC Produccion.agregarModulo 'Módulo 6', 250,1
+EXEC Produccion.agregarModulo 'Módulo 7', 200,1
+EXEC Produccion.agregarModulo 'Módulo 8', 150,1
+EXEC Produccion.agregarModulo 'Módulo 9', 300,1
+EXEC Produccion.agregarModulo 'Módulo 10', 300,1
+EXEC Produccion.agregarModulo 'FastTrack',125,2
 
-EXEC agregarFactura '2018-06-15','2018-05-27','2018-05-31','2018-06-01','Calle las brisas, Av. Chinameca Condominio #4',1
-EXEC agregarFactura '2018-09-21','2018-08-27','2018-09-06','2018-09-07','Sucursal de Metrocento, San Salvador',2
-EXEC agregarFactura '2018-08-22','2018-05-27','2018-08-07','2018-08-08','Sucursal Unicentro Soyapango',3
-EXEC agregarFactura '2018-07-17','2018-07-27','2018-07-02','2018-07-03','Sucursal Metrocentro, Cerca de Adidas',4
-EXEC agregarFactura '2018-01-19','2017-12-25','2018-01-04','2018-01-05','Boulevar Constitución, atras de Papa Jonh`s',5
-EXEC agregarFactura '2018-01-16','2017-12-21','2018-01-02','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
-EXEC agregarFactura '2018-02-25','2018-01-27','2018-02-10','2018-02-11','Metrocentro Doceava Etapa, a la par St Jack´s',7
-EXEC agregarFactura '2018-10-24','2018-09-27','2018-10-09','2018-10-10','Plaza Mundo San Salvador, local #53',8
-EXEC agregarFactura '2018-09-29','2018-08-27','2018-09-14','2018-09-15','Calle a San sebastian, condominio #55, Edificio Rojo',9
-EXEC agregarFactura '2018-05-26','2018-04-27','2018-05-11','2018-05-12','44 calle 2 Zona 12,Guatemala',10
-EXEC agregarFactura '2018-04-21','2018-03-27','2018-04-06','2018-04-07','Centro comercial la cascada etapa #1,Local #12',11
-EXEC agregarFactura '2018-03-20','2018-02-27','2018-03-05','2018-03-06','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1',12
-EXEC agregarFactura '2018-06-28','2018-05-27','2018-06-13','2018-06-14','Metrosur San Salvador, segunda planta local #99',13
-EXEC agregarFactura '2018-05-30','2018-04-27','2018-05-15','2018-05-16','Galerias San Salvador, 3º nivel, local #12',14
-EXEC agregarFactura '2018-03-29','2018-02-27','2018-03-14','2018-03-15','Galerias San Salvador,Cerca del cine local #41',15
-EXEC agregarFactura '2018-09-16','2018-08-27','2018-09-01','2018-09-02','Calle el estante, Cabañas, comercial maria purisima,local #47',16
-EXEC agregarFactura '2018-03-26','2018-02-27','2018-03-11','2018-03-12','Sucursal Plaza Mundo, Etapa 2, local #43',17
-EXEC agregarFactura '2018-08-31','2018-07-27','2018-08-16','2018-08-17','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks',18
-EXEC agregarFactura '2018-08-20','2018-07-27','2018-08-05','2018-08-06','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro',19
-EXEC agregarFactura '2018-05-15','2018-04-27','2018-04-30','2018-05-01','Calle a Paseo general Escalón, Edificio Verde Local #1',20
-EXEC agregarFactura '2018-04-02','2018-03-27','2018-03-18','2018-03-19','Metrocentro San Salvador,1º Nivel, Local #43',21
-EXEC agregarFactura '2018-04-22','2018-03-27','2018-04-07','2018-04-08','Galerias San Salvador, 2º Etapa, nivel #2, local #55',22
-EXEC agregarFactura '2018-03-27','2018-02-27','2018-03-12','2018-03-13','Soyapango San Salvador, Calle a plan del pino',23
-EXEC agregarFactura '2018-02-28','2018-01-27','2018-02-13','2018-02-14','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines',24
-EXEC agregarFactura '2018-01-20','2017-12-20','2018-01-05','2018-01-06','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1',25
-EXEC agregarFactura '2018-04-15','2018-03-21','2018-03-31','2018-04-01','San Miguel, El Salvador, Calle la Conquista Edificio Azul',26
-EXEC agregarFactura '2018-08-21','2018-07-23','2018-08-06','2018-08-07','Sucursal de Plaza Mundo, San Salvador',27
-EXEC agregarFactura '2018-07-22','2018-06-26','2018-07-07','2018-07-08','Sucursal Metrocentro San Salvador',28
-EXEC agregarFactura '2018-06-17','2018-05-29','2018-06-02','2018-06-03','Sucursal Metrocentro, Cerca de ADOC y MD',29
-EXEC agregarFactura '2018-02-19','2018-01-25','2018-02-04','2018-02-05','Boulevar Constitución, atras de Pollo Real',30
-EXEC agregarFactura '2018-02-16','2018-01-21','2018-02-01','2018-02-02','Calle a Apulo, Edificio #42,parcela #2',31
-EXEC agregarFactura '2018-03-25','2018-02-27','2018-03-10','2018-03-11','Metrocentro Cuarta etapa, a la par de Jacarandas',32
-EXEC agregarFactura '2018-09-24','2018-08-29','2018-09-09','2018-09-10','Metrocentro San Salvador, local #23',33
-EXEC agregarFactura '2018-08-29','2018-07-20','2018-08-14','2018-08-15','Paseo General Escalón, condominio #15, Edificio Azul',34
-EXEC agregarFactura '2018-04-26','2018-03-23','2018-04-11','2018-04-12','Unicentro Soyapango San Salvador, local #40',35
-EXEC agregarFactura '2018-03-21','2018-02-25','2018-03-06','2018-03-07','Centro comercial la cascada etapa #6,Local #68',36
-EXEC agregarFactura '2018-02-20','2018-01-27','2018-02-05','2018-02-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
-EXEC agregarFactura '2018-05-28','2018-04-26','2018-05-13','2018-05-14','MetroNorte San Salvador, tercera planta local #68',38
-EXEC agregarFactura '2018-04-30','2018-05-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
-EXEC agregarFactura '2018-02-29','2018-01-22','2018-02-14','2018-02-15','Plaza Mundo San Salvador, 2º etapa,local #22',40
-EXEC agregarFactura '2018-08-16','2018-07-20','2018-08-01','2018-08-02','Calle la sucia, La unión, comercial maria santisima,local 2',41
-EXEC agregarFactura '2018-02-26','2018-01-27','2018-02-11','2018-02-12','Sucursal Galerias, Etapa 1, local #9',42
-EXEC agregarFactura '2018-07-31','2018-06-27','2018-07-16','2018-07-17','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4',43
-EXEC agregarFactura '2018-07-20','2018-06-27','2018-07-05','2018-07-06','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal',44
-EXEC agregarFactura '2018-04-15','2018-03-27','2018-03-31','2018-04-01','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41',45
-EXEC agregarFactura '2018-03-02','2018-02-27','2018-02-16','2018-02-17','Metrocentro San Salvador,2º Nivel, Local #66',46
-EXEC agregarFactura '2018-03-22','2018-02-27','2018-03-07','2018-03-08','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung',47
-EXEC agregarFactura '2018-02-27','2018-01-27','2018-02-12','2018-02-13','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero',48
-EXEC agregarFactura '2018-01-28','2017-12-27','2018-01-13','2018-01-14','Metrocentro San Salvador, A la par de Restaurante los Cebollines',49
-EXEC agregarFactura '2018-02-20','2018-01-20','2018-02-05','2018-02-06','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein',50
+EXEC Venta.agregarFactura '2018-06-15','2018-05-27','2018-05-31','2018-06-01','Calle las brisas, Av. Chinameca Condominio #4',1
+EXEC Venta.agregarFactura '2018-09-21','2018-08-27','2018-09-06','2018-09-07','Sucursal de Metrocento, San Salvador',2
+EXEC Venta.agregarFactura '2018-08-22','2018-05-27','2018-08-07','2018-08-08','Sucursal Unicentro Soyapango',3
+EXEC Venta.agregarFactura '2018-07-17','2018-07-27','2018-07-02','2018-07-03','Sucursal Metrocentro, Cerca de Adidas',4
+EXEC Venta.agregarFactura '2018-01-19','2017-12-25','2018-01-04','2018-01-05','Boulevar Constitución, atras de Papa Jonh`s',5
+EXEC Venta.agregarFactura '2018-01-16','2017-12-21','2018-01-02','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
+EXEC Venta.agregarFactura '2018-02-25','2018-01-27','2018-02-10','2018-02-11','Metrocentro Doceava Etapa, a la par St Jack´s',7
+EXEC Venta.agregarFactura '2018-10-24','2018-09-27','2018-10-09','2018-10-10','Plaza Mundo San Salvador, local #53',8
+EXEC Venta.agregarFactura '2018-09-29','2018-08-27','2018-09-14','2018-09-15','Calle a San sebastian, condominio #55, Edificio Rojo',9
+EXEC Venta.agregarFactura '2018-05-26','2018-04-27','2018-05-11','2018-05-12','44 calle 2 Zona 12,Guatemala',10
+EXEC Venta.agregarFactura '2018-04-21','2018-03-27','2018-04-06','2018-04-07','Centro comercial la cascada etapa #1,Local #12',11
+EXEC Venta.agregarFactura '2018-03-20','2018-02-27','2018-03-05','2018-03-06','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1',12
+EXEC Venta.agregarFactura '2018-06-28','2018-05-27','2018-06-13','2018-06-14','Metrosur San Salvador, segunda planta local #99',13
+EXEC Venta.agregarFactura '2018-05-30','2018-04-27','2018-05-15','2018-05-16','Galerias San Salvador, 3º nivel, local #12',14
+EXEC Venta.agregarFactura '2018-03-29','2018-02-27','2018-03-14','2018-03-15','Galerias San Salvador,Cerca del cine local #41',15
+EXEC Venta.agregarFactura '2018-09-16','2018-08-27','2018-09-01','2018-09-02','Calle el estante, Cabañas, comercial maria purisima,local #47',16
+EXEC Venta.agregarFactura '2018-03-26','2018-02-27','2018-03-11','2018-03-12','Sucursal Plaza Mundo, Etapa 2, local #43',17
+EXEC Venta.agregarFactura '2018-08-31','2018-07-27','2018-08-16','2018-08-17','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks',18
+EXEC Venta.agregarFactura '2018-08-20','2018-07-27','2018-08-05','2018-08-06','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro',19
+EXEC Venta.agregarFactura '2018-05-15','2018-04-27','2018-04-30','2018-05-01','Calle a Paseo general Escalón, Edificio Verde Local #1',20
+EXEC Venta.agregarFactura '2018-04-02','2018-03-27','2018-03-18','2018-03-19','Metrocentro San Salvador,1º Nivel, Local #43',21
+EXEC Venta.agregarFactura '2018-04-22','2018-03-27','2018-04-07','2018-04-08','Galerias San Salvador, 2º Etapa, nivel #2, local #55',22
+EXEC Venta.agregarFactura '2018-03-27','2018-02-27','2018-03-12','2018-03-13','Soyapango San Salvador, Calle a plan del pino',23
+EXEC Venta.agregarFactura '2018-02-28','2018-01-27','2018-02-13','2018-02-14','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines',24
+EXEC Venta.agregarFactura '2018-01-20','2017-12-20','2018-01-05','2018-01-06','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1',25
+EXEC Venta.agregarFactura '2018-04-15','2018-03-21','2018-03-31','2018-04-01','San Miguel, El Salvador, Calle la Conquista Edificio Azul',26
+EXEC Venta.agregarFactura '2018-08-21','2018-07-23','2018-08-06','2018-08-07','Sucursal de Plaza Mundo, San Salvador',27
+EXEC Venta.agregarFactura '2018-07-22','2018-06-26','2018-07-07','2018-07-08','Sucursal Metrocentro San Salvador',28
+EXEC Venta.agregarFactura '2018-06-17','2018-05-29','2018-06-02','2018-06-03','Sucursal Metrocentro, Cerca de ADOC y MD',29
+EXEC Venta.agregarFactura '2018-02-19','2018-01-25','2018-02-04','2018-02-05','Boulevar Constitución, atras de Pollo Real',30
+EXEC Venta.agregarFactura '2018-02-16','2018-01-21','2018-02-01','2018-02-02','Calle a Apulo, Edificio #42,parcela #2',31
+EXEC Venta.agregarFactura '2018-03-25','2018-02-27','2018-03-10','2018-03-11','Metrocentro Cuarta etapa, a la par de Jacarandas',32
+EXEC Venta.agregarFactura '2018-09-24','2018-08-29','2018-09-09','2018-09-10','Metrocentro San Salvador, local #23',33
+EXEC Venta.agregarFactura '2018-08-29','2018-07-20','2018-08-14','2018-08-15','Paseo General Escalón, condominio #15, Edificio Azul',34
+EXEC Venta.agregarFactura '2018-04-26','2018-03-23','2018-04-11','2018-04-12','Unicentro Soyapango San Salvador, local #40',35
+EXEC Venta.agregarFactura '2018-03-21','2018-02-25','2018-03-06','2018-03-07','Centro comercial la cascada etapa #6,Local #68',36
+EXEC Venta.agregarFactura '2018-02-20','2018-01-27','2018-02-05','2018-02-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
+EXEC Venta.agregarFactura '2018-05-28','2018-04-26','2018-05-13','2018-05-14','MetroNorte San Salvador, tercera planta local #68',38
+EXEC Venta.agregarFactura '2018-04-30','2018-05-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
+EXEC Venta.agregarFactura '2018-02-29','2018-01-22','2018-02-14','2018-02-15','Plaza Mundo San Salvador, 2º etapa,local #22',40
+EXEC Venta.agregarFactura '2018-08-16','2018-07-20','2018-08-01','2018-08-02','Calle la sucia, La unión, comercial maria santisima,local 2',41
+EXEC Venta.agregarFactura '2018-02-26','2018-01-27','2018-02-11','2018-02-12','Sucursal Galerias, Etapa 1, local #9',42
+EXEC Venta.agregarFactura '2018-07-31','2018-06-27','2018-07-16','2018-07-17','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4',43
+EXEC Venta.agregarFactura '2018-07-20','2018-06-27','2018-07-05','2018-07-06','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal',44
+EXEC Venta.agregarFactura '2018-04-15','2018-03-27','2018-03-31','2018-04-01','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41',45
+EXEC Venta.agregarFactura '2018-03-02','2018-02-27','2018-02-16','2018-02-17','Metrocentro San Salvador,2º Nivel, Local #66',46
+EXEC Venta.agregarFactura '2018-03-22','2018-02-27','2018-03-07','2018-03-08','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung',47
+EXEC Venta.agregarFactura '2018-02-27','2018-01-27','2018-02-12','2018-02-13','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero',48
+EXEC Venta.agregarFactura '2018-01-28','2017-12-27','2018-01-13','2018-01-14','Metrocentro San Salvador, A la par de Restaurante los Cebollines',49
+EXEC Venta.agregarFactura '2018-02-20','2018-01-20','2018-02-05','2018-02-06','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein',50
 
-EXEC agregarTipoVariante 'BLANKS'
-EXEC agregarTipoVariante 'SCREEN PRINTING'
-EXEC agregarTipoVariante 'SUBLIMATION'
+EXEC Produccion.agregarTipoVariante 'BLANKS'
+EXEC Produccion.agregarTipoVariante 'SCREEN PRINTING'
+EXEC Produccion.agregarTipoVariante 'SUBLIMATION'
 
-EXEC agregarDetalles 'Pecho Completo',0.75,8 
-EXEC agregarDetalles 'Pecho Derecho',0.55,8
-EXEC agregarDetalles 'Manga Derecha',0.55,8
+EXEC Produccion.agregarDetalles 'Pecho Completo',0.75,8 
+EXEC Produccion.agregarDetalles 'Pecho Derecho',0.55,8
+EXEC Produccion.agregarDetalles 'Manga Derecha',0.55,8
 --revisar
-EXEC agregarVarianteDetalle 2,1
+EXEC Produccion.agregarVarianteDetalle 2,1
 
-EXEC agregarFlujoTrabajo 2
+EXEC Produccion.agregarFlujoTrabajo 2
 
-EXEC agregarFlujoProceso 1,1
+EXEC Produccion.agregarFlujoProceso 1,1
 
-EXEC agregarEstadoSeguimiento 'En proceso'
-EXEC agregarEstadoSeguimiento 'Finalizado'
-EXEC agregarEstadoSeguimiento 'Pendiente'
+EXEC Produccion.agregarEstadoSeguimiento 'En proceso'
+EXEC Produccion.agregarEstadoSeguimiento 'Finalizado'
+EXEC Produccion.agregarEstadoSeguimiento 'Pendiente'
 
-EXEC agregarEstadoOrden 'En proceso'
-EXEC agregarEstadoOrden 'Finalizado'
-EXEC agregarEstadoOrden 'Pendiente'
+EXEC Produccion.agregarEstadoOrden 'En proceso'
+EXEC Produccion.agregarEstadoOrden 'Finalizado'
+EXEC Produccion.agregarEstadoOrden 'Pendiente'
 
-EXEC agregarPrenda 'Camisa',5.75
-EXEC agregarPrenda 'Pantalon',8.75
-EXEC agregarPrenda 'Suéter',11.75
-EXEC agregarPrenda 'Sudadera',11.75
+EXEC Producto.agregarPrenda 'Camisa',5.75
+EXEC Producto.agregarPrenda 'Pantalon',8.75
+EXEC Producto.agregarPrenda 'Suéter',11.75
+EXEC Producto.agregarPrenda 'Sudadera',11.75
 
-EXEC agregarEstilo 'CH350',1
+EXEC Producto.agregarEstilo 'CH350',1
 
-EXEC agregarTipoTalla 'small','S'
-exec agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
-exec agregarTipoTalla @nombre = 'Large', @abreviacion = 'L'
-exec agregarTipoTalla @nombre = 'Extra large', @abreviacion = 'XL'
-exec agregarTipoTalla @nombre = 'Extra extra small', @abreviacion = '2XS'
-exec agregarTipoTalla @nombre = 'Extra small', @abreviacion = 'XS'
-exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '2XL'
-exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '3XL'
-exec agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '4XL'
+EXEC Producto.agregarTipoTalla 'small','S'
+exec Producto.agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
+exec Producto.agregarTipoTalla @nombre = 'Large', @abreviacion = 'L'
+exec Producto.agregarTipoTalla @nombre = 'Extra large', @abreviacion = 'XL'
+exec Producto.agregarTipoTalla @nombre = 'Extra extra small', @abreviacion = '2XS'
+exec Producto.agregarTipoTalla @nombre = 'Extra small', @abreviacion = 'XS'
+exec Producto.agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '2XL'
+exec Producto.agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '3XL'
+exec Producto.agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '4XL'
 
-EXEC agregarUbicacion 'Cintura'
-exec agregarUbicacion @ubicacion = 'Pecho'
-exec agregarUbicacion @ubicacion = 'Cintura'
-exec agregarUbicacion @ubicacion = 'Trasero'
-exec agregarUbicacion @ubicacion = 'Tiro'
-exec agregarUbicacion @ubicacion = 'Manga'
-exec agregarUbicacion @ubicacion = 'Costura interior'
-exec agregarUbicacion @ubicacion = 'Largo pantalon'
-exec agregarUbicacion @ubicacion = 'Ancho espalda'
-exec agregarUbicacion @ubicacion = 'Talle espalda'
-exec agregarUbicacion @ubicacion = 'Cuello'
-exec agregarUbicacion @ubicacion = 'Entrepierna'
-exec agregarUbicacion @ubicacion = 'Manga corta'
-exec agregarUbicacion @ubicacion = 'Largo rodilla'
-exec agregarUbicacion @ubicacion = 'Contorno rodilla'
-exec agregarUbicacion @ubicacion = 'Cadera'
-exec agregarUbicacion @ubicacion = 'Largo camisa'
-exec agregarUbicacion @ubicacion = 'Manga larga'
+exec Producto.agregarUbicacion @ubicacion = 'Pecho'
+exec Producto.agregarUbicacion @ubicacion = 'Cintura'
+exec Producto.agregarUbicacion @ubicacion = 'Trasero'
+exec Producto.agregarUbicacion @ubicacion = 'Tiro'
+exec Producto.agregarUbicacion @ubicacion = 'Manga'
+exec Producto.agregarUbicacion @ubicacion = 'Costura interior'
+exec Producto.agregarUbicacion @ubicacion = 'Largo pantalon'
+exec Producto.agregarUbicacion @ubicacion = 'Ancho espalda'
+exec Producto.agregarUbicacion @ubicacion = 'Talle espalda'
+exec Producto.agregarUbicacion @ubicacion = 'Cuello'
+exec Producto.agregarUbicacion @ubicacion = 'Entrepierna'
+exec Producto.agregarUbicacion @ubicacion = 'Manga corta'
+exec Producto.agregarUbicacion @ubicacion = 'Largo rodilla'
+exec Producto.agregarUbicacion @ubicacion = 'Contorno rodilla'
+exec Producto.agregarUbicacion @ubicacion = 'Cadera'
+exec Producto.agregarUbicacion @ubicacion = 'Largo camisa'
+exec Producto.agregarUbicacion @ubicacion = 'Manga larga'
 
-EXEC agregarTalla 1.00,1,1,1 --Aqui debe coincidir con los registro del PDF
-exec agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 1
+EXEC Producto.agregarTalla 1.00,1,1,1 --Aqui debe coincidir con los registro del PDF
+exec Producto.agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 1
 
-exec agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 1
-exec agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 1
 
-exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
-exec agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 1
-exec agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 1
 
-exec agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
-exec agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
-exec agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 1
-exec agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 1
+exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 1
 
 -- Camisa --
-EXEC agregarMedida 86.5,1,1
-exec agregarMedida @dimension = 36, @idTalla = 1, @idUbicacion = 10
-exec agregarMedida @dimension = 72, @idTalla = 1, @idUbicacion = 16
-exec agregarMedida @dimension = 25, @idTalla = 1, @idUbicacion = 17
+EXEC Producto.agregarMedida 86.5,1,1
+exec Producto.agregarMedida @dimension = 36, @idTalla = 1, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 72, @idTalla = 1, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 25, @idTalla = 1, @idUbicacion = 17
 
 -- Pantalon --
-EXEC agregarMedida 30.5,2,1
-exec agregarMedida @dimension = 40, @idTalla = 2, @idUbicacion = 15
-exec agregarMedida @dimension = 80, @idTalla = 2, @idUbicacion = 7
-exec agregarMedida @dimension = 53, @idTalla = 2, @idUbicacion = 12
+EXEC Producto.agregarMedida 30.5,2,1
+exec Producto.agregarMedida @dimension = 40, @idTalla = 2, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 80, @idTalla = 2, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 53, @idTalla = 2, @idUbicacion = 12
 
 -- Sueter--
-exec agregarMedida @dimension = 38, @idTalla = 3, @idUbicacion = 17
-exec agregarMedida @dimension = 54, @idTalla = 3, @idUbicacion = 16
-exec agregarMedida @dimension = 48, @idTalla = 3, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 38, @idTalla = 3, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 54, @idTalla = 3, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 48, @idTalla = 3, @idUbicacion = 15
 
 -- Sudadera--
-exec agregarMedida @dimension = 51, @idTalla = 4, @idUbicacion = 17
-exec agregarMedida @dimension = 70, @idTalla = 4, @idUbicacion = 16
-exec agregarMedida @dimension = 60, @idTalla = 4, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 51, @idTalla = 4, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 70, @idTalla = 4, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 60, @idTalla = 4, @idUbicacion = 15
 
 EXEC agregarColor 'Azul'
 EXEC agregarColor 'Amarillo'
@@ -3124,636 +3142,633 @@ EXEC agregarColor 'Pistacho'
 EXEC agregarColor 'Verde Musgo'
 EXEC agregarColor 'Ciruela'
 
-EXEC agregartipoUnidadMedidas 'YDS','Yardas'
-EXEC agregartipoUnidadMedidas 'GAL','Galones'
-EXEC agregartipoUnidadMedidas 'LTR','Litros'
-EXEC agregartipoUnidadMedidas 'UDS','Unidades'
+EXEC Produccion.agregartipoUnidadMedidas 'YDS','Yardas'
+EXEC Produccion.agregartipoUnidadMedidas 'GAL','Galones'
+EXEC Produccion.agregartipoUnidadMedidas 'LTR','Litros'
+EXEC Produccion.agregartipoUnidadMedidas 'UDS','Unidades'
 
-EXEC agregarTipoMateriaPrima 'Tela','YDS'
-EXEC agregarTipoMateriaPrima 'Hilo', 'YDS'
-EXEC agregarTipoMateriaPrima 'Cordones', 'YDS'
-EXEC agregarTipoMateriaPrima 'Viñetas', 'UDS'
-EXEC agregarTipoMateriaPrima 'Tintas', 'LTR'
+EXEC Bodega.agregarTipoMateriaPrima 'Tela','YDS'
+EXEC Bodega.agregarTipoMateriaPrima 'Hilo', 'YDS'
+EXEC Bodega.agregarTipoMateriaPrima 'Cordones', 'YDS'
+EXEC Bodega.agregarTipoMateriaPrima 'Viñetas', 'UDS'
+EXEC Bodega.agregarTipoMateriaPrima 'Tintas', 'LTR'
 
-EXEC agregarEstante 'A'
-EXEC agregarEstante 'B'
-EXEC agregarEstante 'C'
-EXEC agregarEstante 'D'
-EXEC agregarEstante 'E'
-EXEC agregarEstante 'F'
-EXEC agregarEstante 'G'
-EXEC agregarEstante 'H'
+EXEC Bodega.agregarEstante 'A'
+EXEC Bodega.agregarEstante 'B'
+EXEC Bodega.agregarEstante 'C'
+EXEC Bodega.agregarEstante 'D'
+EXEC Bodega.agregarEstante 'E'
+EXEC Bodega.agregarEstante 'F'
+EXEC Bodega.agregarEstante 'G'
+EXEC Bodega.agregarEstante 'H'
 
-EXEC agregarNivel 1
-EXEC agregarNivel 2
-EXEC agregarNivel 3
-EXEC agregarNivel 4
-EXEC agregarNivel 5
-EXEC agregarNivel 6
-EXEC agregarNivel 7
-EXEC agregarNivel 8
+EXEC Bodega.agregarNivel 1
+EXEC Bodega.agregarNivel 2
+EXEC Bodega.agregarNivel 3
+EXEC Bodega.agregarNivel 4
+EXEC Bodega.agregarNivel 5
+EXEC Bodega.agregarNivel 6
+EXEC Bodega.agregarNivel 7
+EXEC Bodega.agregarNivel 8
 
-EXEC agregarColumna 1
-EXEC agregarColumna 2
-EXEC agregarColumna 3
-EXEC agregarColumna 4
-EXEC agregarColumna 5
-EXEC agregarColumna 6
-EXEC agregarColumna 7
-EXEC agregarColumna 8
-EXEC agregarColumna 9
+EXEC Bodega.agregarColumna 1
+EXEC Bodega.agregarColumna 2
+EXEC Bodega.agregarColumna 3
+EXEC Bodega.agregarColumna 4
+EXEC Bodega.agregarColumna 5
+EXEC Bodega.agregarColumna 6
+EXEC Bodega.agregarColumna 7
+EXEC Bodega.agregarColumna 8
+EXEC Bodega.agregarColumna 9
 
-EXEC agregarCompartimiento A11,0
-EXEC agregarCompartimiento A12,0
-EXEC agregarCompartimiento A13,0
-EXEC agregarCompartimiento A14,0
-EXEC agregarCompartimiento A15,0
-EXEC agregarCompartimiento A16,0
-EXEC agregarCompartimiento A17,0
-EXEC agregarCompartimiento A18,0
-EXEC agregarCompartimiento A19,0
-EXEC agregarCompartimiento A21,0
-EXEC agregarCompartimiento A22,0
-EXEC agregarCompartimiento A23,0
-EXEC agregarCompartimiento A24,0
-EXEC agregarCompartimiento A25,0
-EXEC agregarCompartimiento A26,0
-EXEC agregarCompartimiento A27,0
-EXEC agregarCompartimiento A28,0
-EXEC agregarCompartimiento A29,0
-EXEC agregarCompartimiento A31,0
-EXEC agregarCompartimiento A32,0
-EXEC agregarCompartimiento A33,0
-EXEC agregarCompartimiento A34,0
-EXEC agregarCompartimiento A35,0
-EXEC agregarCompartimiento A36,0
-EXEC agregarCompartimiento A37,0
-EXEC agregarCompartimiento A38,0
-EXEC agregarCompartimiento A39,0
-EXEC agregarCompartimiento A41,0
-EXEC agregarCompartimiento A42,0
-EXEC agregarCompartimiento A43,0
-EXEC agregarCompartimiento A44,0
-EXEC agregarCompartimiento A45,0
-EXEC agregarCompartimiento A46,0
-EXEC agregarCompartimiento A47,0
-EXEC agregarCompartimiento A48,0
-EXEC agregarCompartimiento A49,0
-EXEC agregarCompartimiento A51,0
-EXEC agregarCompartimiento A52,0
-EXEC agregarCompartimiento A53,0
-EXEC agregarCompartimiento A54,0
-EXEC agregarCompartimiento A55,0
-EXEC agregarCompartimiento A56,0
-EXEC agregarCompartimiento A57,0
-EXEC agregarCompartimiento A58,0
-EXEC agregarCompartimiento A59,0
-EXEC agregarCompartimiento A61,0
-EXEC agregarCompartimiento A62,0
-EXEC agregarCompartimiento A63,0
-EXEC agregarCompartimiento A64,0
-EXEC agregarCompartimiento A65,0
-EXEC agregarCompartimiento A66,0
-EXEC agregarCompartimiento A67,0
-EXEC agregarCompartimiento A68,0
-EXEC agregarCompartimiento A69,0
-EXEC agregarCompartimiento A71,0
-EXEC agregarCompartimiento A72,0
-EXEC agregarCompartimiento A73,0
-EXEC agregarCompartimiento A74,0
-EXEC agregarCompartimiento A75,0
-EXEC agregarCompartimiento A76,0
-EXEC agregarCompartimiento A77,0
-EXEC agregarCompartimiento A78,0
-EXEC agregarCompartimiento A79,0
-EXEC agregarCompartimiento A81,0
-EXEC agregarCompartimiento A82,0
-EXEC agregarCompartimiento A83,0
-EXEC agregarCompartimiento A84,0
-EXEC agregarCompartimiento A85,0
-EXEC agregarCompartimiento A86,0
-EXEC agregarCompartimiento A87,0
-EXEC agregarCompartimiento A88,0
-EXEC agregarCompartimiento A89,0
-EXEC agregarCompartimiento B11,0
-EXEC agregarCompartimiento B12,0
-EXEC agregarCompartimiento B13,0
-EXEC agregarCompartimiento B14,0
-EXEC agregarCompartimiento B15,0
-EXEC agregarCompartimiento B16,0
-EXEC agregarCompartimiento B17,0
-EXEC agregarCompartimiento B18,0
-EXEC agregarCompartimiento B19,0
-EXEC agregarCompartimiento B21,0
-EXEC agregarCompartimiento B22,0
-EXEC agregarCompartimiento B23,0
-EXEC agregarCompartimiento B24,0
-EXEC agregarCompartimiento B25,0
-EXEC agregarCompartimiento B26,0
-EXEC agregarCompartimiento B27,0
-EXEC agregarCompartimiento B28,0
-EXEC agregarCompartimiento B29,0
-EXEC agregarCompartimiento B31,0
-EXEC agregarCompartimiento B32,0
-EXEC agregarCompartimiento B33,0
-EXEC agregarCompartimiento B34,0
-EXEC agregarCompartimiento B35,0
-EXEC agregarCompartimiento B36,0
-EXEC agregarCompartimiento B37,0
-EXEC agregarCompartimiento B38,0
-EXEC agregarCompartimiento B39,0
-EXEC agregarCompartimiento B41,0
-EXEC agregarCompartimiento B42,0
-EXEC agregarCompartimiento B43,0
-EXEC agregarCompartimiento B44,0
-EXEC agregarCompartimiento B45,0
-EXEC agregarCompartimiento B46,0
-EXEC agregarCompartimiento B47,0
-EXEC agregarCompartimiento B48,0
-EXEC agregarCompartimiento B49,0
-EXEC agregarCompartimiento B51,0
-EXEC agregarCompartimiento B52,0
-EXEC agregarCompartimiento B53,0
-EXEC agregarCompartimiento B54,0
-EXEC agregarCompartimiento B55,0
-EXEC agregarCompartimiento B56,0
-EXEC agregarCompartimiento B57,0
-EXEC agregarCompartimiento B58,0
-EXEC agregarCompartimiento B59,0
-EXEC agregarCompartimiento B61,0
-EXEC agregarCompartimiento B62,0
-EXEC agregarCompartimiento B63,0
-EXEC agregarCompartimiento B64,0
-EXEC agregarCompartimiento B65,0
-EXEC agregarCompartimiento B66,0
-EXEC agregarCompartimiento B67,0
-EXEC agregarCompartimiento B68,0
-EXEC agregarCompartimiento B69,0
-EXEC agregarCompartimiento B71,0
-EXEC agregarCompartimiento B72,0
-EXEC agregarCompartimiento B73,0
-EXEC agregarCompartimiento B74,0
-EXEC agregarCompartimiento B75,0
-EXEC agregarCompartimiento B76,0
-EXEC agregarCompartimiento B77,0
-EXEC agregarCompartimiento B78,0
-EXEC agregarCompartimiento B79,0
-EXEC agregarCompartimiento B81,0
-EXEC agregarCompartimiento B82,0
-EXEC agregarCompartimiento B83,0
-EXEC agregarCompartimiento B84,0
-EXEC agregarCompartimiento B85,0
-EXEC agregarCompartimiento B86,0
-EXEC agregarCompartimiento B87,0
-EXEC agregarCompartimiento B88,0
-EXEC agregarCompartimiento B89,0
-EXEC agregarCompartimiento C11,0
-EXEC agregarCompartimiento C12,0
-EXEC agregarCompartimiento C13,0
-EXEC agregarCompartimiento C14,0
-EXEC agregarCompartimiento C15,0
-EXEC agregarCompartimiento C16,0
-EXEC agregarCompartimiento C17,0
-EXEC agregarCompartimiento C18,0
-EXEC agregarCompartimiento C19,0
-EXEC agregarCompartimiento C21,0
-EXEC agregarCompartimiento C22,0
-EXEC agregarCompartimiento C23,0
-EXEC agregarCompartimiento C24,0
-EXEC agregarCompartimiento C25,0
-EXEC agregarCompartimiento C26,0
-EXEC agregarCompartimiento C27,0
-EXEC agregarCompartimiento C28,0
-EXEC agregarCompartimiento C29,0
-EXEC agregarCompartimiento C31,0
-EXEC agregarCompartimiento C32,0
-EXEC agregarCompartimiento C33,0
-EXEC agregarCompartimiento C34,0
-EXEC agregarCompartimiento C35,0
-EXEC agregarCompartimiento C36,0
-EXEC agregarCompartimiento C37,0
-EXEC agregarCompartimiento C38,0
-EXEC agregarCompartimiento C39,0
-EXEC agregarCompartimiento C41,0
-EXEC agregarCompartimiento C42,0
-EXEC agregarCompartimiento C43,0
-EXEC agregarCompartimiento C44,0
-EXEC agregarCompartimiento C45,0
-EXEC agregarCompartimiento C46,0
-EXEC agregarCompartimiento C47,0
-EXEC agregarCompartimiento C48,0
-EXEC agregarCompartimiento C49,0
-EXEC agregarCompartimiento C51,0
-EXEC agregarCompartimiento C52,0
-EXEC agregarCompartimiento C53,0
-EXEC agregarCompartimiento C54,0
-EXEC agregarCompartimiento C55,0
-EXEC agregarCompartimiento C56,0
-EXEC agregarCompartimiento C57,0
-EXEC agregarCompartimiento C58,0
-EXEC agregarCompartimiento C59,0
-EXEC agregarCompartimiento C61,0
-EXEC agregarCompartimiento C62,0
-EXEC agregarCompartimiento C63,0
-EXEC agregarCompartimiento C64,0
-EXEC agregarCompartimiento C65,0
-EXEC agregarCompartimiento C66,0
-EXEC agregarCompartimiento C67,0
-EXEC agregarCompartimiento C68,0
-EXEC agregarCompartimiento C69,0
-EXEC agregarCompartimiento C71,0
-EXEC agregarCompartimiento C72,0
-EXEC agregarCompartimiento C73,0
-EXEC agregarCompartimiento C74,0
-EXEC agregarCompartimiento C75,0
-EXEC agregarCompartimiento C76,0
-EXEC agregarCompartimiento C77,0
-EXEC agregarCompartimiento C78,0
-EXEC agregarCompartimiento C79,0
-EXEC agregarCompartimiento C81,0
-EXEC agregarCompartimiento C82,0
-EXEC agregarCompartimiento C83,0
-EXEC agregarCompartimiento C84,0
-EXEC agregarCompartimiento C85,0
-EXEC agregarCompartimiento C86,0
-EXEC agregarCompartimiento C87,0
-EXEC agregarCompartimiento C88,0
-EXEC agregarCompartimiento C89,0
-EXEC agregarCompartimiento D11,0
-EXEC agregarCompartimiento D12,0
-EXEC agregarCompartimiento D13,0
-EXEC agregarCompartimiento D14,0
-EXEC agregarCompartimiento D15,0
-EXEC agregarCompartimiento D16,0
-EXEC agregarCompartimiento D17,0
-EXEC agregarCompartimiento D18,0
-EXEC agregarCompartimiento D19,0
-EXEC agregarCompartimiento D21,0
-EXEC agregarCompartimiento D22,0
-EXEC agregarCompartimiento D23,0
-EXEC agregarCompartimiento D24,0
-EXEC agregarCompartimiento D25,0
-EXEC agregarCompartimiento D26,0
-EXEC agregarCompartimiento D27,0
-EXEC agregarCompartimiento D28,0
-EXEC agregarCompartimiento D29,0
-EXEC agregarCompartimiento D31,0
-EXEC agregarCompartimiento D32,0
-EXEC agregarCompartimiento D33,0
-EXEC agregarCompartimiento D34,0
-EXEC agregarCompartimiento D35,0
-EXEC agregarCompartimiento D36,0
-EXEC agregarCompartimiento D37,0
-EXEC agregarCompartimiento D38,0
-EXEC agregarCompartimiento D39,0
-EXEC agregarCompartimiento D41,0
-EXEC agregarCompartimiento D42,0
-EXEC agregarCompartimiento D43,0
-EXEC agregarCompartimiento D44,0
-EXEC agregarCompartimiento D45,0
-EXEC agregarCompartimiento D46,0
-EXEC agregarCompartimiento D47,0
-EXEC agregarCompartimiento D48,0
-EXEC agregarCompartimiento D49,0
-EXEC agregarCompartimiento D51,0
-EXEC agregarCompartimiento D52,0
-EXEC agregarCompartimiento D53,0
-EXEC agregarCompartimiento D54,0
-EXEC agregarCompartimiento D55,0
-EXEC agregarCompartimiento D56,0
-EXEC agregarCompartimiento D57,0
-EXEC agregarCompartimiento D58,0
-EXEC agregarCompartimiento D59,0
-EXEC agregarCompartimiento D61,0
-EXEC agregarCompartimiento D62,0
-EXEC agregarCompartimiento D63,0
-EXEC agregarCompartimiento D64,0
-EXEC agregarCompartimiento D65,0
-EXEC agregarCompartimiento D66,0
-EXEC agregarCompartimiento D67,0
-EXEC agregarCompartimiento D68,0
-EXEC agregarCompartimiento D69,0
-EXEC agregarCompartimiento D71,0
-EXEC agregarCompartimiento D72,0
-EXEC agregarCompartimiento D73,0
-EXEC agregarCompartimiento D74,0
-EXEC agregarCompartimiento D75,0
-EXEC agregarCompartimiento D76,1
-EXEC agregarCompartimiento D77,0
-EXEC agregarCompartimiento D78,0
-EXEC agregarCompartimiento D79,0
-EXEC agregarCompartimiento D81,0
-EXEC agregarCompartimiento D82,0
-EXEC agregarCompartimiento D83,0
-EXEC agregarCompartimiento D84,0
-EXEC agregarCompartimiento D85,0
-EXEC agregarCompartimiento D86,0
-EXEC agregarCompartimiento D87,0
-EXEC agregarCompartimiento D88,0
-EXEC agregarCompartimiento D89,0
-EXEC agregarCompartimiento E11,0
-EXEC agregarCompartimiento E12,0
-EXEC agregarCompartimiento E13,0
-EXEC agregarCompartimiento E14,0
-EXEC agregarCompartimiento E15,0
-EXEC agregarCompartimiento E16,0
-EXEC agregarCompartimiento E17,0
-EXEC agregarCompartimiento E18,0
-EXEC agregarCompartimiento E19,0
-EXEC agregarCompartimiento E21,0
-EXEC agregarCompartimiento E22,0
-EXEC agregarCompartimiento E23,0
-EXEC agregarCompartimiento E24,0
-EXEC agregarCompartimiento E25,0
-EXEC agregarCompartimiento E26,0
-EXEC agregarCompartimiento E27,0
-EXEC agregarCompartimiento E28,0
-EXEC agregarCompartimiento E29,0
-EXEC agregarCompartimiento E31,0
-EXEC agregarCompartimiento E32,0
-EXEC agregarCompartimiento E33,0
-EXEC agregarCompartimiento E34,0
-EXEC agregarCompartimiento E35,0
-EXEC agregarCompartimiento E36,0
-EXEC agregarCompartimiento E37,0
-EXEC agregarCompartimiento E38,0
-EXEC agregarCompartimiento E39,0
-EXEC agregarCompartimiento E41,0
-EXEC agregarCompartimiento E42,0
-EXEC agregarCompartimiento E43,0
-EXEC agregarCompartimiento E44,0
-EXEC agregarCompartimiento E45,0
-EXEC agregarCompartimiento E46,0
-EXEC agregarCompartimiento E47,0
-EXEC agregarCompartimiento E48,0
-EXEC agregarCompartimiento E49,0
-EXEC agregarCompartimiento E51,0
-EXEC agregarCompartimiento E52,0
-EXEC agregarCompartimiento E53,0
-EXEC agregarCompartimiento E54,0
-EXEC agregarCompartimiento E55,0
-EXEC agregarCompartimiento E56,0
-EXEC agregarCompartimiento E57,0
-EXEC agregarCompartimiento E58,0
-EXEC agregarCompartimiento E59,0
-EXEC agregarCompartimiento E61,0
-EXEC agregarCompartimiento E62,0
-EXEC agregarCompartimiento E63,0
-EXEC agregarCompartimiento E64,0
-EXEC agregarCompartimiento E65,0
-EXEC agregarCompartimiento E66,0
-EXEC agregarCompartimiento E67,0
-EXEC agregarCompartimiento E68,0
-EXEC agregarCompartimiento E69,0
-EXEC agregarCompartimiento E71,0
-EXEC agregarCompartimiento E72,0
-EXEC agregarCompartimiento E73,0
-EXEC agregarCompartimiento E74,0
-EXEC agregarCompartimiento E75,0
-EXEC agregarCompartimiento E76,0
-EXEC agregarCompartimiento E77,0
-EXEC agregarCompartimiento E78,0
-EXEC agregarCompartimiento E79,0
-EXEC agregarCompartimiento E81,0
-EXEC agregarCompartimiento E82,0
-EXEC agregarCompartimiento E83,0
-EXEC agregarCompartimiento E84,0
-EXEC agregarCompartimiento E85,0
-EXEC agregarCompartimiento E86,0
-EXEC agregarCompartimiento E87,0
-EXEC agregarCompartimiento E88,0
-EXEC agregarCompartimiento E89,0
-EXEC agregarCompartimiento F11,0
-EXEC agregarCompartimiento F12,0
-EXEC agregarCompartimiento F13,0
-EXEC agregarCompartimiento F14,0
-EXEC agregarCompartimiento F15,0
-EXEC agregarCompartimiento F16,0
-EXEC agregarCompartimiento F17,0
-EXEC agregarCompartimiento F18,0
-EXEC agregarCompartimiento F19,0
-EXEC agregarCompartimiento F21,0
-EXEC agregarCompartimiento F22,0
-EXEC agregarCompartimiento F23,0
-EXEC agregarCompartimiento F24,0
-EXEC agregarCompartimiento F25,0
-EXEC agregarCompartimiento F26,0
-EXEC agregarCompartimiento F27,0
-EXEC agregarCompartimiento F28,0
-EXEC agregarCompartimiento F29,0
-EXEC agregarCompartimiento F31,0
-EXEC agregarCompartimiento F32,0
-EXEC agregarCompartimiento F33,0
-EXEC agregarCompartimiento F34,0
-EXEC agregarCompartimiento F35,0
-EXEC agregarCompartimiento F36,0
-EXEC agregarCompartimiento F37,0
-EXEC agregarCompartimiento F38,0
-EXEC agregarCompartimiento F39,0
-EXEC agregarCompartimiento F41,0
-EXEC agregarCompartimiento F42,0
-EXEC agregarCompartimiento F43,0
-EXEC agregarCompartimiento F44,0
-EXEC agregarCompartimiento F45,0
-EXEC agregarCompartimiento F46,0
-EXEC agregarCompartimiento F47,0
-EXEC agregarCompartimiento F48,0
-EXEC agregarCompartimiento F49,0
-EXEC agregarCompartimiento F51,0
-EXEC agregarCompartimiento F52,0
-EXEC agregarCompartimiento F53,0
-EXEC agregarCompartimiento F54,0
-EXEC agregarCompartimiento F55,0
-EXEC agregarCompartimiento F56,0
-EXEC agregarCompartimiento F57,0
-EXEC agregarCompartimiento F58,0
-EXEC agregarCompartimiento F59,0
-EXEC agregarCompartimiento F61,0
-EXEC agregarCompartimiento F62,0
-EXEC agregarCompartimiento F63,0
-EXEC agregarCompartimiento F64,0
-EXEC agregarCompartimiento F65,0
-EXEC agregarCompartimiento F66,0
-EXEC agregarCompartimiento F67,0
-EXEC agregarCompartimiento F68,0
-EXEC agregarCompartimiento F69,0
-EXEC agregarCompartimiento F71,0
-EXEC agregarCompartimiento F72,0
-EXEC agregarCompartimiento F73,0
-EXEC agregarCompartimiento F74,0
-EXEC agregarCompartimiento F75,0
-EXEC agregarCompartimiento F76,0
-EXEC agregarCompartimiento F77,0
-EXEC agregarCompartimiento F78,0
-EXEC agregarCompartimiento F79,0
-EXEC agregarCompartimiento F81,0
-EXEC agregarCompartimiento F82,0
-EXEC agregarCompartimiento F83,0
-EXEC agregarCompartimiento F84,0
-EXEC agregarCompartimiento F85,0
-EXEC agregarCompartimiento F86,0
-EXEC agregarCompartimiento F87,0
-EXEC agregarCompartimiento F88,0
-EXEC agregarCompartimiento F89,0
-EXEC agregarCompartimiento G11,0
-EXEC agregarCompartimiento G12,0
-EXEC agregarCompartimiento G13,0
-EXEC agregarCompartimiento G14,0
-EXEC agregarCompartimiento G15,0
-EXEC agregarCompartimiento G16,0
-EXEC agregarCompartimiento G17,0
-EXEC agregarCompartimiento G18,0
-EXEC agregarCompartimiento G19,0
-EXEC agregarCompartimiento G21,0
-EXEC agregarCompartimiento G22,0
-EXEC agregarCompartimiento G23,0
-EXEC agregarCompartimiento G24,0
-EXEC agregarCompartimiento G25,0
-EXEC agregarCompartimiento G26,0
-EXEC agregarCompartimiento G27,0
-EXEC agregarCompartimiento G28,0
-EXEC agregarCompartimiento G29,0
-EXEC agregarCompartimiento G31,0
-EXEC agregarCompartimiento G32,0
-EXEC agregarCompartimiento G33,0
-EXEC agregarCompartimiento G34,0
-EXEC agregarCompartimiento G35,0
-EXEC agregarCompartimiento G36,0
-EXEC agregarCompartimiento G37,0
-EXEC agregarCompartimiento G38,0
-EXEC agregarCompartimiento G39,0
-EXEC agregarCompartimiento G41,0
-EXEC agregarCompartimiento G42,0
-EXEC agregarCompartimiento G43,0
-EXEC agregarCompartimiento G44,0
-EXEC agregarCompartimiento G45,0
-EXEC agregarCompartimiento G46,0
-EXEC agregarCompartimiento G47,0
-EXEC agregarCompartimiento G48,0
-EXEC agregarCompartimiento G49,0
-EXEC agregarCompartimiento G51,0
-EXEC agregarCompartimiento G52,0
-EXEC agregarCompartimiento G53,0
-EXEC agregarCompartimiento G54,0
-EXEC agregarCompartimiento G55,0
-EXEC agregarCompartimiento G56,0
-EXEC agregarCompartimiento G57,0
-EXEC agregarCompartimiento G58,0
-EXEC agregarCompartimiento G59,0
-EXEC agregarCompartimiento G61,0
-EXEC agregarCompartimiento G62,0
-EXEC agregarCompartimiento G63,0
-EXEC agregarCompartimiento G64,0
-EXEC agregarCompartimiento G65,0
-EXEC agregarCompartimiento G66,0
-EXEC agregarCompartimiento G67,0
-EXEC agregarCompartimiento G68,0
-EXEC agregarCompartimiento G69,0
-EXEC agregarCompartimiento G71,0
-EXEC agregarCompartimiento G72,0
-EXEC agregarCompartimiento G73,0
-EXEC agregarCompartimiento G74,0
-EXEC agregarCompartimiento G75,0
-EXEC agregarCompartimiento G76,0
-EXEC agregarCompartimiento G77,0
-EXEC agregarCompartimiento G78,0
-EXEC agregarCompartimiento G79,0
-EXEC agregarCompartimiento G81,0
-EXEC agregarCompartimiento G82,0
-EXEC agregarCompartimiento G83,0
-EXEC agregarCompartimiento G84,0
-EXEC agregarCompartimiento G85,0
-EXEC agregarCompartimiento G86,0
-EXEC agregarCompartimiento G87,0
-EXEC agregarCompartimiento G88,0
-EXEC agregarCompartimiento G89,0
-EXEC agregarCompartimiento H11,0
-EXEC agregarCompartimiento H12,0
-EXEC agregarCompartimiento H13,1
-EXEC agregarCompartimiento H14,0
-EXEC agregarCompartimiento H15,0
-EXEC agregarCompartimiento H16,0
-EXEC agregarCompartimiento H17,0
-EXEC agregarCompartimiento H18,0
-EXEC agregarCompartimiento H19,0
-EXEC agregarCompartimiento H21,0
-EXEC agregarCompartimiento H22,0
-EXEC agregarCompartimiento H23,0
-EXEC agregarCompartimiento H24,0
-EXEC agregarCompartimiento H25,0
-EXEC agregarCompartimiento H26,0
-EXEC agregarCompartimiento H27,0
-EXEC agregarCompartimiento H28,0
-EXEC agregarCompartimiento H29,0
-EXEC agregarCompartimiento H31,0
-EXEC agregarCompartimiento H32,0
-EXEC agregarCompartimiento H33,0
-EXEC agregarCompartimiento H34,0
-EXEC agregarCompartimiento H35,0
-EXEC agregarCompartimiento H36,0
-EXEC agregarCompartimiento H37,0
-EXEC agregarCompartimiento H38,0
-EXEC agregarCompartimiento H39,0
-EXEC agregarCompartimiento H41,0
-EXEC agregarCompartimiento H42,0
-EXEC agregarCompartimiento H43,0
-EXEC agregarCompartimiento H44,0
-EXEC agregarCompartimiento H45,0
-EXEC agregarCompartimiento H46,0
-EXEC agregarCompartimiento H47,0
-EXEC agregarCompartimiento H48,0
-EXEC agregarCompartimiento H49,0
-EXEC agregarCompartimiento H51,0
-EXEC agregarCompartimiento H52,0
-EXEC agregarCompartimiento H53,0
-EXEC agregarCompartimiento H54,0
-EXEC agregarCompartimiento H55,0
-EXEC agregarCompartimiento H56,0
-EXEC agregarCompartimiento H57,0
-EXEC agregarCompartimiento H58,0
-EXEC agregarCompartimiento H59,0
-EXEC agregarCompartimiento H61,0
-EXEC agregarCompartimiento H62,0
-EXEC agregarCompartimiento H63,0
-EXEC agregarCompartimiento H64,0
-EXEC agregarCompartimiento H65,0
-EXEC agregarCompartimiento H66,0
-EXEC agregarCompartimiento H67,0
-EXEC agregarCompartimiento H68,0
-EXEC agregarCompartimiento H69,0
-EXEC agregarCompartimiento H71,0
-EXEC agregarCompartimiento H72,0
-EXEC agregarCompartimiento H73,0
-EXEC agregarCompartimiento H74,0
-EXEC agregarCompartimiento H75,0
-EXEC agregarCompartimiento H76,0
-EXEC agregarCompartimiento H77,0
-EXEC agregarCompartimiento H78,0
-EXEC agregarCompartimiento H79,0
-EXEC agregarCompartimiento H81,0
-EXEC agregarCompartimiento H82,0
-EXEC agregarCompartimiento H83,0
-EXEC agregarCompartimiento H84,0
-EXEC agregarCompartimiento H85,0
-EXEC agregarCompartimiento H86,0
-EXEC agregarCompartimiento H87,0
-EXEC agregarCompartimiento H88,0
-EXEC agregarCompartimiento H89,0
+EXEC Bodega.agregarCompartimiento A11,0
+EXEC Bodega.agregarCompartimiento A12,0
+EXEC Bodega.agregarCompartimiento A13,0
+EXEC Bodega.agregarCompartimiento A14,0
+EXEC Bodega.agregarCompartimiento A15,0
+EXEC Bodega.agregarCompartimiento A16,0
+EXEC Bodega.agregarCompartimiento A17,0
+EXEC Bodega.agregarCompartimiento A18,0
+EXEC Bodega.agregarCompartimiento A19,0
+EXEC Bodega.agregarCompartimiento A21,0
+EXEC Bodega.agregarCompartimiento A22,0
+EXEC Bodega.agregarCompartimiento A23,0
+EXEC Bodega.agregarCompartimiento A24,0
+EXEC Bodega.agregarCompartimiento A25,0
+EXEC Bodega.agregarCompartimiento A26,0
+EXEC Bodega.agregarCompartimiento A27,0
+EXEC Bodega.agregarCompartimiento A28,0
+EXEC Bodega.agregarCompartimiento A29,0
+EXEC Bodega.agregarCompartimiento A31,0
+EXEC Bodega.agregarCompartimiento A32,0
+EXEC Bodega.agregarCompartimiento A33,0
+EXEC Bodega.agregarCompartimiento A34,0
+EXEC Bodega.agregarCompartimiento A35,0
+EXEC Bodega.agregarCompartimiento A36,0
+EXEC Bodega.agregarCompartimiento A37,0
+EXEC Bodega.agregarCompartimiento A38,0
+EXEC Bodega.agregarCompartimiento A39,0
+EXEC Bodega.agregarCompartimiento A41,0
+EXEC Bodega.agregarCompartimiento A42,0
+EXEC Bodega.agregarCompartimiento A43,0
+EXEC Bodega.agregarCompartimiento A44,0
+EXEC Bodega.agregarCompartimiento A45,0
+EXEC Bodega.agregarCompartimiento A46,0
+EXEC Bodega.agregarCompartimiento A47,0
+EXEC Bodega.agregarCompartimiento A48,0
+EXEC Bodega.agregarCompartimiento A49,0
+EXEC Bodega.agregarCompartimiento A51,0
+EXEC Bodega.agregarCompartimiento A52,0
+EXEC Bodega.agregarCompartimiento A53,0
+EXEC Bodega.agregarCompartimiento A54,0
+EXEC Bodega.agregarCompartimiento A55,0
+EXEC Bodega.agregarCompartimiento A56,0
+EXEC Bodega.agregarCompartimiento A57,0
+EXEC Bodega.agregarCompartimiento A58,0
+EXEC Bodega.agregarCompartimiento A59,0
+EXEC Bodega.agregarCompartimiento A61,0
+EXEC Bodega.agregarCompartimiento A62,0
+EXEC Bodega.agregarCompartimiento A63,0
+EXEC Bodega.agregarCompartimiento A64,0
+EXEC Bodega.agregarCompartimiento A65,0
+EXEC Bodega.agregarCompartimiento A66,0
+EXEC Bodega.agregarCompartimiento A67,0
+EXEC Bodega.agregarCompartimiento A68,0
+EXEC Bodega.agregarCompartimiento A69,0
+EXEC Bodega.agregarCompartimiento A71,0
+EXEC Bodega.agregarCompartimiento A72,0
+EXEC Bodega.agregarCompartimiento A73,0
+EXEC Bodega.agregarCompartimiento A74,0
+EXEC Bodega.agregarCompartimiento A75,0
+EXEC Bodega.agregarCompartimiento A76,0
+EXEC Bodega.agregarCompartimiento A77,0
+EXEC Bodega.agregarCompartimiento A78,0
+EXEC Bodega.agregarCompartimiento A79,0
+EXEC Bodega.agregarCompartimiento A81,0
+EXEC Bodega.agregarCompartimiento A82,0
+EXEC Bodega.agregarCompartimiento A83,0
+EXEC Bodega.agregarCompartimiento A84,0
+EXEC Bodega.agregarCompartimiento A85,0
+EXEC Bodega.agregarCompartimiento A86,0
+EXEC Bodega.agregarCompartimiento A87,0
+EXEC Bodega.agregarCompartimiento A88,0
+EXEC Bodega.agregarCompartimiento A89,0
+EXEC Bodega.agregarCompartimiento B11,0
+EXEC Bodega.agregarCompartimiento B12,0
+EXEC Bodega.agregarCompartimiento B13,0
+EXEC Bodega.agregarCompartimiento B14,0
+EXEC Bodega.agregarCompartimiento B15,0
+EXEC Bodega.agregarCompartimiento B16,0
+EXEC Bodega.agregarCompartimiento B17,0
+EXEC Bodega.agregarCompartimiento B18,0
+EXEC Bodega.agregarCompartimiento B19,0
+EXEC Bodega.agregarCompartimiento B21,0
+EXEC Bodega.agregarCompartimiento B22,0
+EXEC Bodega.agregarCompartimiento B23,0
+EXEC Bodega.agregarCompartimiento B24,0
+EXEC Bodega.agregarCompartimiento B25,0
+EXEC Bodega.agregarCompartimiento B26,0
+EXEC Bodega.agregarCompartimiento B27,0
+EXEC Bodega.agregarCompartimiento B28,0
+EXEC Bodega.agregarCompartimiento B29,0
+EXEC Bodega.agregarCompartimiento B31,0
+EXEC Bodega.agregarCompartimiento B32,0
+EXEC Bodega.agregarCompartimiento B33,0
+EXEC Bodega.agregarCompartimiento B34,0
+EXEC Bodega.agregarCompartimiento B35,0
+EXEC Bodega.agregarCompartimiento B36,0
+EXEC Bodega.agregarCompartimiento B37,0
+EXEC Bodega.agregarCompartimiento B38,0
+EXEC Bodega.agregarCompartimiento B39,0
+EXEC Bodega.agregarCompartimiento B41,0
+EXEC Bodega.agregarCompartimiento B42,0
+EXEC Bodega.agregarCompartimiento B43,0
+EXEC Bodega.agregarCompartimiento B44,0
+EXEC Bodega.agregarCompartimiento B45,0
+EXEC Bodega.agregarCompartimiento B46,0
+EXEC Bodega.agregarCompartimiento B47,0
+EXEC Bodega.agregarCompartimiento B48,0
+EXEC Bodega.agregarCompartimiento B49,0
+EXEC Bodega.agregarCompartimiento B51,0
+EXEC Bodega.agregarCompartimiento B52,0
+EXEC Bodega.agregarCompartimiento B53,0
+EXEC Bodega.agregarCompartimiento B54,0
+EXEC Bodega.agregarCompartimiento B55,0
+EXEC Bodega.agregarCompartimiento B56,0
+EXEC Bodega.agregarCompartimiento B57,0
+EXEC Bodega.agregarCompartimiento B58,0
+EXEC Bodega.agregarCompartimiento B59,0
+EXEC Bodega.agregarCompartimiento B61,0
+EXEC Bodega.agregarCompartimiento B62,0
+EXEC Bodega.agregarCompartimiento B63,0
+EXEC Bodega.agregarCompartimiento B64,0
+EXEC Bodega.agregarCompartimiento B65,0
+EXEC Bodega.agregarCompartimiento B66,0
+EXEC Bodega.agregarCompartimiento B67,0
+EXEC Bodega.agregarCompartimiento B68,0
+EXEC Bodega.agregarCompartimiento B69,0
+EXEC Bodega.agregarCompartimiento B71,0
+EXEC Bodega.agregarCompartimiento B72,0
+EXEC Bodega.agregarCompartimiento B73,0
+EXEC Bodega.agregarCompartimiento B74,0
+EXEC Bodega.agregarCompartimiento B75,0
+EXEC Bodega.agregarCompartimiento B76,0
+EXEC Bodega.agregarCompartimiento B77,0
+EXEC Bodega.agregarCompartimiento B78,0
+EXEC Bodega.agregarCompartimiento B79,0
+EXEC Bodega.agregarCompartimiento B81,0
+EXEC Bodega.agregarCompartimiento B82,0
+EXEC Bodega.agregarCompartimiento B83,0
+EXEC Bodega.agregarCompartimiento B84,0
+EXEC Bodega.agregarCompartimiento B85,0
+EXEC Bodega.agregarCompartimiento B86,0
+EXEC Bodega.agregarCompartimiento B87,0
+EXEC Bodega.agregarCompartimiento B88,0
+EXEC Bodega.agregarCompartimiento B89,0
+EXEC Bodega.agregarCompartimiento C11,0
+EXEC Bodega.agregarCompartimiento C12,0
+EXEC Bodega.agregarCompartimiento C13,0
+EXEC Bodega.agregarCompartimiento C14,0
+EXEC Bodega.agregarCompartimiento C15,0
+EXEC Bodega.agregarCompartimiento C16,0
+EXEC Bodega.agregarCompartimiento C17,0
+EXEC Bodega.agregarCompartimiento C18,0
+EXEC Bodega.agregarCompartimiento C19,0
+EXEC Bodega.agregarCompartimiento C21,0
+EXEC Bodega.agregarCompartimiento C22,0
+EXEC Bodega.agregarCompartimiento C23,0
+EXEC Bodega.agregarCompartimiento C24,0
+EXEC Bodega.agregarCompartimiento C25,0
+EXEC Bodega.agregarCompartimiento C26,0
+EXEC Bodega.agregarCompartimiento C27,0
+EXEC Bodega.agregarCompartimiento C28,0
+EXEC Bodega.agregarCompartimiento C29,0
+EXEC Bodega.agregarCompartimiento C31,0
+EXEC Bodega.agregarCompartimiento C32,0
+EXEC Bodega.agregarCompartimiento C33,0
+EXEC Bodega.agregarCompartimiento C34,0
+EXEC Bodega.agregarCompartimiento C35,0
+EXEC Bodega.agregarCompartimiento C36,0
+EXEC Bodega.agregarCompartimiento C37,0
+EXEC Bodega.agregarCompartimiento C38,0
+EXEC Bodega.agregarCompartimiento C39,0
+EXEC Bodega.agregarCompartimiento C41,0
+EXEC Bodega.agregarCompartimiento C42,0
+EXEC Bodega.agregarCompartimiento C43,0
+EXEC Bodega.agregarCompartimiento C44,0
+EXEC Bodega.agregarCompartimiento C45,0
+EXEC Bodega.agregarCompartimiento C46,0
+EXEC Bodega.agregarCompartimiento C47,0
+EXEC Bodega.agregarCompartimiento C48,0
+EXEC Bodega.agregarCompartimiento C49,0
+EXEC Bodega.agregarCompartimiento C51,0
+EXEC Bodega.agregarCompartimiento C52,0
+EXEC Bodega.agregarCompartimiento C53,0
+EXEC Bodega.agregarCompartimiento C54,0
+EXEC Bodega.agregarCompartimiento C55,0
+EXEC Bodega.agregarCompartimiento C56,0
+EXEC Bodega.agregarCompartimiento C57,0
+EXEC Bodega.agregarCompartimiento C58,0
+EXEC Bodega.agregarCompartimiento C59,0
+EXEC Bodega.agregarCompartimiento C61,0
+EXEC Bodega.agregarCompartimiento C62,0
+EXEC Bodega.agregarCompartimiento C63,0
+EXEC Bodega.agregarCompartimiento C64,0
+EXEC Bodega.agregarCompartimiento C65,0
+EXEC Bodega.agregarCompartimiento C66,0
+EXEC Bodega.agregarCompartimiento C67,0
+EXEC Bodega.agregarCompartimiento C68,0
+EXEC Bodega.agregarCompartimiento C69,0
+EXEC Bodega.agregarCompartimiento C71,0
+EXEC Bodega.agregarCompartimiento C72,0
+EXEC Bodega.agregarCompartimiento C73,0
+EXEC Bodega.agregarCompartimiento C74,0
+EXEC Bodega.agregarCompartimiento C75,0
+EXEC Bodega.agregarCompartimiento C76,0
+EXEC Bodega.agregarCompartimiento C77,0
+EXEC Bodega.agregarCompartimiento C78,0
+EXEC Bodega.agregarCompartimiento C79,0
+EXEC Bodega.agregarCompartimiento C81,0
+EXEC Bodega.agregarCompartimiento C82,0
+EXEC Bodega.agregarCompartimiento C83,0
+EXEC Bodega.agregarCompartimiento C84,0
+EXEC Bodega.agregarCompartimiento C85,0
+EXEC Bodega.agregarCompartimiento C86,0
+EXEC Bodega.agregarCompartimiento C87,0
+EXEC Bodega.agregarCompartimiento C88,0
+EXEC Bodega.agregarCompartimiento C89,0
+EXEC Bodega.agregarCompartimiento D11,0
+EXEC Bodega.agregarCompartimiento D12,0
+EXEC Bodega.agregarCompartimiento D13,0
+EXEC Bodega.agregarCompartimiento D14,0
+EXEC Bodega.agregarCompartimiento D15,0
+EXEC Bodega.agregarCompartimiento D16,0
+EXEC Bodega.agregarCompartimiento D17,0
+EXEC Bodega.agregarCompartimiento D18,0
+EXEC Bodega.agregarCompartimiento D19,0
+EXEC Bodega.agregarCompartimiento D21,0
+EXEC Bodega.agregarCompartimiento D22,0
+EXEC Bodega.agregarCompartimiento D23,0
+EXEC Bodega.agregarCompartimiento D24,0
+EXEC Bodega.agregarCompartimiento D25,0
+EXEC Bodega.agregarCompartimiento D26,0
+EXEC Bodega.agregarCompartimiento D27,0
+EXEC Bodega.agregarCompartimiento D28,0
+EXEC Bodega.agregarCompartimiento D29,0
+EXEC Bodega.agregarCompartimiento D31,0
+EXEC Bodega.agregarCompartimiento D32,0
+EXEC Bodega.agregarCompartimiento D33,0
+EXEC Bodega.agregarCompartimiento D34,0
+EXEC Bodega.agregarCompartimiento D35,0
+EXEC Bodega.agregarCompartimiento D36,0
+EXEC Bodega.agregarCompartimiento D37,0
+EXEC Bodega.agregarCompartimiento D38,0
+EXEC Bodega.agregarCompartimiento D39,0
+EXEC Bodega.agregarCompartimiento D41,0
+EXEC Bodega.agregarCompartimiento D42,0
+EXEC Bodega.agregarCompartimiento D43,0
+EXEC Bodega.agregarCompartimiento D44,0
+EXEC Bodega.agregarCompartimiento D45,0
+EXEC Bodega.agregarCompartimiento D46,0
+EXEC Bodega.agregarCompartimiento D47,0
+EXEC Bodega.agregarCompartimiento D48,0
+EXEC Bodega.agregarCompartimiento D49,0
+EXEC Bodega.agregarCompartimiento D51,0
+EXEC Bodega.agregarCompartimiento D52,0
+EXEC Bodega.agregarCompartimiento D53,0
+EXEC Bodega.agregarCompartimiento D54,0
+EXEC Bodega.agregarCompartimiento D55,0
+EXEC Bodega.agregarCompartimiento D56,0
+EXEC Bodega.agregarCompartimiento D57,0
+EXEC Bodega.agregarCompartimiento D58,0
+EXEC Bodega.agregarCompartimiento D59,0
+EXEC Bodega.agregarCompartimiento D61,0
+EXEC Bodega.agregarCompartimiento D62,0
+EXEC Bodega.agregarCompartimiento D63,0
+EXEC Bodega.agregarCompartimiento D64,0
+EXEC Bodega.agregarCompartimiento D65,0
+EXEC Bodega.agregarCompartimiento D66,0
+EXEC Bodega.agregarCompartimiento D67,0
+EXEC Bodega.agregarCompartimiento D68,0
+EXEC Bodega.agregarCompartimiento D69,0
+EXEC Bodega.agregarCompartimiento D71,0
+EXEC Bodega.agregarCompartimiento D72,0
+EXEC Bodega.agregarCompartimiento D73,0
+EXEC Bodega.agregarCompartimiento D74,0
+EXEC Bodega.agregarCompartimiento D75,0
+EXEC Bodega.agregarCompartimiento D76,1
+EXEC Bodega.agregarCompartimiento D77,0
+EXEC Bodega.agregarCompartimiento D78,0
+EXEC Bodega.agregarCompartimiento D79,0
+EXEC Bodega.agregarCompartimiento D81,0
+EXEC Bodega.agregarCompartimiento D82,0
+EXEC Bodega.agregarCompartimiento D83,0
+EXEC Bodega.agregarCompartimiento D84,0
+EXEC Bodega.agregarCompartimiento D85,0
+EXEC Bodega.agregarCompartimiento D86,0
+EXEC Bodega.agregarCompartimiento D87,0
+EXEC Bodega.agregarCompartimiento D88,0
+EXEC Bodega.agregarCompartimiento D89,0
+EXEC Bodega.agregarCompartimiento E11,0
+EXEC Bodega.agregarCompartimiento E12,0
+EXEC Bodega.agregarCompartimiento E13,0
+EXEC Bodega.agregarCompartimiento E14,0
+EXEC Bodega.agregarCompartimiento E15,0
+EXEC Bodega.agregarCompartimiento E16,0
+EXEC Bodega.agregarCompartimiento E17,0
+EXEC Bodega.agregarCompartimiento E18,0
+EXEC Bodega.agregarCompartimiento E19,0
+EXEC Bodega.agregarCompartimiento E21,0
+EXEC Bodega.agregarCompartimiento E22,0
+EXEC Bodega.agregarCompartimiento E23,0
+EXEC Bodega.agregarCompartimiento E24,0
+EXEC Bodega.agregarCompartimiento E25,0
+EXEC Bodega.agregarCompartimiento E26,0
+EXEC Bodega.agregarCompartimiento E27,0
+EXEC Bodega.agregarCompartimiento E28,0
+EXEC Bodega.agregarCompartimiento E29,0
+EXEC Bodega.agregarCompartimiento E31,0
+EXEC Bodega.agregarCompartimiento E32,0
+EXEC Bodega.agregarCompartimiento E33,0
+EXEC Bodega.agregarCompartimiento E34,0
+EXEC Bodega.agregarCompartimiento E35,0
+EXEC Bodega.agregarCompartimiento E36,0
+EXEC Bodega.agregarCompartimiento E37,0
+EXEC Bodega.agregarCompartimiento E38,0
+EXEC Bodega.agregarCompartimiento E39,0
+EXEC Bodega.agregarCompartimiento E41,0
+EXEC Bodega.agregarCompartimiento E42,0
+EXEC Bodega.agregarCompartimiento E43,0
+EXEC Bodega.agregarCompartimiento E44,0
+EXEC Bodega.agregarCompartimiento E45,0
+EXEC Bodega.agregarCompartimiento E46,0
+EXEC Bodega.agregarCompartimiento E47,0
+EXEC Bodega.agregarCompartimiento E48,0
+EXEC Bodega.agregarCompartimiento E49,0
+EXEC Bodega.agregarCompartimiento E51,0
+EXEC Bodega.agregarCompartimiento E52,0
+EXEC Bodega.agregarCompartimiento E53,0
+EXEC Bodega.agregarCompartimiento E54,0
+EXEC Bodega.agregarCompartimiento E55,0
+EXEC Bodega.agregarCompartimiento E56,0
+EXEC Bodega.agregarCompartimiento E57,0
+EXEC Bodega.agregarCompartimiento E58,0
+EXEC Bodega.agregarCompartimiento E59,0
+EXEC Bodega.agregarCompartimiento E61,0
+EXEC Bodega.agregarCompartimiento E62,0
+EXEC Bodega.agregarCompartimiento E63,0
+EXEC Bodega.agregarCompartimiento E64,0
+EXEC Bodega.agregarCompartimiento E65,0
+EXEC Bodega.agregarCompartimiento E66,0
+EXEC Bodega.agregarCompartimiento E67,0
+EXEC Bodega.agregarCompartimiento E68,0
+EXEC Bodega.agregarCompartimiento E69,0
+EXEC Bodega.agregarCompartimiento E71,0
+EXEC Bodega.agregarCompartimiento E72,0
+EXEC Bodega.agregarCompartimiento E73,0
+EXEC Bodega.agregarCompartimiento E74,0
+EXEC Bodega.agregarCompartimiento E75,0
+EXEC Bodega.agregarCompartimiento E76,0
+EXEC Bodega.agregarCompartimiento E77,0
+EXEC Bodega.agregarCompartimiento E78,0
+EXEC Bodega.agregarCompartimiento E79,0
+EXEC Bodega.agregarCompartimiento E81,0
+EXEC Bodega.agregarCompartimiento E82,0
+EXEC Bodega.agregarCompartimiento E83,0
+EXEC Bodega.agregarCompartimiento E84,0
+EXEC Bodega.agregarCompartimiento E85,0
+EXEC Bodega.agregarCompartimiento E86,0
+EXEC Bodega.agregarCompartimiento E87,0
+EXEC Bodega.agregarCompartimiento E88,0
+EXEC Bodega.agregarCompartimiento E89,0
+EXEC Bodega.agregarCompartimiento F11,0
+EXEC Bodega.agregarCompartimiento F12,0
+EXEC Bodega.agregarCompartimiento F13,0
+EXEC Bodega.agregarCompartimiento F14,0
+EXEC Bodega.agregarCompartimiento F15,0
+EXEC Bodega.agregarCompartimiento F16,0
+EXEC Bodega.agregarCompartimiento F17,0
+EXEC Bodega.agregarCompartimiento F18,0
+EXEC Bodega.agregarCompartimiento F19,0
+EXEC Bodega.agregarCompartimiento F21,0
+EXEC Bodega.agregarCompartimiento F22,0
+EXEC Bodega.agregarCompartimiento F23,0
+EXEC Bodega.agregarCompartimiento F24,0
+EXEC Bodega.agregarCompartimiento F25,0
+EXEC Bodega.agregarCompartimiento F26,0
+EXEC Bodega.agregarCompartimiento F27,0
+EXEC Bodega.agregarCompartimiento F28,0
+EXEC Bodega.agregarCompartimiento F29,0
+EXEC Bodega.agregarCompartimiento F31,0
+EXEC Bodega.agregarCompartimiento F32,0
+EXEC Bodega.agregarCompartimiento F33,0
+EXEC Bodega.agregarCompartimiento F34,0
+EXEC Bodega.agregarCompartimiento F35,0
+EXEC Bodega.agregarCompartimiento F36,0
+EXEC Bodega.agregarCompartimiento F37,0
+EXEC Bodega.agregarCompartimiento F38,0
+EXEC Bodega.agregarCompartimiento F39,0
+EXEC Bodega.agregarCompartimiento F41,0
+EXEC Bodega.agregarCompartimiento F42,0
+EXEC Bodega.agregarCompartimiento F43,0
+EXEC Bodega.agregarCompartimiento F44,0
+EXEC Bodega.agregarCompartimiento F45,0
+EXEC Bodega.agregarCompartimiento F46,0
+EXEC Bodega.agregarCompartimiento F47,0
+EXEC Bodega.agregarCompartimiento F48,0
+EXEC Bodega.agregarCompartimiento F49,0
+EXEC Bodega.agregarCompartimiento F51,0
+EXEC Bodega.agregarCompartimiento F52,0
+EXEC Bodega.agregarCompartimiento F53,0
+EXEC Bodega.agregarCompartimiento F54,0
+EXEC Bodega.agregarCompartimiento F55,0
+EXEC Bodega.agregarCompartimiento F56,0
+EXEC Bodega.agregarCompartimiento F57,0
+EXEC Bodega.agregarCompartimiento F58,0
+EXEC Bodega.agregarCompartimiento F59,0
+EXEC Bodega.agregarCompartimiento F61,0
+EXEC Bodega.agregarCompartimiento F62,0
+EXEC Bodega.agregarCompartimiento F63,0
+EXEC Bodega.agregarCompartimiento F64,0
+EXEC Bodega.agregarCompartimiento F65,0
+EXEC Bodega.agregarCompartimiento F66,0
+EXEC Bodega.agregarCompartimiento F67,0
+EXEC Bodega.agregarCompartimiento F68,0
+EXEC Bodega.agregarCompartimiento F69,0
+EXEC Bodega.agregarCompartimiento F71,0
+EXEC Bodega.agregarCompartimiento F72,0
+EXEC Bodega.agregarCompartimiento F73,0
+EXEC Bodega.agregarCompartimiento F74,0
+EXEC Bodega.agregarCompartimiento F75,0
+EXEC Bodega.agregarCompartimiento F76,0
+EXEC Bodega.agregarCompartimiento F77,0
+EXEC Bodega.agregarCompartimiento F78,0
+EXEC Bodega.agregarCompartimiento F79,0
+EXEC Bodega.agregarCompartimiento F81,0
+EXEC Bodega.agregarCompartimiento F82,0
+EXEC Bodega.agregarCompartimiento F83,0
+EXEC Bodega.agregarCompartimiento F84,0
+EXEC Bodega.agregarCompartimiento F85,0
+EXEC Bodega.agregarCompartimiento F86,0
+EXEC Bodega.agregarCompartimiento F87,0
+EXEC Bodega.agregarCompartimiento F88,0
+EXEC Bodega.agregarCompartimiento F89,0
+EXEC Bodega.agregarCompartimiento G11,0
+EXEC Bodega.agregarCompartimiento G12,0
+EXEC Bodega.agregarCompartimiento G13,0
+EXEC Bodega.agregarCompartimiento G14,0
+EXEC Bodega.agregarCompartimiento G15,0
+EXEC Bodega.agregarCompartimiento G16,0
+EXEC Bodega.agregarCompartimiento G17,0
+EXEC Bodega.agregarCompartimiento G18,0
+EXEC Bodega.agregarCompartimiento G19,0
+EXEC Bodega.agregarCompartimiento G21,0
+EXEC Bodega.agregarCompartimiento G22,0
+EXEC Bodega.agregarCompartimiento G23,0
+EXEC Bodega.agregarCompartimiento G24,0
+EXEC Bodega.agregarCompartimiento G25,0
+EXEC Bodega.agregarCompartimiento G26,0
+EXEC Bodega.agregarCompartimiento G27,0
+EXEC Bodega.agregarCompartimiento G28,0
+EXEC Bodega.agregarCompartimiento G29,0
+EXEC Bodega.agregarCompartimiento G31,0
+EXEC Bodega.agregarCompartimiento G32,0
+EXEC Bodega.agregarCompartimiento G33,0
+EXEC Bodega.agregarCompartimiento G34,0
+EXEC Bodega.agregarCompartimiento G35,0
+EXEC Bodega.agregarCompartimiento G36,0
+EXEC Bodega.agregarCompartimiento G37,0
+EXEC Bodega.agregarCompartimiento G38,0
+EXEC Bodega.agregarCompartimiento G39,0
+EXEC Bodega.agregarCompartimiento G41,0
+EXEC Bodega.agregarCompartimiento G42,0
+EXEC Bodega.agregarCompartimiento G43,0
+EXEC Bodega.agregarCompartimiento G44,0
+EXEC Bodega.agregarCompartimiento G45,0
+EXEC Bodega.agregarCompartimiento G46,0
+EXEC Bodega.agregarCompartimiento G47,0
+EXEC Bodega.agregarCompartimiento G48,0
+EXEC Bodega.agregarCompartimiento G49,0
+EXEC Bodega.agregarCompartimiento G51,0
+EXEC Bodega.agregarCompartimiento G52,0
+EXEC Bodega.agregarCompartimiento G53,0
+EXEC Bodega.agregarCompartimiento G54,0
+EXEC Bodega.agregarCompartimiento G55,0
+EXEC Bodega.agregarCompartimiento G56,0
+EXEC Bodega.agregarCompartimiento G57,0
+EXEC Bodega.agregarCompartimiento G58,0
+EXEC Bodega.agregarCompartimiento G59,0
+EXEC Bodega.agregarCompartimiento G61,0
+EXEC Bodega.agregarCompartimiento G62,0
+EXEC Bodega.agregarCompartimiento G63,0
+EXEC Bodega.agregarCompartimiento G64,0
+EXEC Bodega.agregarCompartimiento G65,0
+EXEC Bodega.agregarCompartimiento G66,0
+EXEC Bodega.agregarCompartimiento G67,0
+EXEC Bodega.agregarCompartimiento G68,0
+EXEC Bodega.agregarCompartimiento G69,0
+EXEC Bodega.agregarCompartimiento G71,0
+EXEC Bodega.agregarCompartimiento G72,0
+EXEC Bodega.agregarCompartimiento G73,0
+EXEC Bodega.agregarCompartimiento G74,0
+EXEC Bodega.agregarCompartimiento G75,0
+EXEC Bodega.agregarCompartimiento G76,0
+EXEC Bodega.agregarCompartimiento G77,0
+EXEC Bodega.agregarCompartimiento G78,0
+EXEC Bodega.agregarCompartimiento G79,0
+EXEC Bodega.agregarCompartimiento G81,0
+EXEC Bodega.agregarCompartimiento G82,0
+EXEC Bodega.agregarCompartimiento G83,0
+EXEC Bodega.agregarCompartimiento G84,0
+EXEC Bodega.agregarCompartimiento G85,0
+EXEC Bodega.agregarCompartimiento G86,0
+EXEC Bodega.agregarCompartimiento G87,0
+EXEC Bodega.agregarCompartimiento G88,0
+EXEC Bodega.agregarCompartimiento G89,0
+EXEC Bodega.agregarCompartimiento H11,0
+EXEC Bodega.agregarCompartimiento H12,0
+EXEC Bodega.agregarCompartimiento H13,1
+EXEC Bodega.agregarCompartimiento H14,0
+EXEC Bodega.agregarCompartimiento H15,0
+EXEC Bodega.agregarCompartimiento H16,0
+EXEC Bodega.agregarCompartimiento H17,0
+EXEC Bodega.agregarCompartimiento H18,0
+EXEC Bodega.agregarCompartimiento H19,0
+EXEC Bodega.agregarCompartimiento H21,0
+EXEC Bodega.agregarCompartimiento H22,0
+EXEC Bodega.agregarCompartimiento H23,0
+EXEC Bodega.agregarCompartimiento H24,0
+EXEC Bodega.agregarCompartimiento H25,0
+EXEC Bodega.agregarCompartimiento H26,0
+EXEC Bodega.agregarCompartimiento H27,0
+EXEC Bodega.agregarCompartimiento H28,0
+EXEC Bodega.agregarCompartimiento H29,0
+EXEC Bodega.agregarCompartimiento H31,0
+EXEC Bodega.agregarCompartimiento H32,0
+EXEC Bodega.agregarCompartimiento H33,0
+EXEC Bodega.agregarCompartimiento H34,0
+EXEC Bodega.agregarCompartimiento H35,0
+EXEC Bodega.agregarCompartimiento H36,0
+EXEC Bodega.agregarCompartimiento H37,0
+EXEC Bodega.agregarCompartimiento H38,0
+EXEC Bodega.agregarCompartimiento H39,0
+EXEC Bodega.agregarCompartimiento H41,0
+EXEC Bodega.agregarCompartimiento H42,0
+EXEC Bodega.agregarCompartimiento H43,0
+EXEC Bodega.agregarCompartimiento H44,0
+EXEC Bodega.agregarCompartimiento H45,0
+EXEC Bodega.agregarCompartimiento H46,0
+EXEC Bodega.agregarCompartimiento H47,0
+EXEC Bodega.agregarCompartimiento H48,0
+EXEC Bodega.agregarCompartimiento H49,0
+EXEC Bodega.agregarCompartimiento H51,0
+EXEC Bodega.agregarCompartimiento H52,0
+EXEC Bodega.agregarCompartimiento H53,0
+EXEC Bodega.agregarCompartimiento H54,0
+EXEC Bodega.agregarCompartimiento H55,0
+EXEC Bodega.agregarCompartimiento H56,0
+EXEC Bodega.agregarCompartimiento H57,0
+EXEC Bodega.agregarCompartimiento H58,0
+EXEC Bodega.agregarCompartimiento H59,0
+EXEC Bodega.agregarCompartimiento H61,0
+EXEC Bodega.agregarCompartimiento H62,0
+EXEC Bodega.agregarCompartimiento H63,0
+EXEC Bodega.agregarCompartimiento H64,0
+EXEC Bodega.agregarCompartimiento H65,0
+EXEC Bodega.agregarCompartimiento H66,0
+EXEC Bodega.agregarCompartimiento H67,0
+EXEC Bodega.agregarCompartimiento H68,0
+EXEC Bodega.agregarCompartimiento H69,0
+EXEC Bodega.agregarCompartimiento H71,0
+EXEC Bodega.agregarCompartimiento H72,0
+EXEC Bodega.agregarCompartimiento H73,0
+EXEC Bodega.agregarCompartimiento H74,0
+EXEC Bodega.agregarCompartimiento H75,0
+EXEC Bodega.agregarCompartimiento H76,0
+EXEC Bodega.agregarCompartimiento H77,0
+EXEC Bodega.agregarCompartimiento H78,0
+EXEC Bodega.agregarCompartimiento H79,0
+EXEC Bodega.agregarCompartimiento H81,0
+EXEC Bodega.agregarCompartimiento H82,0
+EXEC Bodega.agregarCompartimiento H83,0
+EXEC Bodega.agregarCompartimiento H84,0
+EXEC Bodega.agregarCompartimiento H85,0
+EXEC Bodega.agregarCompartimiento H86,0
+EXEC Bodega.agregarCompartimiento H87,0
+EXEC Bodega.agregarCompartimiento H88,0
+EXEC Bodega.agregarCompartimiento H89,0
 
-EXEC agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Alcacer','Boulevard los procesores, Edificio #4 Poligono #40','2383-9802','alcacerTextil@gmail.com'
 
-EXEC agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
+EXEC Bodega.agregarMateriaPrima 'Tela para Camisas',450,750,1,A11,1,1
 
-EXEC agregarEstadoCompras 'Normal'
-EXEC agregarEstadoCompras 'Urgente'
-EXEC agregarEstadoCompras 'Realizada'
+EXEC Compra.agregarEstadoCompras 'Normal'
+EXEC Compra.agregarEstadoCompras 'Urgente'
+EXEC Compra.agregarEstadoCompras 'Realizada'
 
-EXEC agregarCompra 50.50,1,1
+EXEC Compra.agregarCompra 50.50,1,1
 
-EXEC agregarOrdenVenta 1,1,1,1,1
+EXEC Produccion.agregarOrdenVenta 1,1,1,1,1
 
-EXEC agregarOrdenVentaTalla 25,25.50,1,1,1
-
-EXEC agregarOrdenVentaTalla 28,38.4,1,1,1
-
-EXEC agregarSeguimientoOrden 1,1,1
+EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
+EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
