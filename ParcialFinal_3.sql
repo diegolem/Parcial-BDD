@@ -235,9 +235,11 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 --Campos emails o de correo electrónico deben ser únicos.
 	ALTER TABLE clientes
 	ADD CONSTRAINT uCorreo UNIQUE (correo)
+	ALTER TABLE clientes ADD CONSTRAINT CHK_Cliente_Correo CHECK (correo LIKE '%_@__%.__%');
 
 	ALTER TABLE proveedor
 	ADD CONSTRAINT uCorreoP UNIQUE (correo)
+	ALTER TABLE proveedor ADD CONSTRAINT CHK_Proveedor_Correo CHECK (correo LIKE '%_@__%.__%');
 --Campo abreviacion debe ser unico
 	ALTER TABLE tipoTalla
 	ADD CONSTRAINT uAbreviacion UNIQUE (abreviacion)
@@ -298,6 +300,36 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 	ALTER TABLE proveedor
 	ADD CONSTRAINT UTelefonoP
 	UNIQUE(telefono)
+
+-- Nombres
+
+	ALTER TABLE departamento
+	ADD CONSTRAINT CHK_departamento_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE tipoCliente
+	ADD CONSTRAINT CHK_tipocliente_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE metodologia
+	ADD CONSTRAINT CHK_metodologia_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE estadoOrden
+	ADD CONSTRAINT CHK_estadoOrden_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE tipoVariante
+	ADD CONSTRAINT CHK_tipoVariante_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
+
+	ALTER TABLE estadoCompras
+	ADD CONSTRAINT CHK_estadoCompras_nombre
+	CHECK (nombre NOT LIKE  '%[^a-z]%');
+
+	ALTER TABLE estadoSeguimiento
+	ADD CONSTRAINT CHK_estadoSeguimiento_nombre
+	CHECK (nombre NOT LIKE '%[^a-z]%');
 
 --Creaccion de Esquemas
 create schema Venta;
