@@ -3080,8 +3080,62 @@ EXEC Producto.agregarPrenda 'Camisa',5.75
 EXEC Producto.agregarPrenda 'Pantalon',8.75
 EXEC Producto.agregarPrenda 'Suéter',11.75
 EXEC Producto.agregarPrenda 'Sudadera',11.75
+EXEC Producto.agregarPrenda 'Corbata',3.75
+EXEC Producto.agregarPrenda 'Camisa sin Manga',5.25
+EXEC Producto.agregarPrenda 'Camisa de Vestir Manga Larga',10.00
+EXEC Producto.agregarPrenda 'Pantalones Cortos',8.50
+
 
 EXEC Producto.agregarEstilo 'CH350',1
+EXEC Producto.agregarEstilo 'HJ320',1
+EXEC Producto.agregarEstilo 'AD560',1
+EXEC Producto.agregarEstilo 'FG200',1
+EXEC Producto.agregarEstilo 'CL120',1
+EXEC Producto.agregarEstilo 'KL620',1
+EXEC Producto.agregarEstilo 'PO200',1
+EXEC Producto.agregarEstilo 'JK690',1
+EXEC Producto.agregarEstilo 'MN470',1
+EXEC Producto.agregarEstilo 'HY650',1
+EXEC Producto.agregarEstilo 'DE589',2
+EXEC Producto.agregarEstilo 'ZA894',2
+EXEC Producto.agregarEstilo 'BG659',2
+EXEC Producto.agregarEstilo 'UI895',2
+EXEC Producto.agregarEstilo 'NH123',2
+EXEC Producto.agregarEstilo 'MJ698',2
+EXEC Producto.agregarEstilo 'BG548',2
+EXEC Producto.agregarEstilo 'NH698',2
+EXEC Producto.agregarEstilo 'GH548',2
+EXEC Producto.agregarEstilo 'JK659',2
+EXEC Producto.agregarEstilo 'VP548',3
+EXEC Producto.agregarEstilo 'AE781',3
+EXEC Producto.agregarEstilo 'SW453',3
+EXEC Producto.agregarEstilo 'DP890',3
+EXEC Producto.agregarEstilo 'WN751',3
+EXEC Producto.agregarEstilo 'IK587',3
+EXEC Producto.agregarEstilo 'TY548',3
+EXEC Producto.agregarEstilo 'ER321',3
+EXEC Producto.agregarEstilo 'HY985',3
+EXEC Producto.agregarEstilo 'CF489',3
+EXEC Producto.agregarEstilo 'QP501',4
+EXEC Producto.agregarEstilo 'PB283',4
+EXEC Producto.agregarEstilo 'CU348',4
+EXEC Producto.agregarEstilo 'QL569',4
+EXEC Producto.agregarEstilo 'PB582',4
+EXEC Producto.agregarEstilo 'AL573',4
+EXEC Producto.agregarEstilo 'MU891',4
+EXEC Producto.agregarEstilo 'KV528',4
+EXEC Producto.agregarEstilo 'RG243',4
+EXEC Producto.agregarEstilo 'LP189',4
+EXEC Producto.agregarEstilo 'MI854',5
+EXEC Producto.agregarEstilo 'NJ128',5
+EXEC Producto.agregarEstilo 'OP589',5
+EXEC Producto.agregarEstilo 'GT548',5
+EXEC Producto.agregarEstilo 'OV259',5
+EXEC Producto.agregarEstilo 'ER028',5
+EXEC Producto.agregarEstilo 'BHT58',5
+EXEC Producto.agregarEstilo 'NQ145',5
+EXEC Producto.agregarEstilo 'UD574',5
+EXEC Producto.agregarEstilo 'QD147',5
 
 EXEC Producto.agregarTipoTalla 'small','S'
 exec Producto.agregarTipoTalla @nombre = 'Medium', @abreviacion = 'M'
