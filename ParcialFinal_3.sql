@@ -479,15 +479,16 @@ CREATE TRIGGER verificarComprasUpdate
 	ON Compra.compras
 	FOR UPDATE
 	AS
-	DECLARE @cantidad DECIMAL(18,2)
+	DECLARE @cantidad DECIMAL(18,2),@transaccion varchar(20) = 'transact'; 
 	BEGIN
 		IF UPDATE(cantidad)
 		SELECT @cantidad = cantidad FROM inserted
 		BEGIN
 			IF(@cantidad < 0)
 			BEGIN
+				BEGIN TRAN @transaccion
 				PRINT 'La cantidad no debe ser menor a 0'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 			END
 		END
 	END
@@ -495,7 +496,7 @@ GO
 --Verificar datos de Sales Order
 CREATE TRIGGER verificarSalesOrderInsert ON Produccion.ordenVenta
 FOR INSERT AS
-	DECLARE @monto MONEY, @cantidad DECIMAL(18,2), @factura INT, @estilo INT, @flujo INT, @color INT, @estado INT
+	DECLARE @monto MONEY, @cantidad DECIMAL(18,2), @factura INT, @estilo INT, @flujo INT, @color INT, @estado INT,@transaccion varchar(20) = 'transact'; 
 	BEGIN
 		SELECT @monto = monto FROM inserted
 		SELECT @cantidad = cantidad FROM inserted
@@ -506,13 +507,15 @@ FOR INSERT AS
 		SELECT @estado = idEstado FROM inserted
 	IF(@cantidad < 0)
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La cantidad no debe ser menor a 0'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 	IF(@monto < 0)
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El monto no puede ser menor que 0'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 END
 GO
@@ -523,15 +526,16 @@ CREATE TRIGGER verificarSalesOrderUpdate
 	AS
 	DECLARE
 		@monto MONEY,
-		@cantidad DECIMAL(18,2)
+		@cantidad DECIMAL(18,2),@transaccion varchar(20) = 'transact'; 
 	BEGIN
 		IF UPDATE(monto)
 		SELECT @monto = monto FROM inserted
 		BEGIN
 			IF(@monto < 0)
 			BEGIN
+			BEGIN TRAN @transaccion
 				PRINT 'El monto no debe ser menor a 0'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 			END
 		END
 		IF UPDATE(cantidad)
@@ -540,8 +544,9 @@ CREATE TRIGGER verificarSalesOrderUpdate
 			BEGIN
 				IF(@cantidad < 0)
 				BEGIN
+					BEGIN TRAN @transaccion
 					PRINT 'La cantidad no puede ser menor a 0'
-					ROLLBACK TRAN
+					ROLLBACK TRAN @transaccion
 				END
 			END
 		END
@@ -561,7 +566,7 @@ on Produccion.SeguimientoOrden
 after update
 as
 	-- Informacion sobre la fila a modificar
-	declare @id int, @id_orden int, @primer_proceso bit, @ultimo_proceso bit, @proceso_completado bit = 0, @completo varchar(25) = 'Finalizado'
+	declare @id int, @id_orden int, @primer_proceso bit, @ultimo_proceso bit, @proceso_completado bit = 0, @completo varchar(25) = 'Finalizado',@transaccion varchar(20) = 'transact'; 
 	
 	select @id = inserted.idSeguimiento, @id_orden = inserted.idOrdenVenta 
 	from inserted
@@ -613,8 +618,9 @@ as
 
 	if @proceso_completado = 0
 	begin
-		ROLLBACK TRANSACTION
+		BEGIN TRAN @transaccion
 		RAISERROR(50019,21,1)
+		ROLLBACK TRAN @transaccion
 	end
 go
 
@@ -626,7 +632,7 @@ CREATE TRIGGER descontarTela
 	ON Produccion.ordenVenta
 	FOR UPDATE	
 	AS
-	DECLARE @tela decimal(18,2),@color int,@id int,@existencia decimal(18,2)
+	DECLARE @tela decimal(18,2),@color int,@id int,@existencia decimal(18,2),@transaccion varchar(20) = 'transact'
 	BEGIN
 		SELECT @tela = ovt.cantidadTela FROM Produccion.ordenDeVentaTalla AS ovt INNER JOIN Produccion.ordenVenta AS odv
 		ON odv.idOrdenVenta = ovt.idOrdenVenta
@@ -643,14 +649,16 @@ CREATE TRIGGER descontarTela
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @transaccion
 				PRINT 'La cantidad de tela sobrepasa las existencias'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'Porfavor revise el valor de la cantidad de Tela de la orden'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 GO
@@ -664,7 +672,7 @@ trabajo de la empresa).
 CREATE TRIGGER fechaFinalizacionUpdate
 	on Venta.factura
 	AFTER UPDATE
-	AS DECLARE @fechaI DATE,@fechaD DATE,@id INT,@idR INT
+	AS DECLARE @fechaI DATE,@fechaD DATE,@id INT,@idR INT,@transaccion varchar(20) = 'transact'
 	BEGIN
 		select @fechaI = requiredDate,@idR = idFactura from inserted
 		select @id = idFactura from Venta.factura where idFactura = @idR
@@ -677,8 +685,9 @@ CREATE TRIGGER fechaFinalizacionUpdate
 			END	
 			ELSE
 			BEGIN
+				BEGIN TRAN @transaccion
 				PRINT 'Le fecha modificada no puede ser menos a la que se tenia anteriormente'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 			END
 		END
 	END
@@ -690,7 +699,7 @@ PUEDE sobrepasar el límite del Stock Máximo que Maneja la empresa (7500 YDS pa
 CREATE TRIGGER StockMaximoCompras on Compra.compras
 AFTER INSERT
 AS 
-	DECLARE @cantidadM DECIMAL(18,2),@compra decimal(18,2),@stockmax decimal(18,2), @idM int,@bodega decimal(18,2),@sumatoria decimal(18,2),@idEstado INT
+	DECLARE @cantidadM DECIMAL(18,2),@compra decimal(18,2),@stockmax decimal(18,2), @idM int,@bodega decimal(18,2),@sumatoria decimal(18,2),@idEstado INT,@transaccion varchar(20) = 'transact'
 	BEGIN
 		SELECT @compra = cantidad FROM inserted
 		SELECT @idM = idMateriaPrima FROM inserted
@@ -700,8 +709,9 @@ AS
 		SET @sumatoria = @compra + @bodega
 		IF(@sumatoria > @stockmax)
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'La compra sobrepasa los valores del almacenamiento máximo'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 		ELSE
 		BEGIN
@@ -724,7 +734,7 @@ on Produccion.detalleFlujoTrabajoProcesos
 after insert, update
 as
 	-- Obtenemos el proceso a que hacemos mencion
-	declare @id_proceso int, @id_variante int
+	declare @id_proceso int, @id_variante int,@transaccion varchar(20) = 'transact'
 	
 	select @id_proceso = inserted.idProceso, @id_variante = flujoTrabajo.idVariante 
 	from inserted 
@@ -751,8 +761,9 @@ as
 		
 		if @coincide_variante = 0
 		begin
-			ROLLBACK TRANSACTION
+			BEGIN TRAN @transaccion
 			RAISERROR(50018,20,1)
+			ROLLBACK TRAN @transaccion
 		end
 	end
 go
@@ -762,14 +773,15 @@ zona a una misma Sales Order*/
 CREATE TRIGGER verificarEstampado ON Produccion.detalleVarianteDetalle
 FOR INSERT
 AS
-	DECLARE @idVariante INT,@detalleID INT
+	DECLARE @idVariante INT,@detalleID INT,@transaccion varchar(20) = 'transact'
 	BEGIN
 		SELECT @idVariante = idVariante FROM inserted
 		SELECT @detalleID = idDetalle FROM inserted
 		IF (SELECT COUNT(*) FROM Produccion.detalleVarianteDetalle WHERE idDetalle = @detalleID AND idVariante = @idVariante) > 1
 		BEGIN
+				BEGIN TRAN @transaccion
 				PRINT 'Ya hay un estampado en esta ubicacion para esta orden'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 		END
 		ELSE
 		BEGIN
@@ -780,7 +792,7 @@ GO
 CREATE TRIGGER verificarCompartimiento ON Bodega.MateriaPrima
 FOR INSERT
 AS
-	DECLARE @idCompartimiento CHAR(3),@idMateriaPrima INT
+	DECLARE @idCompartimiento CHAR(3),@idMateriaPrima INT,@transaccion varchar(20) = 'transact'
 	SELECT @idCompartimiento = idCompartimiento FROM inserted
 	IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 0
 	BEGIN
@@ -789,8 +801,9 @@ AS
 	END
 	ELSE IF(SELECT estado FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento) = 1
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El compartimiento ya esta ocupado'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 -- Funciones /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -874,7 +887,7 @@ tener que deben ser creados para TODAS LAS TABLAS que se crean en la base de dat
 CREATE PROC Produccion.agregarDepartamento
 @nombre VARCHAR(100),@descripcion VARCHAR(250)
 AS
-DECLARE @transaction varchar(20)
+DECLARE @transaccion varchar(20)
 	iF NOT EXISTS(SELECT * FROM Produccion.departamento WHERE nombre = @nombre AND descripcion = @descripcion)
 	BEGIN
 		INSERT INTO Produccion.departamento VALUES(@nombre,@descripcion)
@@ -882,15 +895,16 @@ DECLARE @transaction varchar(20)
 	END
 	ELSE
 	BEGIN
-		BEGIN TRAN @transaction
+		BEGIN TRAN @transaccion
 		PRINT 'El departamento ya existe'
-		ROLLBACK TRAN @transaction
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.procesos
 CREATE PROC Produccion.agregarProcesos
 @nombre VARCHAR(30),@duracion INT,@idDepartamento INT
 AS
+	DECLARE @transaccion varchar(20) = 'transact'
 	IF(@duracion > 0)
 	BEGIN
 		INSERT INTO Produccion.procesos VALUES(@nombre,@duracion,@idDepartamento)
@@ -898,14 +912,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La duracion del proceso no puede ser negativa'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Venta.tipoCliente
 CREATE PROC Venta.agregarTipoCliente
 @nombre VARCHAR(25)
 AS
+	DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Venta.tipoCliente WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Venta.tipoCliente VALUES(@nombre)
@@ -913,8 +929,9 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El tipo de cliente ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Venta.clientes
@@ -923,6 +940,7 @@ CREATE PROC Venta.agregarClientePersona
 @nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(17),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Venta.clientes WHERE nombre = @nombre AND dui = @dui AND nit = @nit AND telefono = @telefono AND correo = @correo AND idTipo = @idTipo)
 	BEGIN
 		IF(@dui LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]%')
@@ -934,20 +952,23 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @transaccion
 				PRINT 'ingrese un NIT valido 0000-000000-000-0'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @transaccion
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'Ingrese un formato de DUI valido 00000000-0'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El cliente ya esta registrado'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --En caso de ser Tipo: Empresa
