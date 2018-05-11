@@ -432,6 +432,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		GROUP BY M.idModulo, M.nombre
 	;
 -- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.
+
 -- 9. Vista de Hilos (Todos los datos junto con el nombre del proveedor) en inventario.
 -- 10. Vista de Cordones (Todos los datos junto con el nombre del proveedor) en inventario.
 -- 11. Vista de las Sales Order con categoría BLANKS.
@@ -4349,7 +4350,7 @@ EXEC Compra.agregarProveedor 'Textufil La paz','Ciudad Nuevo Mundo, calle speake
 EXEC Compra.agregarProveedor 'Needle and Style','Calle de Hotel Juventus contiguo a Papa John´s','2314-3257','needlestyle@gmail.com'
 EXEC Compra.agregarProveedor 'Sant Patricia','Avenida la vega, San Salvador enfrente de China Work','2000-2136','santpatricia@gmail.com'
 EXEC Compra.agregarProveedor 'Pintura Fine','Paseo general Escalón Nivel #1, local #98','2190-3246','pinturafine@gmail.com'
-EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2014','los_santos@gmail.com'
+EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2017','los_santos@gmail.com'
 EXEC Compra.agregarProveedor 'Needle and Fabric','Boulevard de los procesores, frente a banco Davivienda','2426-3234','needlefabric@gmail.com'
 EXEC Compra.agregarProveedor 'Lightning Fabric','Boulevard los soldados, Edificio #72 Poligono #09','6823-3215','lighningfabricESA@gmail.com'
 EXEC Compra.agregarProveedor 'Variedades Jeltrudis','Mercado Zacamil,Mejicanos, puesto #55','2983-4343','jeltrudisvariety@gmail.com'
@@ -4424,7 +4425,7 @@ EXEC Compra.agregarEstadoCompras 'Realizada'
 
 EXEC Compra.agregarCompra 100, 1, 1;
 EXEC Compra.agregarCompra 50, 1, 2;
-EXEC Compra.agregarCompra 200, 1, 3;
+EXEC Compra.agregarCompra 20, 1, 3;
 EXEC Compra.agregarCompra 100, 1, 4;
 EXEC Compra.agregarCompra 200, 1, 5;
 EXEC Compra.agregarCompra 140, 1, 6;
@@ -4435,7 +4436,7 @@ EXEC Compra.agregarCompra 120, 1, 10;
 EXEC Compra.agregarCompra 200, 1, 11;
 EXEC Compra.agregarCompra 200, 1, 12;
 EXEC Compra.agregarCompra 150, 1, 13;
-EXEC Compra.agregarCompra 300, 1, 14;
+EXEC Compra.agregarCompra 30, 1, 14;
 EXEC Compra.agregarCompra 3500, 1, 15;
 EXEC Compra.agregarCompra 5500, 1, 16;
 EXEC Compra.agregarCompra 1520, 1, 17;
@@ -4473,51 +4474,51 @@ EXEC Compra.agregarCompra 600, 1, 48;
 EXEC Compra.agregarCompra 500, 1, 49;
 EXEC Compra.agregarCompra 150, 1, 50;
 
-EXEC Produccion.agregarOrdenVenta 1, 5, 1, 20, 1;
-EXEC Produccion.agregarOrdenVenta 1, 5, 1, 4, 1;
-EXEC Produccion.agregarOrdenVenta 3, 10, 2, 4, 1;
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 42, 1;
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 3, 1;
+EXEC Produccion.agregarOrdenVenta 3, 10, 2, 7, 1;
 EXEC Produccion.agregarOrdenVenta 4, 28, 3, 6, 1;
 EXEC Produccion.agregarOrdenVenta 5, 47, 1, 8, 1;
 EXEC Produccion.agregarOrdenVenta 5, 47, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 7, 30, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 8, 24, 2, 8, 1;
 EXEC Produccion.agregarOrdenVenta 9, 46, 1, 2, 1;
-EXEC Produccion.agregarOrdenVenta 10, 18, 1, 20, 1;
+EXEC Produccion.agregarOrdenVenta 10, 18, 1, 21, 1;
 EXEC Produccion.agregarOrdenVenta 11, 19, 3, 3, 1;
 EXEC Produccion.agregarOrdenVenta 12, 1, 2, 2, 1;
-EXEC Produccion.agregarOrdenVenta 13, 19, 1, 45, 1;
-EXEC Produccion.agregarOrdenVenta 14, 8, 2, 46, 1;
-EXEC Produccion.agregarOrdenVenta 15, 9, 1, 30, 1;
+EXEC Produccion.agregarOrdenVenta 13, 19, 1, 42, 1;
+EXEC Produccion.agregarOrdenVenta 14, 8, 2, 21, 1;
+EXEC Produccion.agregarOrdenVenta 15, 9, 1, 19, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 6, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 2, 8, 1;
 EXEC Produccion.agregarOrdenVenta 19, 25, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 20, 7, 2, 7, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 3, 40, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 3, 15, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 2, 20, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 42, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 12, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 2, 21, 1;
 EXEC Produccion.agregarOrdenVenta 21, 36, 1, 18, 1;
 EXEC Produccion.agregarOrdenVenta 21, 40, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 26, 7, 1, 8, 1;
-EXEC Produccion.agregarOrdenVenta 27, 8, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 27, 8, 3, 6, 1;
 EXEC Produccion.agregarOrdenVenta 28, 15, 3, 7, 1;
-EXEC Produccion.agregarOrdenVenta 29, 21, 1, 20, 1;
-EXEC Produccion.agregarOrdenVenta 30, 41, 2, 23, 1;
+EXEC Produccion.agregarOrdenVenta 29, 21, 1, 21, 1;
+EXEC Produccion.agregarOrdenVenta 30, 41, 2, 25, 1;
 EXEC Produccion.agregarOrdenVenta 31, 48, 3, 12, 1;
-EXEC Produccion.agregarOrdenVenta 32, 15, 1, 40, 1;
+EXEC Produccion.agregarOrdenVenta 32, 15, 1, 42, 1;
 EXEC Produccion.agregarOrdenVenta 33, 18, 2, 25, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 27, 1;
-EXEC Produccion.agregarOrdenVenta 34, 9, 3, 35, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 3, 1, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 2, 1;
 EXEC Produccion.agregarOrdenVenta 37, 6, 2, 8, 1;
-EXEC Produccion.agregarOrdenVenta 38, 7, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 38, 7, 3, 18, 1;
 EXEC Produccion.agregarOrdenVenta 39, 20, 2, 8, 1;
-EXEC Produccion.agregarOrdenVenta 39, 20, 1, 15, 1;
-EXEC Produccion.agregarOrdenVenta 41, 45, 3, 26, 1;
-EXEC Produccion.agregarOrdenVenta 41, 45, 2, 37, 1;
+EXEC Produccion.agregarOrdenVenta 39, 20, 1, 12, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 3, 27, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 2, 42, 1;
 EXEC Produccion.agregarOrdenVenta 43, 37, 1, 18, 1;
 EXEC Produccion.agregarOrdenVenta 44, 38, 3, 19, 1;
-EXEC Produccion.agregarOrdenVenta 45, 14, 2, 14, 1;
+EXEC Produccion.agregarOrdenVenta 45, 14, 2, 12, 1;
 EXEC Produccion.agregarOrdenVenta 46, 17, 3, 27, 1;
 EXEC Produccion.agregarOrdenVenta 47, 7, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
