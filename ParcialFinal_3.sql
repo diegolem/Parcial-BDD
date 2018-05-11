@@ -4353,7 +4353,7 @@ EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Ju
 EXEC Compra.agregarProveedor 'Needle and Fabric','Boulevard de los procesores, frente a banco Davivienda','2426-3234','needlefabric@gmail.com'
 EXEC Compra.agregarProveedor 'Lightning Fabric','Boulevard los soldados, Edificio #72 Poligono #09','6823-3215','lighningfabricESA@gmail.com'
 EXEC Compra.agregarProveedor 'Variedades Jeltrudis','Mercado Zacamil,Mejicanos, puesto #55','2983-4343','jeltrudisvariety@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Guzman','Boulevard los procesores, Edificio #64 Poligono #32','2641-2555','textileslinaza@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Guzman','Boulevard los procesores, Edificio #64 Poligono #32','2641-2555','textilesGuzman@gmail.com'
 EXEC Compra.agregarProveedor 'Threads Prime','Galerias San Salvador, Nivel #3 local #42','6109-1112','theadsprime@gmail.com'
 EXEC Compra.agregarProveedor 'Threads Falcon','Soyapango San Salvador,Calle hacia Plaza mundo Poligono #48','2083-4321','hilosfalconmaster@gmail.com'
 EXEC Compra.agregarProveedor 'Master Textiles','Boulevard los almendros, Edificio #10 Poligono #2','2042-4202','mastertelas@gmail.com'
@@ -4524,7 +4524,7 @@ EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 49, 26, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 50, 29, 3, 5, 1;
 
-EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, idTalla, 5, 1;
+EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, 1, 5, 1;
 EXEC Produccion.agregarOrdenVentaTalla 20, 50, idTalla, 1, 2;
 EXEC Produccion.agregarOrdenVentaTalla 26, 47.8, idTalla, 2, 3;
 EXEC Produccion.agregarOrdenVentaTalla 25, 9, idTalla, 6, 4;
