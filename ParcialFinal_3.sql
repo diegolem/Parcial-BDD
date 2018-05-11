@@ -4349,11 +4349,11 @@ EXEC Compra.agregarProveedor 'Textufil La paz','Ciudad Nuevo Mundo, calle speake
 EXEC Compra.agregarProveedor 'Needle and Style','Calle de Hotel Juventus contiguo a Papa John´s','2314-3257','needlestyle@gmail.com'
 EXEC Compra.agregarProveedor 'Sant Patricia','Avenida la vega, San Salvador enfrente de China Work','2000-2136','santpatricia@gmail.com'
 EXEC Compra.agregarProveedor 'Pintura Fine','Paseo general Escalón Nivel #1, local #98','2190-3246','pinturafine@gmail.com'
-EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2014','fabricfine@gmail.com'
+EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2014','los_santos@gmail.com'
 EXEC Compra.agregarProveedor 'Needle and Fabric','Boulevard de los procesores, frente a banco Davivienda','2426-3234','needlefabric@gmail.com'
 EXEC Compra.agregarProveedor 'Lightning Fabric','Boulevard los soldados, Edificio #72 Poligono #09','6823-3215','lighningfabricESA@gmail.com'
 EXEC Compra.agregarProveedor 'Variedades Jeltrudis','Mercado Zacamil,Mejicanos, puesto #55','2983-4343','jeltrudisvariety@gmail.com'
-EXEC Compra.agregarProveedor 'Textiles Guzman','Boulevard los procesores, Edificio #64 Poligono #32','2641-2555','textileslinaza@gmail.com'
+EXEC Compra.agregarProveedor 'Textiles Guzman','Boulevard los procesores, Edificio #64 Poligono #32','2641-2555','textilesguzman@gmail.com'
 EXEC Compra.agregarProveedor 'Threads Prime','Galerias San Salvador, Nivel #3 local #42','6109-1112','theadsprime@gmail.com'
 EXEC Compra.agregarProveedor 'Threads Falcon','Soyapango San Salvador,Calle hacia Plaza mundo Poligono #48','2083-4321','hilosfalconmaster@gmail.com'
 EXEC Compra.agregarProveedor 'Master Textiles','Boulevard los almendros, Edificio #10 Poligono #2','2042-4202','mastertelas@gmail.com'
@@ -4486,7 +4486,7 @@ EXEC Produccion.agregarOrdenVenta 10, 18, 1, 20, 1;
 EXEC Produccion.agregarOrdenVenta 11, 19, 3, 3, 1;
 EXEC Produccion.agregarOrdenVenta 12, 1, 2, 2, 1;
 EXEC Produccion.agregarOrdenVenta 13, 19, 1, 45, 1;
-EXEC Produccion.agregarOrdenVenta 14, 8, 2, 50, 1;
+EXEC Produccion.agregarOrdenVenta 14, 8, 2, 46, 1;
 EXEC Produccion.agregarOrdenVenta 15, 9, 1, 30, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 6, 1;
@@ -4497,17 +4497,17 @@ EXEC Produccion.agregarOrdenVenta 21, 36, 3, 40, 1;
 EXEC Produccion.agregarOrdenVenta 21, 36, 3, 15, 1;
 EXEC Produccion.agregarOrdenVenta 21, 36, 2, 20, 1;
 EXEC Produccion.agregarOrdenVenta 21, 36, 1, 18, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 2, 5, 1;
+EXEC Produccion.agregarOrdenVenta 21, 40, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 26, 7, 1, 8, 1;
 EXEC Produccion.agregarOrdenVenta 27, 8, 3, 9, 1;
 EXEC Produccion.agregarOrdenVenta 28, 15, 3, 7, 1;
 EXEC Produccion.agregarOrdenVenta 29, 21, 1, 20, 1;
 EXEC Produccion.agregarOrdenVenta 30, 41, 2, 23, 1;
-EXEC Produccion.agregarOrdenVenta 31, 49, 3, 12, 1;
+EXEC Produccion.agregarOrdenVenta 31, 48, 3, 12, 1;
 EXEC Produccion.agregarOrdenVenta 32, 15, 1, 40, 1;
 EXEC Produccion.agregarOrdenVenta 33, 18, 2, 25, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 27, 1;
-EXEC Produccion.agregarOrdenVenta 34, 9, 3, 50, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 3, 35, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 2, 1;
 EXEC Produccion.agregarOrdenVenta 37, 6, 2, 8, 1;
 EXEC Produccion.agregarOrdenVenta 38, 7, 3, 9, 1;
@@ -4517,63 +4517,63 @@ EXEC Produccion.agregarOrdenVenta 41, 45, 3, 26, 1;
 EXEC Produccion.agregarOrdenVenta 41, 45, 2, 37, 1;
 EXEC Produccion.agregarOrdenVenta 43, 37, 1, 18, 1;
 EXEC Produccion.agregarOrdenVenta 44, 38, 3, 19, 1;
-EXEC Produccion.agregarOrdenVenta 45, 14, 2, 50, 1;
-EXEC Produccion.agregarOrdenVenta 46, 17, 3, 49, 1;
+EXEC Produccion.agregarOrdenVenta 45, 14, 2, 14, 1;
+EXEC Produccion.agregarOrdenVenta 46, 17, 3, 27, 1;
 EXEC Produccion.agregarOrdenVenta 47, 7, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 49, 26, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 50, 29, 3, 5, 1;
 
-EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, idTalla, 5, 1;
-EXEC Produccion.agregarOrdenVentaTalla 20, 50, idTalla, 1, 2;
-EXEC Produccion.agregarOrdenVentaTalla 26, 47.8, idTalla, 2, 3;
-EXEC Produccion.agregarOrdenVentaTalla 25, 9, idTalla, 6, 4;
-EXEC Produccion.agregarOrdenVentaTalla 14, 50.6, idTalla, 4, 5;
-EXEC Produccion.agregarOrdenVentaTalla 26, 40, idTalla, 8, 6;
-EXEC Produccion.agregarOrdenVentaTalla 10, 10, idTalla, 9, 7;
-EXEC Produccion.agregarOrdenVentaTalla 40, 74, idTalla, 1, 8;
-EXEC Produccion.agregarOrdenVentaTalla 16, 50, idTalla, 2, 9;
-EXEC Produccion.agregarOrdenVentaTalla 25, 6.5, idTalla, 11, 10;
-EXEC Produccion.agregarOrdenVentaTalla 16, 45.6, idTalla, 11, 11;
-EXEC Produccion.agregarOrdenVentaTalla 14, 80.5, idTalla, 6, 12;
-EXEC Produccion.agregarOrdenVentaTalla 29, 40.5, idTalla, 3, 13;
-EXEC Produccion.agregarOrdenVentaTalla 9, 10, idTalla, 5, 14;
-EXEC Produccion.agregarOrdenVentaTalla 7, 84.5, idTalla, 7, 15;
-EXEC Produccion.agregarOrdenVentaTalla 15, 46, idTalla, 8, 16;
-EXEC Produccion.agregarOrdenVentaTalla 16, 35, idTalla, 6, 17;
-EXEC Produccion.agregarOrdenVentaTalla 31, 28, idTalla, 1, 18;
-EXEC Produccion.agregarOrdenVentaTalla 17, 36, idTalla, 10, 19;
-EXEC Produccion.agregarOrdenVentaTalla 29, 17, idTalla, 11, 20;
-EXEC Produccion.agregarOrdenVentaTalla 8, 25, idTalla, 4, 21;
-EXEC Produccion.agregarOrdenVentaTalla 17, 18, idTalla, 5, 22;
-EXEC Produccion.agregarOrdenVentaTalla 16, 26, idTalla, 6, 23;
-EXEC Produccion.agregarOrdenVentaTalla 32, 18, idTalla, 5, 24;
-EXEC Produccion.agregarOrdenVentaTalla 17, 17, idTalla, 8, 25;
-EXEC Produccion.agregarOrdenVentaTalla 16, 9.01, idTalla, 9, 26;
-EXEC Produccion.agregarOrdenVentaTalla 17, 8.8, idTalla, 8, 27;
-EXEC Produccion.agregarOrdenVentaTalla 16, 19.6, idTalla, 9, 28;
-EXEC Produccion.agregarOrdenVentaTalla 19, 29.6, idTalla, 8, 29;
-EXEC Produccion.agregarOrdenVentaTalla 27, 38.8, idTalla, 4, 30;
-EXEC Produccion.agregarOrdenVentaTalla 18, 25, idTalla, 5, 31;
-EXEC Produccion.agregarOrdenVentaTalla 19, 27, idTalla, 6, 32;
-EXEC Produccion.agregarOrdenVentaTalla 25, 19.8, idTalla, 4, 33;
-EXEC Produccion.agregarOrdenVentaTalla 26, 15.4, idTalla, 3, 34;
-EXEC Produccion.agregarOrdenVentaTalla 9, 16.3, idTalla, 2, 35;
-EXEC Produccion.agregarOrdenVentaTalla 7, 9.5, idTalla, 1, 36;
-EXEC Produccion.agregarOrdenVentaTalla 46, 18.6, idTalla, 7, 37;
-EXEC Produccion.agregarOrdenVentaTalla 8, 34.3, idTalla, 8, 38;
-EXEC Produccion.agregarOrdenVentaTalla 9, 38.4, idTalla, 9, 39;
-EXEC Produccion.agregarOrdenVentaTalla 8, 45.8, idTalla, 11, 40;
-EXEC Produccion.agregarOrdenVentaTalla 7, 6, idTalla, 1, 41;
-EXEC Produccion.agregarOrdenVentaTalla 20, 48, idTalla, 9, 42;
-EXEC Produccion.agregarOrdenVentaTalla 20, 25, idTalla, 8, 43;
-EXEC Produccion.agregarOrdenVentaTalla 16, 14, idTalla, 7, 44;
-EXEC Produccion.agregarOrdenVentaTalla 17, 16, idTalla, 9, 45;
-EXEC Produccion.agregarOrdenVentaTalla 26, 18.6, idTalla, 6, 46;
-EXEC Produccion.agregarOrdenVentaTalla 47, 25.6, idTalla, 7, 47;
-EXEC Produccion.agregarOrdenVentaTalla 59, 14.3, idTalla, 5, 48;
-EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, idTalla, 6, 49;
-EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, idTalla, 4, 50;
+EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, 17, 5, 1;
+EXEC Produccion.agregarOrdenVentaTalla 20, 50, 20, 1, 2;
+EXEC Produccion.agregarOrdenVentaTalla 26, 47.8, 37, 2, 3;
+EXEC Produccion.agregarOrdenVentaTalla 25, 9, 112, 6, 4;
+EXEC Produccion.agregarOrdenVentaTalla 14, 50.6, 186, 4, 5;
+EXEC Produccion.agregarOrdenVentaTalla 26, 40, 188, 8, 6;
+EXEC Produccion.agregarOrdenVentaTalla 10, 10, 119, 9, 7;
+EXEC Produccion.agregarOrdenVentaTalla 40, 74, 96, 1, 8;
+EXEC Produccion.agregarOrdenVentaTalla 16, 50, 183, 2, 9;
+EXEC Produccion.agregarOrdenVentaTalla 25, 6.5, 72, 11, 10;
+EXEC Produccion.agregarOrdenVentaTalla 16, 45.6, 74, 11, 11;
+EXEC Produccion.agregarOrdenVentaTalla 14, 80.5, 3, 6, 12;
+EXEC Produccion.agregarOrdenVentaTalla 29, 40.5, 75, 3, 13;
+EXEC Produccion.agregarOrdenVentaTalla 9, 10, 30, 5, 14;
+EXEC Produccion.agregarOrdenVentaTalla 7, 84.5, 36, 7, 15;
+EXEC Produccion.agregarOrdenVentaTalla 15, 46, 27, 8, 16;
+EXEC Produccion.agregarOrdenVentaTalla 16, 35, 28, 6, 17;
+EXEC Produccion.agregarOrdenVentaTalla 31, 28, 26, 1, 18;
+EXEC Produccion.agregarOrdenVentaTalla 17, 36, 99, 10, 19;
+EXEC Produccion.agregarOrdenVentaTalla 29, 17, 27, 11, 20;
+EXEC Produccion.agregarOrdenVentaTalla 8, 25, 141, 4, 21;
+EXEC Produccion.agregarOrdenVentaTalla 17, 18, 142, 5, 22;
+EXEC Produccion.agregarOrdenVentaTalla 16, 26, 143, 6, 23;
+EXEC Produccion.agregarOrdenVentaTalla 32, 18, 144, 5, 24;
+EXEC Produccion.agregarOrdenVentaTalla 17, 17, 160, 8, 25;
+EXEC Produccion.agregarOrdenVentaTalla 16, 9.01, 28, 9, 26;
+EXEC Produccion.agregarOrdenVentaTalla 17, 8.8, 30, 8, 27;
+EXEC Produccion.agregarOrdenVentaTalla 16, 19.6, 59, 9, 28;
+EXEC Produccion.agregarOrdenVentaTalla 19, 29.6, 83, 8, 29;
+EXEC Produccion.agregarOrdenVentaTalla 27, 38.8, 162, 4, 30;
+EXEC Produccion.agregarOrdenVentaTalla 18, 25, 189, 5, 31;
+EXEC Produccion.agregarOrdenVentaTalla 19, 27, 57, 6, 32;
+EXEC Produccion.agregarOrdenVentaTalla 25, 19.8, 71, 4, 33;
+EXEC Produccion.agregarOrdenVentaTalla 26, 15.4, 35, 3, 34;
+EXEC Produccion.agregarOrdenVentaTalla 9, 16.3, 34, 2, 35;
+EXEC Produccion.agregarOrdenVentaTalla 7, 9.5, 33, 1, 36;
+EXEC Produccion.agregarOrdenVentaTalla 46, 18.6, 24, 7, 37;
+EXEC Produccion.agregarOrdenVentaTalla 8, 34.3, 26, 8, 38;
+EXEC Produccion.agregarOrdenVentaTalla 9, 38.4, 80, 9, 39;
+EXEC Produccion.agregarOrdenVentaTalla 8, 45.8, 77, 11, 40;
+EXEC Produccion.agregarOrdenVentaTalla 7, 6, 177, 1, 41;
+EXEC Produccion.agregarOrdenVentaTalla 20, 48, 180, 9, 42;
+EXEC Produccion.agregarOrdenVentaTalla 20, 25, 146, 8, 43;
+EXEC Produccion.agregarOrdenVentaTalla 16, 14, 151, 7, 44;
+EXEC Produccion.agregarOrdenVentaTalla 17, 16, 56, 9, 45;
+EXEC Produccion.agregarOrdenVentaTalla 26, 18.6, 67, 6, 46;
+EXEC Produccion.agregarOrdenVentaTalla 47, 25.6, 25, 7, 47;
+EXEC Produccion.agregarOrdenVentaTalla 59, 14.3, 31, 5, 48;
+EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, 104, 6, 49;
+EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, 115, 4, 50;
 
 --Backup de la BDD
 CREATE PROCEDURE CrearBackup --BDD
