@@ -3182,56 +3182,56 @@ EXEC Produccion.agregarModulo 'Módulo 9', 300,1
 EXEC Produccion.agregarModulo 'Módulo 10', 300,1
 EXEC Produccion.agregarModulo 'FastTrack',125,2
 
-EXEC Venta.agregarFactura '2017-06-15','2017-05-27','2017-05-31','2017-06-01','Calle las brisas, Av. Chinameca Condominio #4',1
-EXEC Venta.agregarFactura '2017-09-21','2017-08-27','2017-09-06','2017-09-07','Sucursal de Metrocento, San Salvador',2
-EXEC Venta.agregarFactura '2017-08-22','2017-05-27','2017-08-07','2017-08-08','Sucursal Unicentro Soyapango',3
-EXEC Venta.agregarFactura '2017-07-17','2017-07-27','2017-07-02','2017-07-03','Sucursal Metrocentro, Cerca de Adidas',4
-EXEC Venta.agregarFactura '2018-02-19','2018-01-30','2018-02-04','2018-02-05','Boulevar Constitución, atras de Papa Jonh`s',5
-EXEC Venta.agregarFactura '2018-01-16','2017-12-21','2018-01-01','2018-01-02','Calle a Apulo, Edificio #45,parcela #40',6
-EXEC Venta.agregarFactura '2018-02-25','2018-01-27','2018-02-10','2018-02-11','Metrocentro Doceava Etapa, a la par St Jack´s',7
-EXEC Venta.agregarFactura '2017-10-24','2017-09-27','2017-10-09','2017-10-10','Plaza Mundo San Salvador, local #53',8
-EXEC Venta.agregarFactura '2017-09-29','2017-08-27','2017-09-14','2017-09-15','Calle a San sebastian, condominio #55, Edificio Rojo',9
-EXEC Venta.agregarFactura '2017-05-26','2017-04-27','2017-05-11','2017-05-12','44 calle 2 Zona 12,Guatemala',10
-EXEC Venta.agregarFactura '2018-04-21','2018-03-27','2018-04-06','2018-04-07','Centro comercial la cascada etapa #1,Local #12',11
-EXEC Venta.agregarFactura '2018-03-20','2018-02-27','2018-03-05','2018-03-06','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1',12
-EXEC Venta.agregarFactura '2017-06-28','2017-05-27','2017-06-13','2017-06-14','Metrosur San Salvador, segunda planta local #99',13
-EXEC Venta.agregarFactura '2017-05-30','2017-04-27','2017-05-15','2017-05-16','Galerias San Salvador, 3º nivel, local #12',14
-EXEC Venta.agregarFactura '2018-03-29','2018-02-27','2018-03-14','2018-03-15','Galerias San Salvador,Cerca del cine local #41',15
-EXEC Venta.agregarFactura '2017-09-16','2017-08-27','2017-09-01','2017-09-02','Calle el estante, Cabañas, comercial maria purisima,local #47',16
-EXEC Venta.agregarFactura '2018-03-26','2018-02-27','2018-03-11','2018-03-12','Sucursal Plaza Mundo, Etapa 2, local #43',17
-EXEC Venta.agregarFactura '2017-08-31','2017-07-27','2017-08-16','2017-08-17','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks',18
-EXEC Venta.agregarFactura '2017-08-20','2017-07-27','2017-08-05','2017-08-06','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro',19
-EXEC Venta.agregarFactura '2017-05-15','2017-04-27','2017-04-30','2017-05-01','Calle a Paseo general Escalón, Edificio Verde Local #1',20
-EXEC Venta.agregarFactura '2017-04-02','2017-03-27','2017-03-18','2017-03-19','Metrocentro San Salvador,1º Nivel, Local #43',21
-EXEC Venta.agregarFactura '2017-04-22','2017-03-27','2017-04-07','2017-04-08','Galerias San Salvador, 2º Etapa, nivel #2, local #55',22
-EXEC Venta.agregarFactura '2018-03-27','2018-02-27','2018-03-12','2018-03-13','Soyapango San Salvador, Calle a plan del pino',23
-EXEC Venta.agregarFactura '2018-02-28','2018-01-27','2018-02-13','2018-02-14','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines',24
-EXEC Venta.agregarFactura '2017-01-20','2017-12-20','2017-01-05','2017-01-06','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1',25
-EXEC Venta.agregarFactura '2018-04-15','2018-03-21','2018-03-31','2018-04-01','San Miguel, El Salvador, Calle la Conquista Edificio Azul',26
-EXEC Venta.agregarFactura '2017-08-21','2017-07-23','2017-08-06','2017-08-07','Sucursal de Plaza Mundo, San Salvador',27
-EXEC Venta.agregarFactura '2017-07-22','2017-06-26','2017-07-07','2017-07-08','Sucursal Metrocentro San Salvador',28
-EXEC Venta.agregarFactura '2017-06-17','2017-05-29','2017-06-02','2017-06-03','Sucursal Metrocentro, Cerca de ADOC y MD',29
-EXEC Venta.agregarFactura '2018-02-19','2018-01-25','2018-02-04','2018-02-05','Boulevar Constitución, atras de Pollo Real',30
-EXEC Venta.agregarFactura '2018-02-16','2018-01-21','2018-02-01','2018-02-02','Calle a Apulo, Edificio #42,parcela #2',31
-EXEC Venta.agregarFactura '2018-03-25','2018-02-27','2018-03-10','2018-03-11','Metrocentro Cuarta etapa, a la par de Jacarandas',32
-EXEC Venta.agregarFactura '2017-09-24','2017-08-29','2017-09-09','2017-09-10','Metrocentro San Salvador, local #23',33
-EXEC Venta.agregarFactura '2017-08-29','2017-07-20','2017-08-14','2017-08-15','Paseo General Escalón, condominio #15, Edificio Azul',34
-EXEC Venta.agregarFactura '2018-04-26','2018-03-23','2018-04-11','2018-04-12','Unicentro Soyapango San Salvador, local #40',35
-EXEC Venta.agregarFactura '2018-03-21','2018-02-25','2018-03-06','2018-03-07','Centro comercial la cascada etapa #6,Local #68',36
-EXEC Venta.agregarFactura '2018-02-20','2018-01-27','2018-02-05','2018-02-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
-EXEC Venta.agregarFactura '2017-05-28','2017-04-26','2017-05-13','2017-05-14','MetroNorte San Salvador, tercera planta local #68',38
-EXEC Venta.agregarFactura '2018-04-30','2018-03-21','2018-04-15','2018-04-16','Galerias San Salvador, 1º nivel, local #10',39
-EXEC Venta.agregarFactura '2018-02-28','2018-01-23','2018-02-13','2018-02-14','Plaza Mundo San Salvador, 2º etapa,local #22',40
-EXEC Venta.agregarFactura '2017-08-16','2017-07-20','2017-08-01','2017-08-02','Calle la sucia, La unión, comercial maria santisima,local 2',41
-EXEC Venta.agregarFactura '2018-02-26','2018-01-27','2018-02-11','2018-02-12','Sucursal Galerias, Etapa 1, local #9',42
-EXEC Venta.agregarFactura '2017-07-31','2017-06-27','2017-07-16','2017-07-17','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4',43
-EXEC Venta.agregarFactura '2017-07-20','2017-06-27','2017-07-05','2017-07-06','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal',44
-EXEC Venta.agregarFactura '2018-04-15','2018-03-27','2018-03-31','2018-04-01','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41',45
-EXEC Venta.agregarFactura '2018-03-15','2018-02-22','2018-02-28','2018-03-01','Metrocentro San Salvador,2º Nivel, Local #66',46
-EXEC Venta.agregarFactura '2018-05-24','2018-04-29','2018-05-09','2018-05-10','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung',47
-EXEC Venta.agregarFactura '2018-02-27','2018-01-27','2018-02-12','2018-02-13','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero',48
-EXEC Venta.agregarFactura '2018-01-28','2017-12-27','2018-01-13','2018-01-14','Metrocentro San Salvador, A la par de Restaurante los Cebollines',49
-EXEC Venta.agregarFactura '2018-02-20','2018-01-20','2018-02-05','2018-02-06','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein',50
+EXEC Venta.agregarFactura '2018-06-23','2018-05-02','2018-06-08','2018-06-09','Calle las brisas, Av. Chinameca Condominio #4',1
+EXEC Venta.agregarFactura '2018-06-25','2018-05-07','2018-06-10','2018-06-11','Sucursal de Metrocento, San Salvador',2
+EXEC Venta.agregarFactura '2018-06-21','2018-05-05','2018-06-06','2018-06-07','Sucursal Unicentro Soyapango',3
+EXEC Venta.agregarFactura '2018-06-24','2018-05-01','2018-06-09','2018-06-10','Sucursal Metrocentro, Cerca de Adidas',4
+EXEC Venta.agregarFactura '2018-06-20','2018-05-06','2018-06-05','2018-06-06','Boulevar Constitución, atras de Papa Jonh`s',5
+EXEC Venta.agregarFactura '2018-06-29','2018-05-05','2018-06-14','2018-06-15','Calle a Apulo, Edificio #45,parcela #40',6
+EXEC Venta.agregarFactura '2018-06-24','2018-05-03','2018-06-09','2018-06-10','Metrocentro Doceava Etapa, a la par St Jack´s',7
+EXEC Venta.agregarFactura '2018-06-23','2018-05-02','2018-06-08','2018-06-09','Plaza Mundo San Salvador, local #53',8
+EXEC Venta.agregarFactura '2018-06-27','2018-05-10','2018-06-12','2018-06-13','Calle a San sebastian, condominio #55, Edificio Rojo',9
+EXEC Venta.agregarFactura '2018-06-21','2018-05-08','2018-06-06','2018-06-07','44 calle 2 Zona 12,Guatemala',10
+EXEC Venta.agregarFactura '2018-06-20','2018-05-10','2018-06-05','2018-06-06','Centro comercial la cascada etapa #1,Local #12',11
+EXEC Venta.agregarFactura '2018-06-18','2018-05-11','2018-06-03','2018-06-04','Calle la utilisima, Departamento de la Paz, en redondel la gloria edificio #1',12
+EXEC Venta.agregarFactura '2018-06-16','2018-05-08','2018-06-01','2018-06-02','Metrosur San Salvador, segunda planta local #99',13
+EXEC Venta.agregarFactura '2018-06-28','2018-05-02','2018-06-13','2018-06-14','Galerias San Salvador, 3º nivel, local #12',14
+EXEC Venta.agregarFactura '2018-06-23','2018-05-08','2018-06-08','2018-06-09','Galerias San Salvador,Cerca del cine local #41',15
+EXEC Venta.agregarFactura '2018-06-17','2018-05-02','2018-06-02','2018-06-03','Calle el estante, Cabañas, comercial maria purisima,local #47',16
+EXEC Venta.agregarFactura '2018-06-20','2018-05-07','2018-06-05','2018-06-06','Sucursal Plaza Mundo, Etapa 2, local #43',17
+EXEC Venta.agregarFactura '2018-06-20','2018-05-03','2018-06-05','2018-06-06','Sucursal Metrocentro San Salvador, 2 Etapa, por fuente con Starbucks',18
+EXEC Venta.agregarFactura '2018-06-30','2018-05-07','2018-06-15','2018-06-16','Sucursal Metrocentro San Salvador, 1 Etapa, por parqueo principal de Metrocentro',19
+EXEC Venta.agregarFactura '2018-06-24','2018-05-06','2018-06-09','2018-06-10','Calle a Paseo general Escalón, Edificio Verde Local #1',20
+EXEC Venta.agregarFactura '2018-06-02','2018-05-03','2018-05-18','2018-05-19','Metrocentro San Salvador,1º Nivel, Local #43',21
+EXEC Venta.agregarFactura '2018-06-01','2018-05-02','2018-05-17','2018-05-18','Galerias San Salvador, 2º Etapa, nivel #2, local #55',22
+EXEC Venta.agregarFactura '2018-06-27','2018-05-02','2018-06-12','2018-06-13','Soyapango San Salvador, Calle a plan del pino',23
+EXEC Venta.agregarFactura '2018-06-26','2018-05-02','2018-06-11','2018-06-12','Metrocentro San Salvador, Enfrente de Restaurante los Cebollines',24
+EXEC Venta.agregarFactura '2018-06-25','2018-05-01','2018-06-10','2018-06-11','Soyapango San Salvador calle la esperanza, edificio #4, parcela #1',25
+EXEC Venta.agregarFactura '2018-06-26','2018-05-08','2018-06-11','2018-06-12','San Miguel, El Salvador, Calle la Conquista Edificio Azul',26--otro
+EXEC Venta.agregarFactura '2018-06-28','2018-05-07','2018-06-13','2018-06-14','Sucursal de Plaza Mundo, San Salvador',27
+EXEC Venta.agregarFactura '2018-06-26','2018-05-10','2018-06-11','2018-06-12','Sucursal Metrocentro San Salvador',28
+EXEC Venta.agregarFactura '2018-06-20','2018-05-07','2018-06-05','2018-06-06','Sucursal Metrocentro, Cerca de ADOC y MD',29
+EXEC Venta.agregarFactura '2018-06-21','2018-05-08','2018-06-06','2018-06-07','Boulevar Constitución, atras de Pollo Real',30
+EXEC Venta.agregarFactura '2018-06-17','2018-05-06','2018-06-02','2018-06-03','Calle a Apulo, Edificio #42,parcela #2',31
+EXEC Venta.agregarFactura '2018-06-25','2018-05-10','2018-06-10','2018-06-11','Metrocentro Cuarta etapa, a la par de Jacarandas',32
+EXEC Venta.agregarFactura '2018-06-20','2018-05-07','2018-06-05','2018-06-06','Metrocentro San Salvador, local #23',33
+EXEC Venta.agregarFactura '2018-06-19','2018-05-10','2018-06-04','2018-06-05','Paseo General Escalón, condominio #15, Edificio Azul',34
+EXEC Venta.agregarFactura '2018-06-18','2018-05-11','2018-06-03','2018-06-04','Unicentro Soyapango San Salvador, local #40',35
+EXEC Venta.agregarFactura '2018-06-16','2018-05-03','2018-06-01','2018-06-02','Centro comercial la cascada etapa #6,Local #68',36
+EXEC Venta.agregarFactura '2018-06-20','2018-05-07','2018-06-05','2018-06-06','Calle la hacienda, Departamento de San Miguel, en redondel la esperanza edificio #4',37
+EXEC Venta.agregarFactura '2018-06-15','2018-05-01','2018-05-31','2018-06-01','MetroNorte San Salvador, tercera planta local #68',38
+EXEC Venta.agregarFactura '2018-06-16','2018-05-02','2018-06-01','2018-06-02','Galerias San Salvador, 1º nivel, local #10',39
+EXEC Venta.agregarFactura '2018-06-26','2018-05-08','2018-06-11','2018-06-12','Plaza Mundo San Salvador, 2º etapa,local #22',40
+EXEC Venta.agregarFactura '2018-06-21','2018-05-02','2018-06-06','2018-06-07','Calle la sucia, La unión, comercial maria santisima,local 2',41
+EXEC Venta.agregarFactura '2018-06-26','2018-05-11','2018-06-11','2018-06-12','Sucursal Galerias, Etapa 1, local #9',42
+EXEC Venta.agregarFactura '2018-06-13','2018-05-02','2018-05-29','2018-05-30','Sucursal La Cascada San Salvador, 1 Etapa,por la pizza Hut, local #4',43
+EXEC Venta.agregarFactura '2018-06-28','2018-05-01','2018-06-13','2018-06-14','Sucursal Galerias San Salvador, 3 Nivel, por salida de parqueo principal',44
+EXEC Venta.agregarFactura '2018-07-21','2018-05-11','2018-07-06','2018-07-07','Calle a Paseo general Escalón, por plaza Agua pura, Edificio #2, local #41',45
+EXEC Venta.agregarFactura '2018-06-22','2018-05-03','2018-06-07','2018-06-08','Metrocentro San Salvador,2º Nivel, Local #66',46
+EXEC Venta.agregarFactura '2018-06-27','2018-05-10','2018-06-12','2018-06-13','Galerias San Salvador, 1º Etapa, nivel #1, frente a Samsung',47
+EXEC Venta.agregarFactura '2018-06-16','2018-05-09','2018-06-01','2018-06-02','Soyapango San Salvador, Calle a Plaza mundo, a la par del Pollo Campero',48
+EXEC Venta.agregarFactura '2018-07-15','2018-05-11','2018-06-30','2018-07-01','Metrocentro San Salvador, A la par de Restaurante los Cebollines',49
+EXEC Venta.agregarFactura '2018-06-20','2018-05-06','2018-06-05','2018-06-06','Galerias San salvador, local #22 nivel #4, a la par de Calvin Klein',50
 
 EXEC Produccion.agregarTipoVariante 'BLANKS'
 EXEC Produccion.agregarTipoVariante 'SCREEN PRINTING'
@@ -3243,7 +3243,7 @@ EXEC Produccion.agregarDetalles 'Manga Derecha',0.55,8
 EXEC Produccion.agregarDetalles 'Manga Izquierda',0.55,8
 EXEC Produccion.agregarDetalles 'Espalda',0.75,8
 EXEC Produccion.agregarDetalles 'Sublimado',2.25,9
---revisar
+
 EXEC Produccion.agregarVarianteDetalle 2,1
 EXEC Produccion.agregarVarianteDetalle 2,2
 EXEC Produccion.agregarVarianteDetalle 2,3
@@ -3255,7 +3255,42 @@ EXEC Produccion.agregarFlujoTrabajo 1
 EXEC Produccion.agregarFlujoTrabajo 2
 EXEC Produccion.agregarFlujoTrabajo 3
 
-EXEC Produccion.agregarFlujoProceso 1,1
+EXEC Produccion.agregarFlujoProceso 1, 1
+EXEC Produccion.agregarFlujoProceso 1, 2
+EXEC Produccion.agregarFlujoProceso 1, 3
+EXEC Produccion.agregarFlujoProceso 1, 4
+EXEC Produccion.agregarFlujoProceso 1, 5
+EXEC Produccion.agregarFlujoProceso 1, 6
+EXEC Produccion.agregarFlujoProceso 1, 7
+EXEC Produccion.agregarFlujoProceso 1, 10
+EXEC Produccion.agregarFlujoProceso 1, 11
+EXEC Produccion.agregarFlujoProceso 1, 12
+EXEC Produccion.agregarFlujoProceso 1, 13
+EXEC Produccion.agregarFlujoProceso 1, 14
+EXEC Produccion.agregarFlujoProceso 2, 2
+EXEC Produccion.agregarFlujoProceso 2, 3
+EXEC Produccion.agregarFlujoProceso 2, 4
+EXEC Produccion.agregarFlujoProceso 2, 5
+EXEC Produccion.agregarFlujoProceso 2, 6
+EXEC Produccion.agregarFlujoProceso 2, 7
+EXEC Produccion.agregarFlujoProceso 2, 8
+EXEC Produccion.agregarFlujoProceso 2, 10
+EXEC Produccion.agregarFlujoProceso 2, 11
+EXEC Produccion.agregarFlujoProceso 2, 12
+EXEC Produccion.agregarFlujoProceso 2, 13
+EXEC Produccion.agregarFlujoProceso 2, 14
+EXEC Produccion.agregarFlujoProceso 3, 2
+EXEC Produccion.agregarFlujoProceso 3, 3
+EXEC Produccion.agregarFlujoProceso 3, 4
+EXEC Produccion.agregarFlujoProceso 3, 5
+EXEC Produccion.agregarFlujoProceso 3, 6
+EXEC Produccion.agregarFlujoProceso 3, 7
+EXEC Produccion.agregarFlujoProceso 3, 9
+EXEC Produccion.agregarFlujoProceso 3, 10
+EXEC Produccion.agregarFlujoProceso 3, 11
+EXEC Produccion.agregarFlujoProceso 3, 12
+EXEC Produccion.agregarFlujoProceso 3, 13
+EXEC Produccion.agregarFlujoProceso 3, 14
 
 EXEC Produccion.agregarEstadoSeguimiento 'En proceso'
 EXEC Produccion.agregarEstadoSeguimiento 'Finalizado'
@@ -3591,9 +3626,6 @@ exec Producto.agregarTalla @cantidadTela = 1.00, @idTipoTalla = 1,@idPrenda = 3,
 exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 48
 exec Producto.agregarTalla @cantidadTela = 1.77, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 48
 exec Producto.agregarTalla @cantidadTela = 2.60, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 48
-
-
-
 
 -- Camisa --
 EXEC Producto.agregarMedida 86.5,1,1
@@ -4334,7 +4366,7 @@ EXEC Compra.agregarProveedor 'Needle Miguel','Ciudad Delgado, calle el sol edifi
 EXEC Compra.agregarProveedor 'Pinturas el Bucanero','Boulevard la constitucion,a tres cuadras despues de Walmart Edificio #10','2314-2319','elbucaneroesa@gmail.com'
 
 EXEC Bodega.agregarMateriaPrima 'Tela Tipo Velvetón',450,750,1,A11,1,1
-EXEC Bodega.agregarMateriaPrima 'Tela Tipo Damasco', 500, 500, 1, A12, 1, 1
+EXEC Bodega.agregarMateriaPrima 'Tela Tipo Damasco', 500, 600, 1, A12, 1, 1
 EXEC Bodega.agregarMateriaPrima 'Tela Tipo Lona', 600, 650, 1, A13, 2, 2
 EXEC Bodega.agregarMateriaPrima 'Tela Tipo Gabardina', 200, 500, 1, A14, 3, 3
 EXEC Bodega.agregarMateriaPrima 'Tela Tipo Felpa', 200, 500, 1, A15, 5, 2
@@ -4384,61 +4416,62 @@ EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A62, 4, 50
 EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A63, 5, 50
 EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A64, 6, 50
 EXEC Bodega.agregarMateriaPrima 'Anilina', 800, 1400, 3, A65, 7, 50
+EXEC Bodega.agregarMateriaPrima 'Anilina', 700, 1400, 3, A66, 8, 50
 
 EXEC Compra.agregarEstadoCompras 'Normal'
 EXEC Compra.agregarEstadoCompras 'Urgente'
 EXEC Compra.agregarEstadoCompras 'Realizada'
 
-EXEC Compra.agregarCompra 600, 1, 1;
-EXEC Compra.agregarCompra 300, 1, 2;
+EXEC Compra.agregarCompra 100, 1, 1;
+EXEC Compra.agregarCompra 50, 1, 2;
 EXEC Compra.agregarCompra 200, 1, 3;
 EXEC Compra.agregarCompra 100, 1, 4;
-EXEC Compra.agregarCompra 400, 1, 5;
-EXEC Compra.agregarCompra 300, 1, 6;
+EXEC Compra.agregarCompra 200, 1, 5;
+EXEC Compra.agregarCompra 140, 1, 6;
 EXEC Compra.agregarCompra 100, 1, 7;
-EXEC Compra.agregarCompra 450, 1, 8;
+EXEC Compra.agregarCompra 150, 1, 8;
 EXEC Compra.agregarCompra 200, 1, 9;
-EXEC Compra.agregarCompra 520, 1, 10;
-EXEC Compra.agregarCompra 600, 1, 11;
-EXEC Compra.agregarCompra 700, 1, 12;
-EXEC Compra.agregarCompra 250, 1, 13;
+EXEC Compra.agregarCompra 120, 1, 10;
+EXEC Compra.agregarCompra 200, 1, 11;
+EXEC Compra.agregarCompra 200, 1, 12;
+EXEC Compra.agregarCompra 150, 1, 13;
 EXEC Compra.agregarCompra 300, 1, 14;
 EXEC Compra.agregarCompra 3500, 1, 15;
 EXEC Compra.agregarCompra 5500, 1, 16;
 EXEC Compra.agregarCompra 1520, 1, 17;
-EXEC Compra.agregarCompra 6850, 1, 18;
+EXEC Compra.agregarCompra 2850, 1, 18;
 EXEC Compra.agregarCompra 1650, 1, 19;
-EXEC Compra.agregarCompra 6520, 1, 20;
-EXEC Compra.agregarCompra 7650, 1, 21;
-EXEC Compra.agregarCompra 6520, 1, 22;
+EXEC Compra.agregarCompra 2520, 1, 20;
+EXEC Compra.agregarCompra 3650, 1, 21;
+EXEC Compra.agregarCompra 4520, 1, 22;
 EXEC Compra.agregarCompra 157, 1, 23;
 EXEC Compra.agregarCompra 870, 1, 24;
 EXEC Compra.agregarCompra 6080, 1, 25;
-EXEC Compra.agregarCompra 7500, 1, 26;
-EXEC Compra.agregarCompra 606, 1, 27;
-EXEC Compra.agregarCompra 666, 1, 28;
-EXEC Compra.agregarCompra 1950, 1, 29;
-EXEC Compra.agregarCompra 2000, 1, 30;
+EXEC Compra.agregarCompra 4500, 1, 26;
+EXEC Compra.agregarCompra 306, 1, 27;
+EXEC Compra.agregarCompra 266, 1, 28;
+EXEC Compra.agregarCompra 300, 1, 29;
+EXEC Compra.agregarCompra 200, 1, 30;
 EXEC Compra.agregarCompra 180, 1, 31;
-EXEC Compra.agregarCompra 607, 1, 32;
-EXEC Compra.agregarCompra 1250, 1, 33;
-EXEC Compra.agregarCompra 2050, 1, 34;
-EXEC Compra.agregarCompra 2300, 1, 35;
-EXEC Compra.agregarCompra 900, 1, 36;
-EXEC Compra.agregarCompra 1000, 1, 37;
+EXEC Compra.agregarCompra 207, 1, 32;
+EXEC Compra.agregarCompra 250, 1, 33;
+EXEC Compra.agregarCompra 250, 1, 34;
+EXEC Compra.agregarCompra 300, 1, 35;
+EXEC Compra.agregarCompra 300, 1, 36;
+EXEC Compra.agregarCompra 400, 1, 37;
 EXEC Compra.agregarCompra 150, 1, 38;
-EXEC Compra.agregarCompra 698, 1, 39;
-EXEC Compra.agregarCompra 784, 1, 40;
-EXEC Compra.agregarCompra 685, 1, 41;
-EXEC Compra.agregarCompra 1000, 1, 42;
-EXEC Compra.agregarCompra 1350, 1, 43;
+EXEC Compra.agregarCompra 398, 1, 39;
+EXEC Compra.agregarCompra 384, 1, 40;
+EXEC Compra.agregarCompra 385, 1, 41;
+EXEC Compra.agregarCompra 400, 1, 42;
+EXEC Compra.agregarCompra 350, 1, 43;
 EXEC Compra.agregarCompra 600, 1, 44;
-EXEC Compra.agregarCompra 800, 1, 45;
+EXEC Compra.agregarCompra 200, 1, 45;
 EXEC Compra.agregarCompra 150, 1, 46;
 EXEC Compra.agregarCompra 250, 1, 47;
 EXEC Compra.agregarCompra 600, 1, 48;
-EXEC Compra.agregarCompra 1000, 1, 49;
-EXEC Compra.agregarCompra 1250, 1, 50;
+EXEC Compra.agregarCompra 500, 1, 49;
+EXEC Compra.agregarCompra 150, 1, 50;
 
 EXEC Produccion.agregarOrdenVenta 1, 5, 1, 20, 1;
 EXEC Produccion.agregarOrdenVenta 1, 5, 1, 4, 1;
@@ -4542,46 +4575,7 @@ EXEC Produccion.agregarOrdenVentaTalla 59, 14.3, idTalla, 5, 48;
 EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, idTalla, 6, 49;
 EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, idTalla, 4, 50;
 
-EXEC Produccion.agregarFlujoProceso 1, 2
-EXEC Produccion.agregarFlujoProceso 1, 3
-EXEC Produccion.agregarFlujoProceso 1, 4
-EXEC Produccion.agregarFlujoProceso 1, 5
-EXEC Produccion.agregarFlujoProceso 1, 6
-EXEC Produccion.agregarFlujoProceso 1, 7
-EXEC Produccion.agregarFlujoProceso 1, 10
-EXEC Produccion.agregarFlujoProceso 1, 11
-EXEC Produccion.agregarFlujoProceso 1, 12
-EXEC Produccion.agregarFlujoProceso 1, 13
-EXEC Produccion.agregarFlujoProceso 1, 14
-EXEC Produccion.agregarFlujoProceso 2, 2
-EXEC Produccion.agregarFlujoProceso 2, 3
-EXEC Produccion.agregarFlujoProceso 2, 4
-EXEC Produccion.agregarFlujoProceso 2, 5
-EXEC Produccion.agregarFlujoProceso 2, 6
-EXEC Produccion.agregarFlujoProceso 2, 7
-EXEC Produccion.agregarFlujoProceso 2, 8
-EXEC Produccion.agregarFlujoProceso 2, 10
-EXEC Produccion.agregarFlujoProceso 2, 11
-EXEC Produccion.agregarFlujoProceso 2, 12
-EXEC Produccion.agregarFlujoProceso 2, 13
-EXEC Produccion.agregarFlujoProceso 2, 14
-EXEC Produccion.agregarFlujoProceso 3, 2
-EXEC Produccion.agregarFlujoProceso 3, 3
-EXEC Produccion.agregarFlujoProceso 3, 4
-EXEC Produccion.agregarFlujoProceso 3, 5
-EXEC Produccion.agregarFlujoProceso 3, 6
-EXEC Produccion.agregarFlujoProceso 3, 7
-EXEC Produccion.agregarFlujoProceso 3, 9
-EXEC Produccion.agregarFlujoProceso 3, 10
-EXEC Produccion.agregarFlujoProceso 3, 11
-EXEC Produccion.agregarFlujoProceso 3, 12
-EXEC Produccion.agregarFlujoProceso 3, 13
-EXEC Produccion.agregarFlujoProceso 3, 14
-
---EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
---EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
---select * from Produccion.ordenVenta
-
+--Backup de la BDD
 CREATE PROCEDURE CrearBackup --BDD
 AS
     DECLARE @fecha DATE
