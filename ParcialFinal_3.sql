@@ -1829,7 +1829,7 @@ GO
 --Tabla Venta.clientes
 --En caso de ser Tipo: Persona
 CREATE PROC Venta.modificarClientePersona
-@nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(14),@direccion VARCHAR(150),@telefono VARCHAR(9),
+@nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(17),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT, @idCliente int
 AS
 DECLARE @tra varchar(20) = 'transact'
