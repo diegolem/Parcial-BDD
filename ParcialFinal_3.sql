@@ -2703,9 +2703,13 @@ se tienen dentro de ella, el reporte debe ser generado con la siguiente estructu
 create type db_factura AS TABLE(nombre varchar(100), cantidad int, cantidadExtra int, precioUnitario decimal(18, 2), descripcion varchar(255), precioTotal decimal(18, 2));  
 GO
 
+/*declare @json varchar(max)
+exec Produccion.crearReporte @idFactura = 1, @JSON = @json output
+select @json
+select * from Produccion.ordenVenta
+*/
 create procedure Produccion.crearReporte @idFactura int, @JSON VARCHAR(MAX) OUTPUT
 as
-
 	IF EXISTS(SELECT * FROM venta.factura WHERE venta.factura.idFactura = @idFactura)
 	BEGIN
 		IF EXISTS (select * from Venta.factura inner join Produccion.ordenVenta on Venta.factura.idFactura = Produccion.ordenVenta.idFactura inner join Produccion.ordenDeVentaTalla on Produccion.ordenDeVentaTalla.idOrdenVenta = Produccion.ordenVenta.idOrdenVenta where Venta.factura.idFactura = @idFactura)
@@ -2784,13 +2788,15 @@ as
 		END
 		ELSE
 		BEGIN
-			select @JSON =  cast('{ "Error":"La factura no posee pedidos" }' as varchar)
+			select @JSON =  '{ "Error":"La factura no posee pedidos" }'
 		END
 	END
 	ELSE
 	BEGIN
-		select @JSON =  cast('{ "Error":"El registro no existe" }' as varchar)
+		select @JSON =  '{ "Error":"El registro no existe" }'
 	END
+
+	return 1
 go
 
 --Usuarios de la BDD //////////////////////////////////////////////////////////////////////////////////////
@@ -3165,10 +3171,10 @@ exec Producto.agregarTipoTalla @nombre = 'Extra extra large', @abreviacion = '4X
 exec Producto.agregarUbicacion @ubicacion = 'Pecho'
 exec Producto.agregarUbicacion @ubicacion = 'Cintura'
 exec Producto.agregarUbicacion @ubicacion = 'Trasero'
-exec Producto.agregarUbicacion @ubicacion = 'Tiro'
-exec Producto.agregarUbicacion @ubicacion = 'Manga'
+exec Producto.agregarUbicacion @ubicacion = 'Tiro' 
+exec Producto.agregarUbicacion @ubicacion = 'Manga' 
 exec Producto.agregarUbicacion @ubicacion = 'Costura interior'
-exec Producto.agregarUbicacion @ubicacion = 'Largo pantalon'
+exec Producto.agregarUbicacion @ubicacion = 'Largo pantalon' 
 exec Producto.agregarUbicacion @ubicacion = 'Ancho espalda'
 exec Producto.agregarUbicacion @ubicacion = 'Talle espalda'
 exec Producto.agregarUbicacion @ubicacion = 'Cuello'
@@ -3185,20 +3191,243 @@ exec Producto.agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1,
 exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
 exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 1
 
-exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 2
+exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 1,@idPrenda = 2, @idEstilo = 2
 exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 2
 exec Producto.agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 2
 exec Producto.agregarTalla @cantidadTela = 2.10, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 2
 
-exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 3
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 3
 exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 3
 exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 3
 exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 3
 
-exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 4
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 4
 exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 4
 exec Producto.agregarTalla @cantidadTela = 2.15, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 4
 exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 4
+
+exec Producto.agregarTalla @cantidadTela = 1.18, @idTipoTalla = 1,@idPrenda = 5, @idEstilo = 5
+exec Producto.agregarTalla @cantidadTela = 1.63, @idTipoTalla = 2,@idPrenda = 5, @idEstilo = 5
+exec Producto.agregarTalla @cantidadTela = 2.59, @idTipoTalla = 3,@idPrenda = 5, @idEstilo = 5
+exec Producto.agregarTalla @cantidadTela = 1.77, @idTipoTalla = 4,@idPrenda = 5, @idEstilo = 5
+
+exec Producto.agregarTalla @cantidadTela = 1.78, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 6
+exec Producto.agregarTalla @cantidadTela = 2.89, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 6
+exec Producto.agregarTalla @cantidadTela = 1.22, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 6
+exec Producto.agregarTalla @cantidadTela = 1.78, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 6
+
+exec Producto.agregarTalla @cantidadTela = 1.29, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 7
+exec Producto.agregarTalla @cantidadTela = 2.67, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 7
+exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 7
+exec Producto.agregarTalla @cantidadTela = 1.49, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 7
+
+exec Producto.agregarTalla @cantidadTela = 1.05, @idTipoTalla = 1,@idPrenda = 5, @idEstilo = 8
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 5, @idEstilo = 8
+exec Producto.agregarTalla @cantidadTela = 2.28, @idTipoTalla = 3,@idPrenda = 5, @idEstilo = 8
+exec Producto.agregarTalla @cantidadTela = 1.10, @idTipoTalla = 4,@idPrenda = 5, @idEstilo = 8
+
+exec Producto.agregarTalla @cantidadTela = 1.95, @idTipoTalla = 1,@idPrenda = 2, @idEstilo = 9
+exec Producto.agregarTalla @cantidadTela = 1.92, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 9
+exec Producto.agregarTalla @cantidadTela = 2.47, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 9
+exec Producto.agregarTalla @cantidadTela = 1.03, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 9
+
+exec Producto.agregarTalla @cantidadTela = 2.50, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 10
+exec Producto.agregarTalla @cantidadTela = 1.55, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 10
+exec Producto.agregarTalla @cantidadTela = 1.09, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 10
+exec Producto.agregarTalla @cantidadTela = 1.88, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 10
+
+exec Producto.agregarTalla @cantidadTela = 1.82, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 11
+exec Producto.agregarTalla @cantidadTela = 1.09, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 11
+exec Producto.agregarTalla @cantidadTela = 1.90, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 11
+exec Producto.agregarTalla @cantidadTela = 2.81, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 11
+
+exec Producto.agregarTalla @cantidadTela = 1.43, @idTipoTalla = 1,@idPrenda = 2, @idEstilo = 12
+exec Producto.agregarTalla @cantidadTela = 1.91, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 12
+exec Producto.agregarTalla @cantidadTela = 2.76, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 12
+exec Producto.agregarTalla @cantidadTela = 1.03, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 12
+
+exec Producto.agregarTalla @cantidadTela = 1.55, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 13
+exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 13
+exec Producto.agregarTalla @cantidadTela = 2.50, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 13
+exec Producto.agregarTalla @cantidadTela = 1.91, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 13
+
+exec Producto.agregarTalla @cantidadTela = 1.05, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 14
+exec Producto.agregarTalla @cantidadTela = 1.08, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 14
+exec Producto.agregarTalla @cantidadTela = 1.92, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 14
+exec Producto.agregarTalla @cantidadTela = 1.47, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 14
+
+exec Producto.agregarTalla @cantidadTela = 1.13, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 15
+exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 15
+exec Producto.agregarTalla @cantidadTela = 1.01, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 15
+exec Producto.agregarTalla @cantidadTela = 2.60, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 15
+
+exec Producto.agregarTalla @cantidadTela = 2.17, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 16
+exec Producto.agregarTalla @cantidadTela = 2.62, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 16
+exec Producto.agregarTalla @cantidadTela = 1.01, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 16
+exec Producto.agregarTalla @cantidadTela = 1.32, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 16
+
+exec Producto.agregarTalla @cantidadTela = 1.34, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 17
+exec Producto.agregarTalla @cantidadTela = 1.57, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 17
+exec Producto.agregarTalla @cantidadTela = 1.67, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 17
+exec Producto.agregarTalla @cantidadTela = 2.13, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 17
+
+exec Producto.agregarTalla @cantidadTela = 1.18, @idTipoTalla = 1,@idPrenda = 5, @idEstilo = 18
+exec Producto.agregarTalla @cantidadTela = 2.95, @idTipoTalla = 2,@idPrenda = 5, @idEstilo = 18
+exec Producto.agregarTalla @cantidadTela = 1.98, @idTipoTalla = 3,@idPrenda = 5, @idEstilo = 18
+exec Producto.agregarTalla @cantidadTela = 2.90, @idTipoTalla = 4,@idPrenda = 5, @idEstilo = 18
+
+exec Producto.agregarTalla @cantidadTela = 1.22, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 19
+exec Producto.agregarTalla @cantidadTela = 1.36, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 19
+exec Producto.agregarTalla @cantidadTela = 1.07, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 19
+exec Producto.agregarTalla @cantidadTela = 2.39, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 19
+
+exec Producto.agregarTalla @cantidadTela = 1.96, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 20
+exec Producto.agregarTalla @cantidadTela = 1.04, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 20
+exec Producto.agregarTalla @cantidadTela = 1.13, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 20
+exec Producto.agregarTalla @cantidadTela = 1.74, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 20
+
+exec Producto.agregarTalla @cantidadTela = 1.41, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 21
+exec Producto.agregarTalla @cantidadTela = 2.36, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 21
+exec Producto.agregarTalla @cantidadTela = 1.56, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 21
+exec Producto.agregarTalla @cantidadTela = 1.63, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 21
+
+exec Producto.agregarTalla @cantidadTela = 1.63, @idTipoTalla = 1,@idPrenda = 5, @idEstilo = 22
+exec Producto.agregarTalla @cantidadTela = 1.31, @idTipoTalla = 2,@idPrenda = 5, @idEstilo = 22
+exec Producto.agregarTalla @cantidadTela = 1.68, @idTipoTalla = 3,@idPrenda = 5, @idEstilo = 22
+exec Producto.agregarTalla @cantidadTela = 1.62, @idTipoTalla = 4,@idPrenda = 5, @idEstilo = 22
+
+exec Producto.agregarTalla @cantidadTela = 1.82, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 23
+exec Producto.agregarTalla @cantidadTela = 1.89, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 23
+exec Producto.agregarTalla @cantidadTela = 1.81, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 23
+exec Producto.agregarTalla @cantidadTela = 1.43, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 23
+
+exec Producto.agregarTalla @cantidadTela = 1.68, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 24
+exec Producto.agregarTalla @cantidadTela = 2.70, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 24
+exec Producto.agregarTalla @cantidadTela = 1.21, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 24
+exec Producto.agregarTalla @cantidadTela = 1.56, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 24
+
+exec Producto.agregarTalla @cantidadTela = 2.76, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 25
+exec Producto.agregarTalla @cantidadTela = 1.86, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 25
+exec Producto.agregarTalla @cantidadTela = 1.03, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 25
+exec Producto.agregarTalla @cantidadTela = 1.57, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 25
+
+exec Producto.agregarTalla @cantidadTela = 2.28, @idTipoTalla = 1,@idPrenda = 2, @idEstilo = 26
+exec Producto.agregarTalla @cantidadTela = 2.50, @idTipoTalla = 2,@idPrenda = 2, @idEstilo = 26
+exec Producto.agregarTalla @cantidadTela = 1.28, @idTipoTalla = 3,@idPrenda = 2, @idEstilo = 26
+exec Producto.agregarTalla @cantidadTela = 1.22, @idTipoTalla = 4,@idPrenda = 2, @idEstilo = 26
+
+exec Producto.agregarTalla @cantidadTela = 1.43, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 27
+exec Producto.agregarTalla @cantidadTela = 2.25, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 27
+exec Producto.agregarTalla @cantidadTela = 1.67, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 27
+exec Producto.agregarTalla @cantidadTela = 2.47, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 27
+
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 28
+exec Producto.agregarTalla @cantidadTela = 1.43, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 28
+exec Producto.agregarTalla @cantidadTela = 1.93, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 28
+exec Producto.agregarTalla @cantidadTela = 1.54, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 28
+
+exec Producto.agregarTalla @cantidadTela = 1.05, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 29
+exec Producto.agregarTalla @cantidadTela = 2.60, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 29
+exec Producto.agregarTalla @cantidadTela = 1.83, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 29
+exec Producto.agregarTalla @cantidadTela = 2.14, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 29
+
+exec Producto.agregarTalla @cantidadTela = 2.36, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 30
+exec Producto.agregarTalla @cantidadTela = 2.82, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 30
+exec Producto.agregarTalla @cantidadTela = 2.25, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 30
+exec Producto.agregarTalla @cantidadTela = 2.46, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 30
+
+exec Producto.agregarTalla @cantidadTela = 1.23, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 31
+exec Producto.agregarTalla @cantidadTela = 1.66, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 31
+exec Producto.agregarTalla @cantidadTela = 1.46, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 31
+exec Producto.agregarTalla @cantidadTela = 2.67, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 31
+
+exec Producto.agregarTalla @cantidadTela = 2.61, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 32
+exec Producto.agregarTalla @cantidadTela = 2.63, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 32
+exec Producto.agregarTalla @cantidadTela = 2.26, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 32
+exec Producto.agregarTalla @cantidadTela = 1.59, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 32
+
+exec Producto.agregarTalla @cantidadTela = 2.33, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 33
+exec Producto.agregarTalla @cantidadTela = 1.35, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 33
+exec Producto.agregarTalla @cantidadTela = 1.61, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 33
+exec Producto.agregarTalla @cantidadTela = 1.09, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 33
+
+exec Producto.agregarTalla @cantidadTela = 2.22, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 34
+exec Producto.agregarTalla @cantidadTela = 2.69, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 34
+exec Producto.agregarTalla @cantidadTela = 1.38, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 34
+exec Producto.agregarTalla @cantidadTela = 1.60, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 34
+
+exec Producto.agregarTalla @cantidadTela = 1.11, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 35
+exec Producto.agregarTalla @cantidadTela = 1.76, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 35
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 35
+exec Producto.agregarTalla @cantidadTela = 1.22, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 35
+
+exec Producto.agregarTalla @cantidadTela = 1.04, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 36
+exec Producto.agregarTalla @cantidadTela = 1.15, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 36
+exec Producto.agregarTalla @cantidadTela = 1.23, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 36
+exec Producto.agregarTalla @cantidadTela = 1.77, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 36
+
+exec Producto.agregarTalla @cantidadTela = 1.72, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 37
+exec Producto.agregarTalla @cantidadTela = 2.40, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 37
+exec Producto.agregarTalla @cantidadTela = 1.81, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 37
+exec Producto.agregarTalla @cantidadTela = 1.54, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 37
+
+exec Producto.agregarTalla @cantidadTela = 1.07, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 38
+exec Producto.agregarTalla @cantidadTela = 1.28, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 38
+exec Producto.agregarTalla @cantidadTela = 1.01, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 38
+exec Producto.agregarTalla @cantidadTela = 1.80, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 38
+
+exec Producto.agregarTalla @cantidadTela = 1.35, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 39
+exec Producto.agregarTalla @cantidadTela = 1.20, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 39
+exec Producto.agregarTalla @cantidadTela = 1.99, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 39
+exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 39
+
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 40
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 40
+exec Producto.agregarTalla @cantidadTela = 1.77, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 40
+exec Producto.agregarTalla @cantidadTela = 1.14, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 40
+
+exec Producto.agregarTalla @cantidadTela = 1.06, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 41
+exec Producto.agregarTalla @cantidadTela = 1.33, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 41
+exec Producto.agregarTalla @cantidadTela = 1.86, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 41
+exec Producto.agregarTalla @cantidadTela = 1.14, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 41
+
+exec Producto.agregarTalla @cantidadTela = 1.91, @idTipoTalla = 1,@idPrenda = 4, @idEstilo = 42
+exec Producto.agregarTalla @cantidadTela = 1.12, @idTipoTalla = 2,@idPrenda = 4, @idEstilo = 42
+exec Producto.agregarTalla @cantidadTela = 2.14, @idTipoTalla = 3,@idPrenda = 4, @idEstilo = 42
+exec Producto.agregarTalla @cantidadTela = 1.42, @idTipoTalla = 4,@idPrenda = 4, @idEstilo = 42
+
+exec Producto.agregarTalla @cantidadTela = 1.75, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 43
+exec Producto.agregarTalla @cantidadTela = 1.14, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 43
+exec Producto.agregarTalla @cantidadTela = 2.73, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 43
+exec Producto.agregarTalla @cantidadTela = 1.83, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 43
+
+exec Producto.agregarTalla @cantidadTela = 1.35, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 44
+exec Producto.agregarTalla @cantidadTela = 1.99, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 44
+exec Producto.agregarTalla @cantidadTela = 2.20, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 44
+exec Producto.agregarTalla @cantidadTela = 1.36, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 44
+
+exec Producto.agregarTalla @cantidadTela = 1.70, @idTipoTalla = 1,@idPrenda = 7, @idEstilo = 45
+exec Producto.agregarTalla @cantidadTela = 1.79, @idTipoTalla = 2,@idPrenda = 7, @idEstilo = 45
+exec Producto.agregarTalla @cantidadTela = 1.02, @idTipoTalla = 3,@idPrenda = 7, @idEstilo = 45
+exec Producto.agregarTalla @cantidadTela = 1.08, @idTipoTalla = 4,@idPrenda = 7, @idEstilo = 45
+
+exec Producto.agregarTalla @cantidadTela = 1.93, @idTipoTalla = 1,@idPrenda = 6, @idEstilo = 46
+exec Producto.agregarTalla @cantidadTela = 2.33, @idTipoTalla = 2,@idPrenda = 6, @idEstilo = 46
+exec Producto.agregarTalla @cantidadTela = 1.97, @idTipoTalla = 3,@idPrenda = 6, @idEstilo = 46
+exec Producto.agregarTalla @cantidadTela = 1.51, @idTipoTalla = 4,@idPrenda = 6, @idEstilo = 46
+
+exec Producto.agregarTalla @cantidadTela = 1.55, @idTipoTalla = 1,@idPrenda = 1, @idEstilo = 47
+exec Producto.agregarTalla @cantidadTela = 2.35, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 47
+exec Producto.agregarTalla @cantidadTela = 1.93, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 47
+exec Producto.agregarTalla @cantidadTela = 1.97, @idTipoTalla = 4,@idPrenda = 1, @idEstilo = 47
+
+exec Producto.agregarTalla @cantidadTela = 1.00, @idTipoTalla = 1,@idPrenda = 3, @idEstilo = 48
+exec Producto.agregarTalla @cantidadTela = 1.71, @idTipoTalla = 2,@idPrenda = 3, @idEstilo = 48
+exec Producto.agregarTalla @cantidadTela = 1.77, @idTipoTalla = 3,@idPrenda = 3, @idEstilo = 48
+exec Producto.agregarTalla @cantidadTela = 2.60, @idTipoTalla = 4,@idPrenda = 3, @idEstilo = 48
+
+
+
 
 -- Camisa --
 EXEC Producto.agregarMedida 86.5,1,1
