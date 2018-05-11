@@ -976,7 +976,7 @@ CREATE PROC Venta.agregarClienteEmpresa
 @nombre VARCHAR(35),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT
 AS
-	DECLARE @dui VARCHAR(10),@nit VARCHAR(14)
+	DECLARE @dui VARCHAR(10),@nit VARCHAR(14), @transaccion varchar(20) = 'transact'
 	SET @dui = '-'
 	SET @nit = '-'
 	IF NOT EXISTS(SELECT * FROM Venta.clientes WHERE nombre = @nombre AND dui = @dui AND nit = @nit AND telefono = @telefono AND correo = @correo AND idTipo = @idTipo)
@@ -986,14 +986,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El cliente ya esta registrado'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.metodologia
 CREATE PROC Produccion.agregarMetodologia
 @nombre VARCHAR(100)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.metodologia WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Produccion.metodologia VALUES(@nombre)
@@ -1001,14 +1003,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La metodologia ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.modulo
 CREATE PROC Produccion.agregarModulo
 @nombre VARCHAR(60),@cantidadProduccion INT,@idMetodologia INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.modulo WHERE nombre = @nombre AND cantidadProduccion = @cantidadProduccion AND idMetodologia = @idMetodologia)
 	BEGIN
 		INSERT INTO Produccion.modulo VALUES(@nombre,@cantidadProduccion,@idMetodologia)
@@ -1016,15 +1020,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El modulo ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Venta.factura
 CREATE PROC Venta.agregarFactura
 @requiredDate Date,@orderDate DATE,@finishedDate DATE,@shipmentDate DATE,@direccion VARCHAR(250),@idCliente INT
 AS
-DECLARE @total MONEY
+DECLARE @total MONEY, @transaccion varchar(20) = 'transact'
 	IF (DATEDIFF(DAY,@finishedDate,@shipmentDate) = 1)
 	BEGIN
 		IF(DATEDIFF(DAY,@shipmentDate,@requiredDate) = 14)
@@ -1035,20 +1040,23 @@ DECLARE @total MONEY
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'La fecha de envio debe ser dos semanas antes que la de requisicion'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La fecha de envio debe ser un dia mas que la de finalizacion'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.tipoVariante
 CREATE PROC Produccion.agregarTipoVariante
 @nombre VARCHAR(25)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.tipoVariante WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Produccion.tipoVariante VALUES(@nombre)
@@ -1056,8 +1064,9 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El tipo de variante ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.Detalles
@@ -1071,10 +1080,12 @@ GO
 CREATE PROC Produccion.agregarVarianteDetalle
 @idVariante INT,@idDetalle INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF(@idVariante = 1)
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La categoría Blanks no incluye ningun estampado ni sublimado'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 	ELSE
 	BEGIN
@@ -1092,6 +1103,7 @@ GO
 CREATE PROC Produccion.agregarFlujoProceso
 @idFlujo INT,@idProceso INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.detalleFlujoTrabajoProcesos WHERE idFLujo = @idFlujo AND idProceso = @idProceso)
 	BEGIN
 		INSERT INTO Produccion.detalleFlujoTrabajoProcesos VALUES(@idFlujo,@idProceso)
@@ -1099,14 +1111,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El flujo con este proceso ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.estadoSeguimiento
 CREATE PROC Produccion.agregarEstadoSeguimiento
 @nombre VARCHAR(25)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Produccion.estadoSeguimiento VALUES(@nombre)
@@ -1114,14 +1128,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El estado de seguimiento ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Produccion.estadoOrden
 CREATE PROC Produccion.agregarEstadoOrden
 @nombre VARCHAR(25)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Produccion.estadoOrden WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Produccion.estadoOrden VALUES(@nombre)
@@ -1129,14 +1145,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El estado de la orden ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Producto.prenda
 CREATE PROC Producto.agregarPrenda
 @nombre VARCHAR(100),@precio MONEY
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.prenda WHERE nombre = @nombre AND precio = @precio)
 	BEGIN
 		IF(@precio > 0)
@@ -1146,20 +1164,23 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'El precio debe ser mayor que 0'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La prenda ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Producto.estilo
 CREATE PROC Producto.agregarEstilo
 @codigo CHAR(5),@idPrenda INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.estilo WHERE codigo = @codigo)
 	BEGIN
 		IF(@codigo LIKE '%[A-Z][A-Z][0-9][0-9][0-9]%')
@@ -1170,14 +1191,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El estilo ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 -- Tabla Producto.tipoTalla
 CREATE PROC Producto.agregarTipoTalla
 @nombre VARCHAR(40),@abreviacion char(4)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.tipoTalla WHERE nombre = @nombre AND abreviacion = @abreviacion)
 	BEGIN
 		IF(@abreviacion IN ('2XS','XS','S','M','L','XL','2XL','3XL','4XL'))
@@ -1187,14 +1210,16 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'Ingrese una talla valida'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'El tipo de talla ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 
@@ -1202,6 +1227,7 @@ GO
 CREATE PROC Producto.agregarUbicacion
 @ubicacion VARCHAR(50)
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.tallaUbicacion WHERE ubicacion = @ubicacion)
 	BEGIN
 		INSERT INTO Producto.tallaUbicacion VALUES(@ubicacion)
@@ -1209,14 +1235,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La ubicacion de la talla ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Producto.talla
 CREATE PROC Producto.agregarTalla
 @cantidadTela DECIMAL(18,2),@idTipoTalla INT,@idPrenda INT,@idEstilo INT
 AS
+DECLARE @transaccion varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.talla WHERE cantidadTela = @cantidadTela AND idTipoTalla = @idTipoTalla AND idPrenda = @idPrenda AND idEstilo = @idEstilo)
 	BEGIN
 		IF(@cantidadTela > 0)
@@ -1226,20 +1254,23 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @transaccion
 			PRINT 'La cantidad de tela no puede ser menor que 0'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @transaccion
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @transaccion
 		PRINT 'La talla ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @transaccion
 	END
 GO
 --Tabla Producto.medida
 CREATE PROC Producto.agregarMedida
 @dimension DECIMAL(18,2),@idTalla INT,@idUbicacion INT
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Producto.medida WHERE dimension = @dimension AND idTalla = @idTalla AND idUbicacion = @idUbicacion)
 	BEGIN
 		IF(@dimension > 0)
@@ -1249,20 +1280,23 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La dimension no puede ser menor que 0'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'La medida ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla dbo.color
 CREATE PROC agregarColor
 @nombre VARCHAR(50)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM dbo.color WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO dbo.color VALUES(@nombre)
@@ -1270,8 +1304,9 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El color ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Produccion.ordenVenta
@@ -1279,7 +1314,7 @@ CREATE PROCEDURE Produccion.agregarOrdenVenta
 	@idFactura INT,@idEstilo INT,@idFlujo INT,
 	@idColor INT,@idEstado INT
 	AS
-    DECLARE @monto MONEY,@cantidad INT
+    DECLARE @monto MONEY,@cantidad INT,@tra varchar(20) = 'transact'
 		IF NOT EXISTS(SELECT * FROM Produccion.ordenVenta WHERE cantidad = @cantidad AND idFactura = @idFactura  AND idEstilo = @idEstilo AND idFlujo = @idFlujo AND idColor = @idColor AND idEstado = @idEstado)
 		BEGIN
             SET @monto = 0.00
@@ -1289,15 +1324,16 @@ CREATE PROCEDURE Produccion.agregarOrdenVenta
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'No se pudo ingresar la Orden revise los datos' 
-            ROLLBACK TRAN
+            ROLLBACK TRAN @tra
         END
 	GO
 --Tabla Produccion.ordenDeVentaTalla
 CREATE PROC Produccion.agregarOrdenVentaTalla
 @cantidad INT,@cantidadTela DECIMAL(18,2),@idTalla INT,@idModulo INT,@idOrdenVenta INT
 AS
-DECLARE @cantidadExtra INT
+DECLARE @cantidadExtra INT,@tra varchar(20) = 'transact'
 	IF(@cantidad > 0 AND @cantidad < 21)
 	BEGIN
 		SET @cantidadExtra = 1
@@ -1335,6 +1371,7 @@ GO
 CREATE PROC Produccion.agregartipoUnidadMedidas
 @idTipoUnidad CHAR(6),@nombre VARCHAR(60)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.tipoUnidadMedidas WHERE idTipoUnidad = @idTipoUnidad AND nombre = @nombre)
 	BEGIN
 		IF (@idTipoUnidad IN('YDS','GAL','LTR','UDS'))
@@ -1344,20 +1381,23 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'La unidad de medida no es válida'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'Esta unidad de medida ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.tipoMateriaPrima
 CREATE PROC Bodega.agregarTipoMateriaPrima
 @nombre VARCHAR(60),@idMedicion CHAR(6)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.tipoMateriaPrima WHERE nombre = @nombre AND idMedicion = @idMedicion)
 	BEGIN
 		IF (@idMedicion IN('YDS','GAL','LTR','UDS'))
@@ -1367,20 +1407,23 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'La unidad de medida no es válida'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El tipo de materia prima ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.estante
 CREATE PROCEDURE Bodega.agregarEstante
 @estante char(1)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.estante WHERE idEstante = @estante)
 	BEGIN
 		IF (@estante LIKE '%[A-H]%')
@@ -1390,20 +1433,23 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La letra del estante debe estar entre A-H'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El estante ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.Nivel
 CREATE PROC Bodega.agregarNivel
 @nivel INT
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.nivel WHERE nivel = @nivel)
 	BEGIN
 		IF(@nivel > 0 AND @nivel < 9)
@@ -1413,20 +1459,23 @@ AS
         END
         ELSE
         BEGIN
+			BEGIN TRAN @tra
             PRINT 'El nivel debe estar entre 1-8'
-            ROLLBACK TRAN
+            ROLLBACK TRAN @tra
         END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El nivel ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.Columna
 CREATE PROCEDURE Bodega.agregarColumna
 @columna INT
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.columna WHERE columna = @columna)
 	BEGIN
 		IF(@columna > 0 AND @columna < 10)
@@ -1436,21 +1485,23 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El valor de la columna debe estar entre 1-9'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'Esta columna ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.Compartimiento
 CREATE PROCEDURE Bodega.agregarCompartimiento
 @idCompartimiento CHAR(3),@estado TINYINT
 AS
-DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT
+DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT, @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.Compartimiento WHERE idCompartimiento = @idCompartimiento)
 	BEGIN
 		IF (@idCompartimiento LIKE '%[A-H][1-8][1-9]%')
@@ -1465,26 +1516,30 @@ DECLARE @idEstante CHAR(1),@idNivel INT,@idColumna INT
 			END
 			ELSE
 				BEGIN
+					BEGIN TRAN @tra
 					PRINT 'el estado no puede ser negativo'
-					ROLLBACK TRAN
+					ROLLBACK TRAN @tra
 				END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'el valor del Compartimiento es inválido'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'Este compartimiento ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Compra.Proveedor
 CREATE PROC Compra.agregarProveedor
 @nombre VARCHAR(100),@direccion VARCHAR(200),@telefono CHAR(9),@correo VARCHAR(50)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS (SELECT * FROM Compra.Proveedor WHERE nombre = @nombre AND direccion = @direccion AND telefono = @telefono AND correo = @correo)
 	BEGIN
 		INSERT INTO Compra.Proveedor VALUES(@nombre,@direccion,@telefono,@correo)
@@ -1492,8 +1547,9 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El proveedor ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Bodega.MateriaPrima
@@ -1501,6 +1557,7 @@ CREATE PROCEDURE Bodega.agregarMateriaPrima
 @descripcion varchar(200),@existencia decimal(18,2),@stockMaximo decimal(18,2),@idTipoMateriaPrima INT,
 @idCompartimiento CHAR(3),@idColor INT,@idProveedor INT
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Bodega.MateriaPrima WHERE descripcion = @descripcion AND idTipoMateriaPrima = @idTipoMateriaPrima AND idCompartimiento = @idCompartimiento)
 	BEGIN
 		IF(@existencia > 0)
@@ -1514,32 +1571,37 @@ AS
 				END
 				ELSE
 				BEGIN
+					BEGIN TRAN @tra
 					PRINT 'Verifique el codigo del compartimiento'
-					ROLLBACK TRAN
+					ROLLBACK TRAN @tra
 				END
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'Porfavor verifique los valores del stockMaximo'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La existencia no puede ser negativa'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'Este material ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Compra.estadoCompras
 CREATE PROC Compra.agregarEstadoCompras
 @nombre VARCHAR(25)
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF NOT EXISTS(SELECT * FROM Compra.estadoCompras WHERE nombre = @nombre)
 	BEGIN
 		INSERT INTO Compra.estadoCompras VALUES(@nombre)
@@ -1547,14 +1609,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El estado de Compras ya existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Compra.compras
 CREATE PROCEDURE Compra.agregarCompra
 	@cantidad DECIMAL(18,2),@idEstado INT,@idMateriaPrima INT
 	AS
+	DECLARE @tra varchar(20) = 'transact'
 		IF NOT EXISTS(SELECT * FROM Compra.compras WHERE cantidad = @cantidad AND idEstado = @idEstado AND idMateriaPrima = @idMateriaPrima)
 		BEGIN
 			IF (@cantidad > 0)
@@ -1572,14 +1636,16 @@ CREATE PROCEDURE Compra.agregarCompra
 			END
             ELSE
             BEGIN
+				BEGIN TRAN @tra
                 PRINT 'la cantidad no puede ser menor a 0'
-                ROLLBACK TRAN
+                ROLLBACK TRAN @tra
             END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La compra ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 GO
 --TRIGGER para verificar el abastecimiento
@@ -1692,6 +1758,7 @@ GO
 CREATE PROC Produccion.modificarDepartamento -- Tabla produccion
 @nombre VARCHAR(100),@descripcion VARCHAR(250), @idDepartamento int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.departamento WHERE idDepartamento = @idDepartamento)
 	BEGIN
 		iF NOT EXISTS(SELECT * FROM Produccion.departamento WHERE nombre = @nombre AND descripcion = @descripcion AND idDepartamento != @idDepartamento)
@@ -1701,8 +1768,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El departamento ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1714,6 +1782,7 @@ GO
 CREATE PROC Produccion.modificarProcesos -- Tabla proceso
 @nombre VARCHAR(30),@duracion INT,@idDepartamento INT, @idProceso int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.procesos WHERE idProceso = @idProceso)
 	BEGIN
 		IF(@duracion > 0)
@@ -1723,8 +1792,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La duracion del proceso no puede ser negativa'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1736,6 +1806,7 @@ GO
 CREATE PROC Venta.modificarTipoCliente
 @nombre VARCHAR(25), @idTipo int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Venta.tipoCliente WHERE idTipo = @idTipo)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Venta.tipoCliente WHERE nombre = @nombre AND idTipo != @idTipo	)
@@ -1745,8 +1816,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El tipo de cliente ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1760,6 +1832,7 @@ CREATE PROC Venta.modificarClientePersona
 @nombre VARCHAR(35),@dui CHAR(10),@nit CHAR(14),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT, @idCliente int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Venta.clientes WHERE idCliente = @idCliente)
 	BEGIN
 		IF(@dui LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][-][0-9]%')
@@ -1771,20 +1844,23 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'ingrese un NIT valido 0000-000000-000-0'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'Ingrese un formato de DUI valido 00000000-0'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El cliente no existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --En caso de ser Tipo: Empresa
@@ -1792,6 +1868,7 @@ CREATE PROC Venta.modificarClienteEmpresa
 @nombre VARCHAR(35),@direccion VARCHAR(150),@telefono VARCHAR(9),
 @correo VARCHAR(50),@idTipo INT, @idCliente int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Venta.clientes WHERE idCliente = @idCliente)
 	BEGIN
 		UPDATE Venta.clientes SET nombre = @nombre,direccion = @direccion, telefono = @telefono, correo = @correo, idTipo = @idTipo WHERE idCliente = @idCliente
@@ -1799,14 +1876,16 @@ AS
 	END
 	ELSE
 	BEGIN
+		BEGIN TRAN @tra
 		PRINT 'El cliente no existe'
-		ROLLBACK TRAN
+		ROLLBACK TRAN @tra
 	END
 GO
 --Tabla Produccion.metodologia
 CREATE PROC Produccion.modificarMetodologia
 @nombre VARCHAR(100), @idMetodologia int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.metodologia WHERE idMetodologia = @idMetodologia)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.metodologia WHERE nombre = @nombre AND idMetodologia != @idMetodologia)
@@ -1816,8 +1895,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La metodologia ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1829,6 +1909,7 @@ GO
 CREATE PROC Produccion.modificarModulo
 @nombre VARCHAR(60),@cantidadProduccion INT,@idMetodologia INT, @idModulo INT
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.modulo WHERE idModulo = @idModulo)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.modulo WHERE nombre = @nombre AND cantidadProduccion = @cantidadProduccion AND idMetodologia = @idMetodologia and idModulo != @idModulo)
@@ -1838,8 +1919,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El modulo ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1851,6 +1933,7 @@ GO
 CREATE PROC Venta.modificarFactura
 @requiredDate Date,@orderDate DATE,@finishedDate DATE,@shipmentDate DATE,@direccion VARCHAR(250),@idCliente INT, @idFactura int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Venta.factura WHERE idFactura = @idFactura)
 	BEGIN
 		IF (DATEDIFF(DAY,@finishedDate,@shipmentDate) = 1)
@@ -1862,14 +1945,16 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'La fecha de envio debe ser dos semanas antes que la de requisicion'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La fecha de envio debe ser un dia mas que la de finalizacion'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1881,6 +1966,7 @@ GO
 CREATE PROC Produccion.modificarTipoVariante
 @nombre VARCHAR(25), @idVariante int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.tipoVariante WHERE idVariante = @idVariante)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.tipoVariante WHERE nombre = @nombre AND idVariante != @idVariante)
@@ -1890,8 +1976,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El tipo de variante ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1943,6 +2030,7 @@ GO
 --Tabla Produccion.detalleFlujoTrabajoProcesos
 CREATE PROC Produccion.modificarFlujoProceso @idFlujo INT,@idProceso INT, @idNuevoProceso int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS (SELECT * FROM Produccion.detalleFlujoTrabajoProcesos WHERE idFLujo = @idFlujo)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.detalleFlujoTrabajoProcesos WHERE idFLujo = @idFlujo AND idProceso = @idNuevoProceso)
@@ -1952,8 +2040,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El flujo con este proceso ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1965,6 +2054,7 @@ GO
 CREATE PROC Produccion.modificarEstadoSeguimiento -- Tabla estado seguimiento
 @nombre VARCHAR(25), @idEstadoSeguimiento int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE idEstadoSeguimiento = @idEstadoSeguimiento)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.estadoSeguimiento WHERE nombre = @nombre AND idEstadoSeguimiento != @idEstadoSeguimiento)
@@ -1974,8 +2064,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El estado de seguimiento ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -1987,6 +2078,7 @@ GO
 CREATE PROC Produccion.modificarEstadoOrden -- Tabla estado orden
 @nombre VARCHAR(25), @idEstadoOrden int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Produccion.estadoOrden WHERE idEstadoOrden = @idEstadoOrden)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Produccion.estadoOrden WHERE nombre = @nombre AND idEstadoOrden != @idEstadoOrden)
@@ -1996,8 +2088,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El estado de la orden ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -2009,6 +2102,7 @@ GO
 CREATE PROC Producto.modificarPrenda
 @nombre VARCHAR(100),@precio MONEY, @idPrenda int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Producto.prenda WHERE idPrenda = @idPrenda)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Producto.prenda WHERE nombre = @nombre AND precio = @precio AND idPrenda != @idPrenda)
@@ -2020,14 +2114,16 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'El precio debe ser mayor que 0'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'La prenda ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
@@ -2039,6 +2135,7 @@ GO
 CREATE PROC Producto.modificarEstilo
 @codigo CHAR(5),@idPrenda INT, @idEstilo int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Producto.estilo WHERE idEstilo = @idEstilo)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Producto.estilo WHERE codigo = @codigo AND idEstilo != @idEstilo)
@@ -2051,8 +2148,9 @@ AS
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El estilo ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 GO
@@ -2060,6 +2158,7 @@ GO
 CREATE PROC Producto.modificarTipoTalla
 @nombre VARCHAR(40),@abreviacion char(4), @idTipoTalla int
 AS
+DECLARE @tra varchar(20) = 'transact'
 	IF EXISTS(SELECT * FROM Producto.tipoTalla WHERE idTipoTalla = @idTipoTalla)
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM Producto.tipoTalla WHERE nombre = @nombre AND abreviacion = @abreviacion AND idTipoTalla != @idTipoTalla)
@@ -2071,14 +2170,16 @@ AS
 			END
 			ELSE
 			BEGIN
+				BEGIN TRAN @tra
 				PRINT 'Ingrese una talla valida'
-				ROLLBACK TRAN
+				ROLLBACK TRAN @tra
 			END
 		END
 		ELSE
 		BEGIN
+			BEGIN TRAN @tra
 			PRINT 'El tipo de talla ya existe'
-			ROLLBACK TRAN
+			ROLLBACK TRAN @tra
 		END
 	END
 	ELSE
