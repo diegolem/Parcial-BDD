@@ -4183,6 +4183,10 @@ EXEC Produccion.agregarFlujoProceso 3, 12
 EXEC Produccion.agregarFlujoProceso 3, 13
 EXEC Produccion.agregarFlujoProceso 3, 14
 
+--EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
+--EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
+--select * from Produccion.ordenVenta
+
 CREATE PROCEDURE CrearBackup --BDD
 AS
     DECLARE @fecha DATE
@@ -4194,11 +4198,6 @@ AS
 	BACKUP DATABASE Fedisal TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
 	WITH INIT;
 
-<<<<<<< HEAD
-EXEC Produccion.agregarOrdenVentaTalla 25,25.50,1,1,1
-EXEC Produccion.agregarOrdenVentaTalla 28,38.4,1,1,1
-select * from Produccion.ordenVenta
-=======
     BACKUP DATABASE Fedisal TO DISK = @name
     WITH DIFFERENTIAL;
 ;
@@ -4244,4 +4243,3 @@ AS
 	;
 ;
 EXEC CreandoJob;
->>>>>>> d414bbd95ad1e6d2299ab796f378ed7d3907defd
