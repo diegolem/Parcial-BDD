@@ -305,31 +305,31 @@ idMateriaPrima int foreign key references materiaPrima(idMateriaPrima)
 
 	ALTER TABLE departamento
 	ADD CONSTRAINT CHK_departamento_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 	ALTER TABLE tipoCliente
 	ADD CONSTRAINT CHK_tipocliente_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 	ALTER TABLE metodologia
 	ADD CONSTRAINT CHK_metodologia_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 	ALTER TABLE estadoOrden
 	ADD CONSTRAINT CHK_estadoOrden_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 	ALTER TABLE tipoVariante
 	ADD CONSTRAINT CHK_tipoVariante_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 	ALTER TABLE estadoCompras
 	ADD CONSTRAINT CHK_estadoCompras_nombre
-	CHECK (nombre NOT LIKE  '%[^a-z]%');
+	CHECK (nombre NOT LIKE  '%[^a-z ]%');
 
 	ALTER TABLE estadoSeguimiento
 	ADD CONSTRAINT CHK_estadoSeguimiento_nombre
-	CHECK (nombre NOT LIKE '%[^a-z]%');
+	CHECK (nombre NOT LIKE '%[^a-z ]%');
 
 --Creaccion de Esquemas
 create schema Venta;
@@ -459,15 +459,16 @@ CREATE TRIGGER verificarComprasInsert
     BEGIN
         DECLARE
             @verificarCantidad DECIMAL(18,2),
-            @idMateria INT
+            @idMateria INT,@transaccion varchar(20) = 'transact'; 
         BEGIN
             SELECT @verificarCantidad = cantidad FROM inserted
             SELECT @idMateria = idMateriaPrima FROM inserted
             --Ingreso de datos
             IF (@verificarCantidad < 0)
             BEGIN
+				BEGIN TRAN @transaccion
                 PRINT 'La cantidad no debe ser menor a 0'
-                ROLLBACK TRAN
+                ROLLBACK TRAN @transaccion
             END
         END
 	END
@@ -2857,7 +2858,7 @@ GO
 --2.3 Usuario Administrador de Esquema, el cual podrá crear objetos como vistas,
 --procedimientos, tablas etc dentro de este esquema.
 DROP LOGIN AdministradorProduccion
-DROP LOGIN FernandaValle
+DROP USER FernandaValle
 CREATE LOGIN AdministradorProduccion
 WITH PASSWORD = '12345'
 CREATE USER FernandaValle FOR LOGIN AdministradorProduccion
