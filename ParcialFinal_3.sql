@@ -386,43 +386,53 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 	;
 -- 2. Vista completa de los trabajos en proceso.
 	CREATE VIEW trabajosProceso AS	
-		SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, F.idFactura AS [Factura (ID)]
-		FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
-		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2
-	; --Por ejemplo si en el id 2 es "En proceso";
--- 3. Vista de los trabajos que aún no han sido implementados.
-	CREATE VIEW trabajosPendientes AS	
-		SELECT O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
 		FROM Produccion.OrdenVenta O 
 		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
 		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 3
-; --Por ejemplo si en el id 1 es "pendiente";
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 1
+	; --Por ejemplo si en el id 1 es "En proceso";
+-- 3. Vista de los trabajos que aún no han sido implementados.
+	CREATE VIEW trabajosPendientes AS	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
+		FROM Produccion.OrdenVenta O 
+		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
+		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 3
+	; --Por ejemplo si en el id 1 es "pendiente";
 -- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
 --    datos de contacto.
 	CREATE VIEW productosNecesitados AS	
-		SELECT MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	
+		SELECT TMP.nombre AS [Tipo de Materia Prima], MP.descripcion AS [Producto], EC.nombre AS [Estado de Necesidad], P.nombre AS [Proveedor], P.telefono, P.correo
 		FROM Compra.compras C 
 		INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstadoCompras	
-		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima 
-		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstadoCompras != 3
-	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.;
+		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima
+		INNER JOIN Bodega.tipoMateriaPrima TMP ON MP.idTipoMateriaPrima = TMP.idTipoMateriaPrima
+		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor 
+		WHERE EC.idEstadoCompras != 3
+	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.
 -- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.
 	CREATE VIEW piezasModulo AS
-		SELECT P.idPrenda, P.nombre AS [Categoría], M.nombre AS [Módulo], COUNT(*) AS [Cantidad] 
+		SELECT P.nombre AS [Categoría], M.nombre AS [Módulo], SUM(OT.cantidad) AS [Cantidad] 
 		FROM Produccion.ordenDeVentaTalla OT 
 		INNER JOIN Produccion.modulo M ON OT.idModulo = M.idModulo
 		INNER JOIN Producto.talla T ON OT.idTalla = T.idTalla 
 		INNER JOIN Producto.prenda P ON P.idPrenda = T.idPrenda
-		GROUP BY P.idPrenda, P.nombre, M.nombre
+		GROUP BY P.nombre, M.nombre
 	;
 -- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.
 	CREATE VIEW comprasCliente AS	
-		SELECT F.idCliente, C.nombre, COUNT(*) AS [Compras], DATEPART(yyyy, F.orderDate) AS [Año]
+		SELECT TC.nombre AS [Tipo De Cliente], C.nombre AS [Nombre], COUNT(*) AS [N° de Compras], DATEPART(yyyy, F.orderDate) AS [Año]
 		FROM Venta.Factura F 
-		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	
-		GROUP BY F.idCliente, C.nombre, DATEPART(yyyy, F.orderDate)
+		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente
+		INNER JOIN Venta.tipoCliente TC ON C.idTipo = TC.idTipo
+		GROUP BY TC.nombre, C.nombre, DATEPART(yyyy, F.orderDate)
 	;
 -- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
 	CREATE VIEW ordenModulos AS
@@ -432,12 +442,102 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		GROUP BY M.idModulo, M.nombre
 	;
 -- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.
+	CREATE VIEW telasMateriaPrima AS
+		SELECT 
+			mp.descripcion AS [Descripción], mp.existencia AS [Existencias], mp.stockMaximo AS [Stock Máximo], mp.idCompartimiento AS [Compartimiento], pr.nombre AS [Proveedor]
+		FROM Bodega.MateriaPrima AS mp 
+		INNER JOIN Bodega.tipoMateriaPrima AS tmp
+		ON tmp.idTipoMateriaPrima = mp.idTipoMateriaPrima 
+		INNER JOIN Compra.Proveedor AS pr
+		ON pr.idProveedor = mp.idProveedor 
+		WHERE tmp.nombre = 'Tela'
+	;
 -- 9. Vista de Hilos (Todos los datos junto con el nombre del proveedor) en inventario.
+	CREATE VIEW hilosMateriaPrima AS
+		SELECT 
+			mp.descripcion AS [Descripción], mp.existencia AS [Existencias], mp.stockMaximo AS [Stock Máximo], mp.idCompartimiento AS [Compartimiento], pr.nombre AS [Proveedor]
+		FROM Bodega.MateriaPrima AS mp 
+		INNER JOIN Bodega.tipoMateriaPrima AS tmp
+		ON tmp.idTipoMateriaPrima = mp.idTipoMateriaPrima 
+		INNER JOIN Compra.Proveedor AS pr
+		ON pr.idProveedor = mp.idProveedor 
+		WHERE tmp.nombre = 'Hilo'
+	;
 -- 10. Vista de Cordones (Todos los datos junto con el nombre del proveedor) en inventario.
+	CREATE VIEW cordonerMateriaPrima AS
+		SELECT 
+			mp.descripcion AS [Descripción], mp.existencia AS [Existencias], mp.stockMaximo AS [Stock Máximo], mp.idCompartimiento AS [Compartimiento], pr.nombre AS [Proveedor]
+		FROM Bodega.MateriaPrima AS mp 
+		INNER JOIN Bodega.tipoMateriaPrima AS tmp
+		ON tmp.idTipoMateriaPrima = mp.idTipoMateriaPrima 
+		INNER JOIN Compra.Proveedor AS pr
+		ON pr.idProveedor = mp.idProveedor 
+		WHERE tmp.nombre = 'Cordones'
 -- 11. Vista de las Sales Order con categoría BLANKS.
+	CREATE VIEW ordenesBlanks AS
+		SELECT 
+			fa.idFactura AS [N° de Factura],
+			pa.nombre as [Prenda],
+			eo.codigo AS [Código de estilo],
+			odv.cantidad AS [Cantidad de la orden],
+			odv.monto AS [Monto de la orden],
+			clr.nombre AS [Color]
+		FROM Produccion.ordenVenta AS odv
+		INNER JOIN Produccion.flujoTrabajo AS fto ON fto.idFlujo = odv.idFlujo
+		INNER JOIN Produccion.tipoVariante AS tve ON tve.idVariante = fto.idVariante
+		INNER JOIN color AS clr ON clr.idColor = odv.idColor
+		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
+		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
+		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
+		WHERE tve.nombre = 'BLANKS';
+
 -- 12. Vista de las Sales Order con categoría SCREEN PRINTING.
+	CREATE VIEW ordenesScreenPrinting AS
+		SELECT 
+			fa.idFactura AS [N° de Factura],pa.nombre as [Prenda], eo.codigo AS [Código de estilo],odv.cantidad AS [Cantidad de la orden], odv.monto AS [Monto de la orden], clr.nombre AS [Color]
+		FROM Produccion.ordenVenta AS odv
+		INNER JOIN Produccion.flujoTrabajo AS fto ON fto.idFlujo = odv.idFlujo
+		INNER JOIN Produccion.tipoVariante AS tve ON tve.idVariante = fto.idVariante
+		INNER JOIN color AS clr ON clr.idColor = odv.idColor
+		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
+		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
+		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
+		WHERE tve.nombre = 'SCREEN PRINTING';
 -- 13. Vista de las Sales Order con categoría Sublimation.
+	CREATE VIEW ordenesSublimation AS
+		SELECT 
+			fa.idFactura AS [N° de Factura],
+			pa.nombre as [Prenda],
+			eo.codigo AS [Código de estilo],
+			odv.cantidad AS [Cantidad de la orden],
+			odv.monto AS [Monto de la orden],
+			clr.nombre AS [Color]
+		FROM Produccion.ordenVenta AS odv
+		INNER JOIN Produccion.flujoTrabajo AS fto ON fto.idFlujo = odv.idFlujo
+		INNER JOIN Produccion.tipoVariante AS tve ON tve.idVariante = fto.idVariante
+		INNER JOIN color AS clr ON clr.idColor = odv.idColor
+		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
+		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
+		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
+		WHERE tve.nombre = 'Sublimation';
 -- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
+	CREATE VIEW ordenesConRetraso AS
+		SELECT
+			fa.idFactura AS [N° de Factura],
+			pa.nombre as [Prenda],
+			eo.codigo AS [Código de estilo],
+			odv.cantidad AS [Cantidad de la orden],
+			odv.monto AS [Monto de la orden],
+			clr.nombre AS [Color]
+		FROM Produccion.ordenVenta AS odv
+		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
+		INNER JOIN Produccion.flujoTrabajo AS fto ON fto.idFlujo = odv.idFlujo
+		INNER JOIN Produccion.tipoVariante AS tve ON tve.idVariante = fto.idVariante
+		INNER JOIN color AS clr ON clr.idColor = odv.idColor
+		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
+		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
+		WHERE DATEDIFF(DAY, CURRENT_TIMESTAMP, fa.finishedDate) <= -1;
+
 -- Creacion de errores //////////////////////////////////////////////////////////////////////////////
 exec sp_dropmessage 50018
 exec sp_dropmessage 50019
@@ -5277,7 +5377,7 @@ EXEC Compra.agregarProveedor 'Textufil La paz','Ciudad Nuevo Mundo, calle speake
 EXEC Compra.agregarProveedor 'Needle and Style','Calle de Hotel Juventus contiguo a Papa John´s','2314-3257','needlestyle@gmail.com'
 EXEC Compra.agregarProveedor 'Sant Patricia','Avenida la vega, San Salvador enfrente de China Work','2000-2136','santpatricia@gmail.com'
 EXEC Compra.agregarProveedor 'Pintura Fine','Paseo general Escalón Nivel #1, local #98','2190-3246','pinturafine@gmail.com'
-EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2014','los_santos@gmail.com'
+EXEC Compra.agregarProveedor 'Tinta Los Santos','Boulevard de los heroes, por Jugueton, edificio #7','2411-2017','los_santos@gmail.com'
 EXEC Compra.agregarProveedor 'Needle and Fabric','Boulevard de los procesores, frente a banco Davivienda','2426-3234','needlefabric@gmail.com'
 EXEC Compra.agregarProveedor 'Lightning Fabric','Boulevard los soldados, Edificio #72 Poligono #09','6823-3215','lighningfabricESA@gmail.com'
 EXEC Compra.agregarProveedor 'Variedades Jeltrudis','Mercado Zacamil,Mejicanos, puesto #55','2983-4343','jeltrudisvariety@gmail.com'
@@ -5352,7 +5452,7 @@ EXEC Compra.agregarEstadoCompras 'Realizada'
 
 EXEC Compra.agregarCompra 100, 1, 1;
 EXEC Compra.agregarCompra 50, 1, 2;
-EXEC Compra.agregarCompra 200, 1, 3;
+EXEC Compra.agregarCompra 20, 1, 3;
 EXEC Compra.agregarCompra 100, 1, 4;
 EXEC Compra.agregarCompra 200, 1, 5;
 EXEC Compra.agregarCompra 140, 1, 6;
@@ -5363,7 +5463,7 @@ EXEC Compra.agregarCompra 120, 1, 10;
 EXEC Compra.agregarCompra 200, 1, 11;
 EXEC Compra.agregarCompra 200, 1, 12;
 EXEC Compra.agregarCompra 150, 1, 13;
-EXEC Compra.agregarCompra 300, 1, 14;
+EXEC Compra.agregarCompra 30, 1, 14;
 EXEC Compra.agregarCompra 3500, 1, 15;
 EXEC Compra.agregarCompra 5500, 1, 16;
 EXEC Compra.agregarCompra 1520, 1, 17;
@@ -5401,51 +5501,51 @@ EXEC Compra.agregarCompra 600, 1, 48;
 EXEC Compra.agregarCompra 500, 1, 49;
 EXEC Compra.agregarCompra 150, 1, 50;
 
-EXEC Produccion.agregarOrdenVenta 1, 5, 1, 20, 1;
-EXEC Produccion.agregarOrdenVenta 1, 5, 1, 4, 1;
-EXEC Produccion.agregarOrdenVenta 3, 10, 2, 4, 1;
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 42, 1;
+EXEC Produccion.agregarOrdenVenta 1, 5, 1, 3, 1;
+EXEC Produccion.agregarOrdenVenta 3, 10, 2, 7, 1;
 EXEC Produccion.agregarOrdenVenta 4, 28, 3, 6, 1;
 EXEC Produccion.agregarOrdenVenta 5, 47, 1, 8, 1;
 EXEC Produccion.agregarOrdenVenta 5, 47, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 7, 30, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 8, 24, 2, 8, 1;
 EXEC Produccion.agregarOrdenVenta 9, 46, 1, 2, 1;
-EXEC Produccion.agregarOrdenVenta 10, 18, 1, 20, 1;
+EXEC Produccion.agregarOrdenVenta 10, 18, 1, 21, 1;
 EXEC Produccion.agregarOrdenVenta 11, 19, 3, 3, 1;
 EXEC Produccion.agregarOrdenVenta 12, 1, 2, 2, 1;
-EXEC Produccion.agregarOrdenVenta 13, 19, 1, 45, 1;
-EXEC Produccion.agregarOrdenVenta 14, 8, 2, 46, 1;
-EXEC Produccion.agregarOrdenVenta 15, 9, 1, 30, 1;
+EXEC Produccion.agregarOrdenVenta 13, 19, 1, 42, 1;
+EXEC Produccion.agregarOrdenVenta 14, 8, 2, 21, 1;
+EXEC Produccion.agregarOrdenVenta 15, 9, 1, 19, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 1, 6, 1;
 EXEC Produccion.agregarOrdenVenta 16, 7, 2, 8, 1;
 EXEC Produccion.agregarOrdenVenta 19, 25, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 20, 7, 2, 7, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 3, 40, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 3, 15, 1;
-EXEC Produccion.agregarOrdenVenta 21, 36, 2, 20, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 42, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 3, 12, 1;
+EXEC Produccion.agregarOrdenVenta 21, 36, 2, 21, 1;
 EXEC Produccion.agregarOrdenVenta 21, 36, 1, 18, 1;
 EXEC Produccion.agregarOrdenVenta 21, 40, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 26, 7, 1, 8, 1;
-EXEC Produccion.agregarOrdenVenta 27, 8, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 27, 8, 3, 6, 1;
 EXEC Produccion.agregarOrdenVenta 28, 15, 3, 7, 1;
-EXEC Produccion.agregarOrdenVenta 29, 21, 1, 20, 1;
-EXEC Produccion.agregarOrdenVenta 30, 41, 2, 23, 1;
+EXEC Produccion.agregarOrdenVenta 29, 21, 1, 21, 1;
+EXEC Produccion.agregarOrdenVenta 30, 41, 2, 25, 1;
 EXEC Produccion.agregarOrdenVenta 31, 48, 3, 12, 1;
-EXEC Produccion.agregarOrdenVenta 32, 15, 1, 40, 1;
+EXEC Produccion.agregarOrdenVenta 32, 15, 1, 42, 1;
 EXEC Produccion.agregarOrdenVenta 33, 18, 2, 25, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 27, 1;
-EXEC Produccion.agregarOrdenVenta 34, 9, 3, 35, 1;
+EXEC Produccion.agregarOrdenVenta 34, 9, 3, 1, 1;
 EXEC Produccion.agregarOrdenVenta 34, 9, 1, 2, 1;
 EXEC Produccion.agregarOrdenVenta 37, 6, 2, 8, 1;
-EXEC Produccion.agregarOrdenVenta 38, 7, 3, 9, 1;
+EXEC Produccion.agregarOrdenVenta 38, 7, 3, 18, 1;
 EXEC Produccion.agregarOrdenVenta 39, 20, 2, 8, 1;
-EXEC Produccion.agregarOrdenVenta 39, 20, 1, 15, 1;
-EXEC Produccion.agregarOrdenVenta 41, 45, 3, 26, 1;
-EXEC Produccion.agregarOrdenVenta 41, 45, 2, 37, 1;
+EXEC Produccion.agregarOrdenVenta 39, 20, 1, 12, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 3, 27, 1;
+EXEC Produccion.agregarOrdenVenta 41, 45, 2, 42, 1;
 EXEC Produccion.agregarOrdenVenta 43, 37, 1, 18, 1;
 EXEC Produccion.agregarOrdenVenta 44, 38, 3, 19, 1;
-EXEC Produccion.agregarOrdenVenta 45, 14, 2, 14, 1;
+EXEC Produccion.agregarOrdenVenta 45, 14, 2, 12, 1;
 EXEC Produccion.agregarOrdenVenta 46, 17, 3, 27, 1;
 EXEC Produccion.agregarOrdenVenta 47, 7, 2, 5, 1;
 EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
