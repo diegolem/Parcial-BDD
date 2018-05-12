@@ -2969,11 +2969,6 @@ se tienen dentro de ella, el reporte debe ser generado con la siguiente estructu
 create type db_factura AS TABLE(nombre varchar(100), cantidad int, cantidadExtra int, precioUnitario decimal(18, 2), descripcion varchar(255), precioTotal decimal(18, 2));  
 GO
 
-/*declare @json varchar(max)
-exec Produccion.crearReporte @idFactura = 1, @JSON = @json output
-select @json
-select * from Produccion.ordenVenta
-*/
 create procedure Produccion.crearReporte @idFactura int, @JSON VARCHAR(MAX) OUTPUT
 as
 	IF EXISTS(SELECT * FROM venta.factura WHERE venta.factura.idFactura = @idFactura)
@@ -2999,7 +2994,7 @@ as
 			select Producto.prenda.nombre, Produccion.ordenDeVentaTalla.cantidad, Produccion.ordenDeVentaTalla.cantidadExtra, Producto.prenda.precio, 
 			STUFF(  
 				(  
-					SELECT concat(', medida', Producto.medida.dimension, ' en la ubicacion ', Producto.tallaUbicacion.ubicacion)
+					SELECT concat(', medida ', Producto.medida.dimension, ' en la ubicacion ', Producto.tallaUbicacion.ubicacion)
 					FROM Producto.medida
 					inner join Producto.tallaUbicacion
 					on Producto.tallaUbicacion.idUbicacion = Producto.medida.idUbicacion
@@ -3028,6 +3023,7 @@ as
 			declare @factura varchar(max)
 
 			select @JSON = '{"id":' + cast(@id_factura as varchar(max)) + ',' +
+							   '"codigo":"' + cast((concat(LEFT(@cliente, 2), year(@fecha_actual), REPLICATE('0', 5 - len(@id_factura)), @id_factura)) as varchar(max)) + '",' +
 							   '"direccion":"' + @direccion + '",' +
 							   '"cliente":"' + @cliente + '",' +
 							   '"fecha":"' + cast(@fecha_actual as varchar(max)) + '",' +
@@ -3037,7 +3033,7 @@ as
 										select 
 											',{' + 
 											'"nombre":"' + nombre + '",' +
-											'"cantidad":"' + cast(cantidad as varchar(max)) + ',' +
+											'"cantidad":' + cast(cantidad as varchar(max)) + ',' +
 											'"extra":' + cast(cantidadExtra as varchar(max)) + ',' +
 											'"precio":' + cast(precioUnitario as varchar(max)) + ',' +
 											'"descripcion":"' + descripcion + '",' +
@@ -5660,3 +5656,7 @@ AS
 	;
 ;
 EXEC CreandoJob;
+
+--declare @json varchar(max)
+--exec Produccion.crearReporte 1, @json output
+--select @json
