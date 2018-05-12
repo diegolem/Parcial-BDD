@@ -380,60 +380,63 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 -- Vistas
 --1. Vista completa de los productos de inventario.
 	CREATE VIEW productos AS	
-		SELECT 
-			MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
+		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
 		FROM Bodega.MateriaPrima M 	
 		INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima
 	;
 -- 2. Vista completa de los trabajos en proceso.
 	CREATE VIEW trabajosProceso AS	
-		SELECT 
-			O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, F.idFactura AS [Factura (ID)]
-		FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
-		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2
-	; --Por ejemplo si en el id 2 es "En proceso";
--- 3. Vista de los trabajos que aún no han sido implementados.
-	CREATE VIEW trabajosPendientes AS	
-		SELECT 
-			O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
 		FROM Produccion.OrdenVenta O 
 		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
 		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 3
-; --Por ejemplo si en el id 1 es "pendiente";
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 1
+	; --Por ejemplo si en el id 1 es "En proceso";
+-- 3. Vista de los trabajos que aún no han sido implementados.
+	CREATE VIEW trabajosPendientes AS	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
+		FROM Produccion.OrdenVenta O 
+		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
+		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 3
+	; --Por ejemplo si en el id 1 es "pendiente";
 -- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
 --    datos de contacto.
 	CREATE VIEW productosNecesitados AS	
-		SELECT 
-			MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	
+		SELECT TMP.nombre AS [Tipo de Materia Prima], MP.descripcion AS [Producto], EC.nombre AS [Estado de Necesidad], P.nombre AS [Proveedor], P.telefono, P.correo
 		FROM Compra.compras C 
 		INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstadoCompras	
-		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima 
-		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstadoCompras != 3
-	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.;
+		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima
+		INNER JOIN Bodega.tipoMateriaPrima TMP ON MP.idTipoMateriaPrima = TMP.idTipoMateriaPrima
+		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor 
+		WHERE EC.idEstadoCompras != 3
+	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.
 -- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.
 	CREATE VIEW piezasModulo AS
-		SELECT 
-			P.idPrenda, P.nombre AS [Categoría], M.nombre AS [Módulo], COUNT(*) AS [Cantidad] 
+		SELECT P.nombre AS [Categoría], M.nombre AS [Módulo], SUM(OT.cantidad) AS [Cantidad] 
 		FROM Produccion.ordenDeVentaTalla OT 
 		INNER JOIN Produccion.modulo M ON OT.idModulo = M.idModulo
 		INNER JOIN Producto.talla T ON OT.idTalla = T.idTalla 
 		INNER JOIN Producto.prenda P ON P.idPrenda = T.idPrenda
-		GROUP BY P.idPrenda, P.nombre, M.nombre
+		GROUP BY P.nombre, M.nombre
 	;
 -- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.
 	CREATE VIEW comprasCliente AS	
-		SELECT 
-			F.idCliente, C.nombre, COUNT(*) AS [Compras], DATEPART(yyyy, F.orderDate) AS [Año]
+		SELECT TC.nombre AS [Tipo De Cliente], C.nombre AS [Nombre], COUNT(*) AS [N° de Compras], DATEPART(yyyy, F.orderDate) AS [Año]
 		FROM Venta.Factura F 
-		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	
-		GROUP BY F.idCliente, C.nombre, DATEPART(yyyy, F.orderDate)
+		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente
+		INNER JOIN Venta.tipoCliente TC ON C.idTipo = TC.idTipo
+		GROUP BY TC.nombre, C.nombre, DATEPART(yyyy, F.orderDate)
 	;
 -- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
 	CREATE VIEW ordenModulos AS
-		SELECT 
-			M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
+		SELECT M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
 		INNER JOIN Produccion.ordenDeVentaTalla OVT ON OV.idOrdenVenta = OVT.idOrdenVentaTalla
 		INNER JOIN Produccion.modulo M ON OVT.idModulo = M.idModulo
 		GROUP BY M.idModulo, M.nombre
