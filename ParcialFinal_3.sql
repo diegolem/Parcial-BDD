@@ -380,60 +380,63 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 -- Vistas
 --1. Vista completa de los productos de inventario.
 	CREATE VIEW productos AS	
-		SELECT 
-			MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
+		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
 		FROM Bodega.MateriaPrima M 	
 		INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima
 	;
 -- 2. Vista completa de los trabajos en proceso.
 	CREATE VIEW trabajosProceso AS	
-		SELECT 
-			O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, F.idFactura AS [Factura (ID)]
-		FROM Produccion.OrdenVenta O INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
-		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 2
-	; --Por ejemplo si en el id 2 es "En proceso";
--- 3. Vista de los trabajos que aún no han sido implementados.
-	CREATE VIEW trabajosPendientes AS	
-		SELECT 
-			O.cantidad AS [Cantidad], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
 		FROM Produccion.OrdenVenta O 
 		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
 		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
-		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	WHERE E.idEstadoOrden = 3
-; --Por ejemplo si en el id 1 es "pendiente";
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 1
+	; --Por ejemplo si en el id 1 es "En proceso";
+-- 3. Vista de los trabajos que aún no han sido implementados.
+	CREATE VIEW trabajosPendientes AS	
+		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
+		F.idFactura AS [Factura (ID)]
+		FROM Produccion.OrdenVenta O 
+		INNER JOIN Produccion.estadoOrden E ON O.idEstado = E.idEstadoOrden	
+		INNER JOIN Color ON O.idColor = Color.idColor
+		INNER JOIN Venta.Factura F ON O.idFactura = F.idFactura	
+		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
+		WHERE E.idEstadoOrden = 3
+	; --Por ejemplo si en el id 1 es "pendiente";
 -- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
 --    datos de contacto.
 	CREATE VIEW productosNecesitados AS	
-		SELECT 
-			MP.descripcion AS [Producto], P.nombre AS [Proveedor], P.telefono, P.correo	
+		SELECT TMP.nombre AS [Tipo de Materia Prima], MP.descripcion AS [Producto], EC.nombre AS [Estado de Necesidad], P.nombre AS [Proveedor], P.telefono, P.correo
 		FROM Compra.compras C 
 		INNER JOIN Compra.estadoCompras EC ON C.idEstado = EC.idEstadoCompras	
-		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima 
-		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor WHERE EC.idEstadoCompras != 3
-	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.;
+		INNER JOIN Bodega.MateriaPrima MP ON C.idMateriaPrima = MP.idMateriaPrima
+		INNER JOIN Bodega.tipoMateriaPrima TMP ON MP.idTipoMateriaPrima = TMP.idTipoMateriaPrima
+		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor 
+		WHERE EC.idEstadoCompras != 3
+	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.
 -- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.
 	CREATE VIEW piezasModulo AS
-		SELECT 
-			P.idPrenda, P.nombre AS [Categoría], M.nombre AS [Módulo], COUNT(*) AS [Cantidad] 
+		SELECT P.nombre AS [Categoría], M.nombre AS [Módulo], SUM(OT.cantidad) AS [Cantidad] 
 		FROM Produccion.ordenDeVentaTalla OT 
 		INNER JOIN Produccion.modulo M ON OT.idModulo = M.idModulo
 		INNER JOIN Producto.talla T ON OT.idTalla = T.idTalla 
 		INNER JOIN Producto.prenda P ON P.idPrenda = T.idPrenda
-		GROUP BY P.idPrenda, P.nombre, M.nombre
+		GROUP BY P.nombre, M.nombre
 	;
 -- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.
 	CREATE VIEW comprasCliente AS	
-		SELECT 
-			F.idCliente, C.nombre, COUNT(*) AS [Compras], DATEPART(yyyy, F.orderDate) AS [Año]
+		SELECT TC.nombre AS [Tipo De Cliente], C.nombre AS [Nombre], COUNT(*) AS [N° de Compras], DATEPART(yyyy, F.orderDate) AS [Año]
 		FROM Venta.Factura F 
-		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente	
-		GROUP BY F.idCliente, C.nombre, DATEPART(yyyy, F.orderDate)
+		INNER JOIN Venta.Clientes C ON F.idCliente = C.idCliente
+		INNER JOIN Venta.tipoCliente TC ON C.idTipo = TC.idTipo
+		GROUP BY TC.nombre, C.nombre, DATEPART(yyyy, F.orderDate)
 	;
 -- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
 	CREATE VIEW ordenModulos AS
-		SELECT 
-			M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
+		SELECT M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
 		INNER JOIN Produccion.ordenDeVentaTalla OVT ON OV.idOrdenVenta = OVT.idOrdenVentaTalla
 		INNER JOIN Produccion.modulo M ON OVT.idModulo = M.idModulo
 		GROUP BY M.idModulo, M.nombre
@@ -3485,6 +3488,10 @@ exec Producto.agregarUbicacion @ubicacion = 'Cadera'
 exec Producto.agregarUbicacion @ubicacion = 'Largo camisa'
 exec Producto.agregarUbicacion @ubicacion = 'Manga larga'
 
+exec Producto.agregarUbicacion @ubicacion = 'Ancho superior corbata'
+exec Producto.agregarUbicacion @ubicacion = 'largo corbata'
+exec Producto.agregarUbicacion @ubicacion = 'ancho inferior corbata'
+
 EXEC Producto.agregarTalla 1.00,1,1,1 --Aqui debe coincidir con los registro del PDF
 exec Producto.agregarTalla @cantidadTela = 1.25, @idTipoTalla = 2,@idPrenda = 1, @idEstilo = 1
 exec Producto.agregarTalla @cantidadTela = 1.50, @idTipoTalla = 3,@idPrenda = 1, @idEstilo = 1
@@ -3746,6 +3753,930 @@ exec Producto.agregarMedida @dimension = 48, @idTalla = 3, @idUbicacion = 15
 exec Producto.agregarMedida @dimension = 51, @idTalla = 4, @idUbicacion = 17
 exec Producto.agregarMedida @dimension = 70, @idTalla = 4, @idUbicacion = 16
 exec Producto.agregarMedida @dimension = 60, @idTalla = 4, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 96.95, @idTalla = 4, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 125.72, @idTalla = 4, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 109.84, @idTalla = 4, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 54.31, @idTalla = 4, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 86.66, @idTalla = 5, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 119.71, @idTalla = 5, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 113.23, @idTalla = 5, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 164.23, @idTalla = 5, @idUbicacion = 3
+
+exec Producto.agregarMedida @dimension = 149.98, @idTalla = 6, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 110.11, @idTalla = 6, @idUbicacion = 3
+exec Producto.agregarMedida @dimension = 72.40, @idTalla = 6, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 67.49, @idTalla = 6, @idUbicacion = 13
+
+exec Producto.agregarMedida @dimension = 75.35, @idTalla = 7, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 132.32, @idTalla = 7, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 38.67, @idTalla = 7, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 122.09, @idTalla = 7, @idUbicacion = 7
+
+exec Producto.agregarMedida @dimension = 114.95, @idTalla = 8, @idUbicacion = 4
+exec Producto.agregarMedida @dimension = 92.80, @idTalla = 8, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 122.02, @idTalla = 8, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 68.70, @idTalla = 8, @idUbicacion = 13
+
+exec Producto.agregarMedida @dimension = 58.27, @idTalla = 9, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 137.58, @idTalla = 9, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 78.26, @idTalla = 9, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 104.14, @idTalla = 9, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 43.88, @idTalla = 10, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 75.65, @idTalla = 10, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 52.73, @idTalla = 10, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 53.52, @idTalla = 10, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 127.03, @idTalla = 11, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 88.17, @idTalla = 11, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 56.67, @idTalla = 11, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 94.47, @idTalla = 11, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 116.27, @idTalla = 12, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 37.90, @idTalla = 12, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 61.46, @idTalla = 12, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 52.98, @idTalla = 12, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 50.93, @idTalla = 13, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 81.96, @idTalla = 13, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 125.49, @idTalla = 13, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 149.72, @idTalla = 13, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 48.25, @idTalla = 14, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 85.96, @idTalla = 14, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 21.03, @idTalla = 14, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 81.91, @idTalla = 14, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 88.74, @idTalla = 15, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 149.22, @idTalla = 15, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 229.49, @idTalla = 15, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 105.17, @idTalla = 15, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 92.57, @idTalla = 16, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 123.65, @idTalla = 16, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 104.41, @idTalla = 16, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 52.94, @idTalla = 16, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 44.01, @idTalla = 17, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 71.58, @idTalla = 17, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 26.20, @idTalla = 17, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 41.47, @idTalla = 18, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 62.64, @idTalla = 18, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 28.10, @idTalla = 18, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 49.87, @idTalla = 19, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 72.60, @idTalla = 19, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 23.34, @idTalla = 19, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 50.89, @idTalla = 20, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 68.95, @idTalla = 20, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 31.90, @idTalla = 20, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 43.11, @idTalla = 21, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 23.12, @idTalla = 21, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 138.69, @idTalla = 21, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 51.41, @idTalla = 21, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 61.46, @idTalla = 22, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 78.81, @idTalla = 22, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 98.36, @idTalla = 22, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 112.11, @idTalla = 22, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 75.81, @idTalla = 23, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 120.57, @idTalla = 23, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 63.56, @idTalla = 23, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 140.84, @idTalla = 23, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 104.87, @idTalla = 24, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 56.16, @idTalla = 24, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 78.73, @idTalla = 24, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 57.63, @idTalla = 24, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 277.20, @idTalla = 25, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 90.80, @idTalla = 25, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 65.80, @idTalla = 25, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 38.28, @idTalla = 25, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 54.99, @idTalla = 26, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 157.75, @idTalla = 26, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 138.15, @idTalla = 26, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 130.27, @idTalla = 26, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 27.67, @idTalla = 27, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 71.19, @idTalla = 27, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 210.54, @idTalla = 27, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 103.26, @idTalla = 27, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 57.24, @idTalla = 28, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 261.21, @idTalla = 28, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 288.20, @idTalla = 28, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 60.17, @idTalla = 28, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 54.69, @idTalla = 29, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 55.87, @idTalla = 29, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 21.82, @idTalla = 29, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 41.83, @idTalla = 30, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 96.66, @idTalla = 30, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 32.96, @idTalla = 30, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 42.47, @idTalla = 31, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 83.96, @idTalla = 31, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 21.36, @idTalla = 31, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 52.27, @idTalla = 32, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 57.71, @idTalla = 32, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 24.43, @idTalla = 32, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 40.30, @idTalla = 33, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 100.57, @idTalla = 33, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 72.37, @idTalla = 33, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 79.92, @idTalla = 33, @idUbicacion = 14
+
+exec Producto.agregarMedida @dimension = 74.72, @idTalla = 34, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 38.78, @idTalla = 34, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 178.87, @idTalla = 34, @idUbicacion = 4
+exec Producto.agregarMedida @dimension = 72.43, @idTalla = 34, @idUbicacion = 13
+
+exec Producto.agregarMedida @dimension = 51.22, @idTalla = 35, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 47.74, @idTalla = 35, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 55.88, @idTalla = 35, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 81.47, @idTalla = 35, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 87.09, @idTalla = 36, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 69.53, @idTalla = 36, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 89.43, @idTalla = 36, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 64.97, @idTalla = 36, @idUbicacion = 13
+
+exec Producto.agregarMedida @dimension = 266.38, @idTalla = 37, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 98.70, @idTalla = 37, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 21.05, @idTalla = 37, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 44.76, @idTalla = 37, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 127.12, @idTalla = 38, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 191.01, @idTalla = 38, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 141.76, @idTalla = 38, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 116.13, @idTalla = 38, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 50.60, @idTalla = 39, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 78.99, @idTalla = 39, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 138.62, @idTalla = 39, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 63.72, @idTalla = 39, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 52.79, @idTalla = 40, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 49.33, @idTalla = 40, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 74.54, @idTalla = 40, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 97.83, @idTalla = 40, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 56.68, @idTalla = 41, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 81.40, @idTalla = 41, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 128.11, @idTalla = 41, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 55.83, @idTalla = 41, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 138.76, @idTalla = 42, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 87.69, @idTalla = 42, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 102.78, @idTalla = 42, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 114.62, @idTalla = 42, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 51.13, @idTalla = 43, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 136.82, @idTalla = 43, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 110.52, @idTalla = 43, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 86.51, @idTalla = 43, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 85.03, @idTalla = 44, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 51.14, @idTalla = 44, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 115.30, @idTalla = 44, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 114.75, @idTalla = 44, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 151.23, @idTalla = 45, @idUbicacion = 3
+exec Producto.agregarMedida @dimension = 67.11, @idTalla = 45, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 64.11, @idTalla = 45, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 179.33, @idTalla = 45, @idUbicacion = 4
+
+exec Producto.agregarMedida @dimension = 55.11, @idTalla = 46, @idUbicacion = 11
+exec Producto.agregarMedida @dimension = 72.65, @idTalla = 46, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 95.05, @idTalla = 46, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 72.13, @idTalla = 46, @idUbicacion = 13
+
+exec Producto.agregarMedida @dimension = 165.74, @idTalla = 47, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 68.01, @idTalla = 47, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 79.80, @idTalla = 47, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 168.23, @idTalla = 47, @idUbicacion = 3
+
+exec Producto.agregarMedida @dimension = 46.63, @idTalla = 48, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 52.33, @idTalla = 48, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 69.63, @idTalla = 48, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 112.82, @idTalla = 48, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 145.39, @idTalla = 49, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 49.88, @idTalla = 49, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 91.50, @idTalla = 49, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 188.13, @idTalla = 49, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 86.91, @idTalla = 50, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 54.96, @idTalla = 50, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 63.00, @idTalla = 50, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 102.45, @idTalla = 50, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 94.05, @idTalla = 51, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 139.84, @idTalla = 51, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 75.44, @idTalla = 51, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 78.02, @idTalla = 51, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 90.17, @idTalla = 52, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 50.93, @idTalla = 52, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 219.10, @idTalla = 52, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 41.25, @idTalla = 52, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 55.64, @idTalla = 53, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 138.41, @idTalla = 53, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 167.76, @idTalla = 53, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 47.52, @idTalla = 53, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 79.69, @idTalla = 54, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 25.98, @idTalla = 54, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 122.59, @idTalla = 54, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 59.65, @idTalla = 54, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 114.74, @idTalla = 55, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 85.42, @idTalla = 55, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 101.39, @idTalla = 55, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 82.13, @idTalla = 55, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 86.17, @idTalla = 56, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 180.57, @idTalla = 56, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 122.01, @idTalla = 56, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 297.87, @idTalla = 56, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 75.50, @idTalla = 57, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 143.50, @idTalla = 57, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 121.00, @idTalla = 57, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 106.14, @idTalla = 57, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 56.51, @idTalla = 58, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 133.90, @idTalla = 58, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 149.63, @idTalla = 58, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 56.89, @idTalla = 58, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 95.65, @idTalla = 59, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 81.19, @idTalla = 59, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 82.30, @idTalla = 59, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 68.07, @idTalla = 59, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 58.20, @idTalla = 60, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 72.92, @idTalla = 60, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 71.35, @idTalla = 60, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 86.29, @idTalla = 60, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 99.12, @idTalla = 61, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 91.17, @idTalla = 61, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 92.08, @idTalla = 61, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 87.22, @idTalla = 61, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 43.20, @idTalla = 62, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 46.19, @idTalla = 62, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 50.47, @idTalla = 62, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 42.74, @idTalla = 62, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 50.38, @idTalla = 63, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 93.93, @idTalla = 63, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 50.76, @idTalla = 63, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 69.75, @idTalla = 63, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 87.74, @idTalla = 64, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 47.11, @idTalla = 64, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 98.75, @idTalla = 64, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 44.79, @idTalla = 64, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 128.15, @idTalla = 65, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 60.94, @idTalla = 65, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 95.00, @idTalla = 65, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 38.94, @idTalla = 65, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 76.36, @idTalla = 66, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 90.79, @idTalla = 66, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 142.78, @idTalla = 66, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 55.26, @idTalla = 66, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 48.47, @idTalla = 67, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 157.40, @idTalla = 67, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 127.74, @idTalla = 67, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 149.16, @idTalla = 67, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 76.30, @idTalla = 68, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 135.91, @idTalla = 68, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 50.73, @idTalla = 68, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 139.55, @idTalla = 68, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 54.09, @idTalla = 69, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 66.88, @idTalla = 69, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 37.22, @idTalla = 69, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 40.21, @idTalla = 70, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 60.08, @idTalla = 70, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 35.24, @idTalla = 70, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 57.53, @idTalla = 71, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 92.86, @idTalla = 71, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 29.40, @idTalla = 71, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 56.84, @idTalla = 72, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 99.12, @idTalla = 72, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 26.59, @idTalla = 72, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 51.78, @idTalla = 73, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 103.77, @idTalla = 73, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 91.99, @idTalla = 73, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 176.02, @idTalla = 73, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 72.10, @idTalla = 74, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 90.20, @idTalla = 74, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 51.46, @idTalla = 74, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 165.51, @idTalla = 74, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 72.78, @idTalla = 75, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 74.95, @idTalla = 75, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 137.93, @idTalla = 75, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 13.54, @idTalla = 75, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 40.75, @idTalla = 76, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 71.10, @idTalla = 76, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 128.39, @idTalla = 76, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 84.34, @idTalla = 76, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 50.17, @idTalla = 77, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 82.87, @idTalla = 77, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 18.26, @idTalla = 77, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 138.98, @idTalla = 77, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 59.93, @idTalla = 78, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 170.78, @idTalla = 78, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 61.73, @idTalla = 78, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 243.05, @idTalla = 78, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 56.85, @idTalla = 79, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 149.80, @idTalla = 79, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 127.06, @idTalla = 79, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 180.67, @idTalla = 79, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 95.69, @idTalla = 80, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 93.78, @idTalla = 80, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 220.16, @idTalla = 80, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 47.12, @idTalla = 80, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 90.31, @idTalla = 81, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 133.86, @idTalla = 81, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 211.69, @idTalla = 81, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 94.83, @idTalla = 81, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 142.97, @idTalla = 82, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 62.92, @idTalla = 82, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 115.27, @idTalla = 82, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 166.16, @idTalla = 82, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 160.50, @idTalla = 83, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 53.24, @idTalla = 83, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 51.96, @idTalla = 83, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 128.61, @idTalla = 83, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 55.89, @idTalla = 84, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 53.65, @idTalla = 84, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 234.51, @idTalla = 84, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 48.92, @idTalla = 84, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 44.49, @idTalla = 85, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 61.60, @idTalla = 85, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 32.36, @idTalla = 85, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 59.00, @idTalla = 86, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 44.97, @idTalla = 86, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 35.17, @idTalla = 86, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 43.24, @idTalla = 87, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 71.55, @idTalla = 87, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 28.98, @idTalla = 87, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 41.67, @idTalla = 88, @idUbicacion = 18
+exec Producto.agregarMedida @dimension = 90.28, @idTalla = 88, @idUbicacion = 19
+exec Producto.agregarMedida @dimension = 33.96, @idTalla = 88, @idUbicacion = 20
+
+exec Producto.agregarMedida @dimension = 87.83, @idTalla = 89, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 70.33, @idTalla = 89, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 78.82, @idTalla = 89, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 170.37, @idTalla = 89, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 44.33, @idTalla = 90, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 91.94, @idTalla = 90, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 54.77, @idTalla = 90, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 117.20, @idTalla = 90, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 42.49, @idTalla = 91, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 43.78, @idTalla = 91, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 144.94, @idTalla = 91, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 54.27, @idTalla = 91, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 53.88, @idTalla = 92, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 126.86, @idTalla = 92, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 217.83, @idTalla = 92, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 169.61, @idTalla = 92, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 129.41, @idTalla = 93, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 103.00, @idTalla = 93, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 91.92, @idTalla = 93, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 110.14, @idTalla = 93, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 44.84, @idTalla = 94, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 57.73, @idTalla = 94, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 119.02, @idTalla = 94, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 109.32, @idTalla = 94, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 41.53, @idTalla = 95, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 62.87, @idTalla = 95, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 70.78, @idTalla = 95, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 92.33, @idTalla = 95, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 119.96, @idTalla = 96, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 135.29, @idTalla = 96, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 94.25, @idTalla = 96, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 60.61, @idTalla = 96, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 87.87, @idTalla = 97, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 199.12, @idTalla = 97, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 57.52, @idTalla = 97, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 90.00, @idTalla = 97, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 82.74, @idTalla = 98, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 91.55, @idTalla = 98, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 124.30, @idTalla = 98, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 204.10, @idTalla = 98, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 107.89, @idTalla = 99, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 217.33, @idTalla = 99, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 158.83, @idTalla = 99, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 40.16, @idTalla = 99, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 52.28, @idTalla = 100, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 112.61, @idTalla = 100, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 45.88, @idTalla = 100, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 43.50, @idTalla = 100, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 119.71, @idTalla = 101, @idUbicacion = 4
+exec Producto.agregarMedida @dimension = 66.63, @idTalla = 101, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 124.62, @idTalla = 101, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 32.07, @idTalla = 101, @idUbicacion = 11
+
+exec Producto.agregarMedida @dimension = 61.25, @idTalla = 102, @idUbicacion = 13
+exec Producto.agregarMedida @dimension = 169.56, @idTalla = 102, @idUbicacion = 4
+exec Producto.agregarMedida @dimension = 171.52, @idTalla = 102, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 137.21, @idTalla = 102, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 76.76, @idTalla = 103, @idUbicacion = 14
+exec Producto.agregarMedida @dimension = 136.83, @idTalla = 103, @idUbicacion = 4
+exec Producto.agregarMedida @dimension = 54.87, @idTalla = 103, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 188.26, @idTalla = 103, @idUbicacion = 4
+
+exec Producto.agregarMedida @dimension = 123.40, @idTalla = 104, @idUbicacion = 3
+exec Producto.agregarMedida @dimension = 113.00, @idTalla = 104, @idUbicacion = 7
+exec Producto.agregarMedida @dimension = 137.22, @idTalla = 104, @idUbicacion = 3
+exec Producto.agregarMedida @dimension = 153.77, @idTalla = 104, @idUbicacion = 4
+
+exec Producto.agregarMedida @dimension = 65.00, @idTalla = 105, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 60.22, @idTalla = 105, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 74.90, @idTalla = 105, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 83.65, @idTalla = 105, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 128.46, @idTalla = 106, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 73.06, @idTalla = 106, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 80.59, @idTalla = 106, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 70.14, @idTalla = 106, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 86.59, @idTalla = 107, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 46.98, @idTalla = 107, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 62.50, @idTalla = 107, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 140.44, @idTalla = 107, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 237.94, @idTalla = 108, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 96.33, @idTalla = 108, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 65.76, @idTalla = 108, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 226.82, @idTalla = 108, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 91.58, @idTalla = 109, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 47.21, @idTalla = 109, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 64.72, @idTalla = 109, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 149.64, @idTalla = 109, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 167.56, @idTalla = 110, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 55.38, @idTalla = 110, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 56.57, @idTalla = 110, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 95.31, @idTalla = 110, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 148.99, @idTalla = 111, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 104.61, @idTalla = 111, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 68.77, @idTalla = 111, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 108.86, @idTalla = 111, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 172.15, @idTalla = 112, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 83.50, @idTalla = 112, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 84.33, @idTalla = 112, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 102.31, @idTalla = 112, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 59.44, @idTalla = 113, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 59.30, @idTalla = 113, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 42.41, @idTalla = 113, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 55.88, @idTalla = 113, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 231.96, @idTalla = 114, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 94.54, @idTalla = 114, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 47.12, @idTalla = 114, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 80.88, @idTalla = 114, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 120.06, @idTalla = 115, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 95.46, @idTalla = 115, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 75.55, @idTalla = 115, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 138.84, @idTalla = 115, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 71.70, @idTalla = 116, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 224.56, @idTalla = 116, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 129.31, @idTalla = 116, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 118.94, @idTalla = 116, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 41.83, @idTalla = 117, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 125.96, @idTalla = 117, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 149.10, @idTalla = 117, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 75.14, @idTalla = 117, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 40.85, @idTalla = 118, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 55.02, @idTalla = 118, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 42.31, @idTalla = 118, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 68.42, @idTalla = 118, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 109.84, @idTalla = 119, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 45.22, @idTalla = 119, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 86.97, @idTalla = 119, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 45.41, @idTalla = 119, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 97.28, @idTalla = 120, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 183.23, @idTalla = 120, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 280.55, @idTalla = 120, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 65.85, @idTalla = 120, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 48.09, @idTalla = 121, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 54.41, @idTalla = 121, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 50.03, @idTalla = 121, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 121.04, @idTalla = 121, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 96.33, @idTalla = 122, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 65.12, @idTalla = 122, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 226.91, @idTalla = 122, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 114.19, @idTalla = 122, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 128.14, @idTalla = 123, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 60.51, @idTalla = 123, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 87.70, @idTalla = 123, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 46.57, @idTalla = 123, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 157.16, @idTalla = 124, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 104.49, @idTalla = 124, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 135.93, @idTalla = 124, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 76.70, @idTalla = 124, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 97.01, @idTalla = 125, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 89.06, @idTalla = 125, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 70.04, @idTalla = 125, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 77.12, @idTalla = 125, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 93.46, @idTalla = 126, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 111.58, @idTalla = 126, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 293.50, @idTalla = 126, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 75.03, @idTalla = 126, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 44.50, @idTalla = 127, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 51.19, @idTalla = 127, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 73.93, @idTalla = 127, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 226.60, @idTalla = 127, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 77.89, @idTalla = 128, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 50.31, @idTalla = 128, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 255.31, @idTalla = 128, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 92.67, @idTalla = 128, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 115.68, @idTalla = 129, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 74.96, @idTalla = 129, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 50.10, @idTalla = 129, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 76.46, @idTalla = 129, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 141.66, @idTalla = 130, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 116.40, @idTalla = 130, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 89.96, @idTalla = 130, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 67.30, @idTalla = 130, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 75.03, @idTalla = 131, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 123.51, @idTalla = 131, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 70.03, @idTalla = 131, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 97.00, @idTalla = 131, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 51.33, @idTalla = 132, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 56.92, @idTalla = 132, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 249.97, @idTalla = 132, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 94.04, @idTalla = 132, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 100.55, @idTalla = 133, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 203.71, @idTalla = 133, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 203.67, @idTalla = 133, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 253.62, @idTalla = 133, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 60.31, @idTalla = 134, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 90.95, @idTalla = 134, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 105.05, @idTalla = 134, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 66.80, @idTalla = 134, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 68.93, @idTalla = 135, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 195.21, @idTalla = 135, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 96.13, @idTalla = 135, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 73.54, @idTalla = 135, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 98.16, @idTalla = 136, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 64.77, @idTalla = 136, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 63.63, @idTalla = 136, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 131.41, @idTalla = 136, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 113.83, @idTalla = 137, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 98.69, @idTalla = 137, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 104.25, @idTalla = 137, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 84.87, @idTalla = 137, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 141.66, @idTalla = 138, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 174.16, @idTalla = 138, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 74.04, @idTalla = 138, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 186.43, @idTalla = 138, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 146.26, @idTalla = 139, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 50.62, @idTalla = 139, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 57.80, @idTalla = 139, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 221.07, @idTalla = 139, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 122.63, @idTalla = 140, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 58.60, @idTalla = 140, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 42.27, @idTalla = 140, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 148.46, @idTalla = 140, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 92.20, @idTalla = 141, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 266.61, @idTalla = 141, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 72.86, @idTalla = 141, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 80.20, @idTalla = 141, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 72.91, @idTalla = 142, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 44.63, @idTalla = 142, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 94.04, @idTalla = 142, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 77.84, @idTalla = 142, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 112.86, @idTalla = 143, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 59.91, @idTalla = 143, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 276.86, @idTalla = 143, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 97.84, @idTalla = 143, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 100.14, @idTalla = 144, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 79.50, @idTalla = 144, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 98.07, @idTalla = 144, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 95.89, @idTalla = 144, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 176.66, @idTalla = 145, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 170.69, @idTalla = 145, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 147.69, @idTalla = 145, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 54.67, @idTalla = 145, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 162.79, @idTalla = 146, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 193.98, @idTalla = 146, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 69.12, @idTalla = 146, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 106.43, @idTalla = 146, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 59.32, @idTalla = 147, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 53.88, @idTalla = 147, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 72.41, @idTalla = 147, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 66.27, @idTalla = 147, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 57.13, @idTalla = 148, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 116.80, @idTalla = 148, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 109.03, @idTalla = 148, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 229.37, @idTalla = 148, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 64.26, @idTalla = 149, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 53.07, @idTalla = 149, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 67.73, @idTalla = 149, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 282.18, @idTalla = 149, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 54.09, @idTalla = 150, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 52.41, @idTalla = 150, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 26.45, @idTalla = 150, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 122.90, @idTalla = 150, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 231.56, @idTalla = 151, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 93.76, @idTalla = 151, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 125.15, @idTalla = 151, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 246.87, @idTalla = 151, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 146.30, @idTalla = 152, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 98.43, @idTalla = 152, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 78.52, @idTalla = 152, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 49.57, @idTalla = 152, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 53.44, @idTalla = 153, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 75.57, @idTalla = 153, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 72.27, @idTalla = 153, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 72.04, @idTalla = 153, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 89.95, @idTalla = 154, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 65.40, @idTalla = 154, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 142.42, @idTalla = 154, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 131.51, @idTalla = 154, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 50.23, @idTalla = 155, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 81.96, @idTalla = 155, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 128.38, @idTalla = 155, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 95.57, @idTalla = 155, @idUbicacion = 5
+
+exec Producto.agregarMedida @dimension = 55.15, @idTalla = 156, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 151.46, @idTalla = 156, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 68.18, @idTalla = 156, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 61.59, @idTalla = 156, @idUbicacion = 17
+
+exec Producto.agregarMedida @dimension = 119.50, @idTalla = 157, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 113.09, @idTalla = 157, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 78.97, @idTalla = 157, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 123.29, @idTalla = 157, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 77.77, @idTalla = 158, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 229.93, @idTalla = 158, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 47.25, @idTalla = 158, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 71.74, @idTalla = 158, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 93.72, @idTalla = 159, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 64.56, @idTalla = 159, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 52.15, @idTalla = 159, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 47.98, @idTalla = 159, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 47.76, @idTalla = 160, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 101.93, @idTalla = 160, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 84.52, @idTalla = 160, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 69.38, @idTalla = 160, @idUbicacion = 10
+
+exec Producto.agregarMedida @dimension = 81.58, @idTalla = 161, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 60.35, @idTalla = 161, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 53.74, @idTalla = 161, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 236.49, @idTalla = 161, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 84.54, @idTalla = 162, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 99.12, @idTalla = 162, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 80.96, @idTalla = 162, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 148.02, @idTalla = 162, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 80.37, @idTalla = 163, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 99.56, @idTalla = 163, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 61.75, @idTalla = 163, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 128.59, @idTalla = 163, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 111.14, @idTalla = 164, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 71.96, @idTalla = 164, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 99.16, @idTalla = 164, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 64.98, @idTalla = 164, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 143.78, @idTalla = 165, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 123.04, @idTalla = 165, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 74.28, @idTalla = 165, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 68.43, @idTalla = 165, @idUbicacion = 16
+
+exec Producto.agregarMedida @dimension = 205.28, @idTalla = 166, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 66.04, @idTalla = 166, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 139.24, @idTalla = 166, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 285.52, @idTalla = 166, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 107.69, @idTalla = 167, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 41.79, @idTalla = 167, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 72.50, @idTalla = 167, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 86.43, @idTalla = 167, @idUbicacion = 15
+
+exec Producto.agregarMedida @dimension = 238.83, @idTalla = 168, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 81.75, @idTalla = 168, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 84.03, @idTalla = 168, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 45.90, @idTalla = 168, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 41.73, @idTalla = 169, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 131.02, @idTalla = 169, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 83.93, @idTalla = 169, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 93.75, @idTalla = 169, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 91.80, @idTalla = 170, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 86.92, @idTalla = 170, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 59.62, @idTalla = 170, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 105.85, @idTalla = 170, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 133.60, @idTalla = 171, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 109.75, @idTalla = 171, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 126.65, @idTalla = 171, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 90.01, @idTalla = 171, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 144.61, @idTalla = 172, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 227.77, @idTalla = 172, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 134.94, @idTalla = 172, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 59.73, @idTalla = 172, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 129.97, @idTalla = 173, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 145.52, @idTalla = 173, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 103.89, @idTalla = 173, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 273.58, @idTalla = 173, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 48.91, @idTalla = 174, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 73.78, @idTalla = 174, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 74.03, @idTalla = 174, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 54.67, @idTalla = 174, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 66.06, @idTalla = 175, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 99.94, @idTalla = 175, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 176.77, @idTalla = 175, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 52.60, @idTalla = 175, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 135.07, @idTalla = 176, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 60.80, @idTalla = 176, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 83.89, @idTalla = 176, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 66.88, @idTalla = 176, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 235.44, @idTalla = 177, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 58.79, @idTalla = 177, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 53.54, @idTalla = 177, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 74.86, @idTalla = 177, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 89.81, @idTalla = 178, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 140.43, @idTalla = 178, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 59.92, @idTalla = 178, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 58.54, @idTalla = 178, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 95.02, @idTalla = 179, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 87.36, @idTalla = 179, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 65.20, @idTalla = 179, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 46.07, @idTalla = 179, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 86.51, @idTalla = 180, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 203.56, @idTalla = 180, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 47.78, @idTalla = 180, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 55.91, @idTalla = 180, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 109.64, @idTalla = 181, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 224.99, @idTalla = 181, @idUbicacion = 16
+exec Producto.agregarMedida @dimension = 65.49, @idTalla = 181, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 145.30, @idTalla = 181, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 69.02, @idTalla = 182, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 96.59, @idTalla = 182, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 59.31, @idTalla = 182, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 65.51, @idTalla = 182, @idUbicacion = 6
+
+exec Producto.agregarMedida @dimension = 57.72, @idTalla = 183, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 109.87, @idTalla = 183, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 106.63, @idTalla = 183, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 106.09, @idTalla = 183, @idUbicacion = 2
+
+exec Producto.agregarMedida @dimension = 91.32, @idTalla = 184, @idUbicacion = 9
+exec Producto.agregarMedida @dimension = 120.61, @idTalla = 184, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 116.26, @idTalla = 184, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 289.49, @idTalla = 184, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 58.53, @idTalla = 185, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 73.81, @idTalla = 185, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 123.28, @idTalla = 185, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 118.17, @idTalla = 185, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 78.07, @idTalla = 186, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 57.66, @idTalla = 186, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 112.93, @idTalla = 186, @idUbicacion = 15
+exec Producto.agregarMedida @dimension = 179.46, @idTalla = 186, @idUbicacion = 1
+
+exec Producto.agregarMedida @dimension = 71.36, @idTalla = 187, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 91.33, @idTalla = 187, @idUbicacion = 5
+exec Producto.agregarMedida @dimension = 57.48, @idTalla = 187, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 49.78, @idTalla = 187, @idUbicacion = 12
+
+exec Producto.agregarMedida @dimension = 57.63, @idTalla = 188, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 116.92, @idTalla = 188, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 56.67, @idTalla = 188, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 140.63, @idTalla = 188, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 147.61, @idTalla = 189, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 62.63, @idTalla = 189, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 62.03, @idTalla = 189, @idUbicacion = 10
+exec Producto.agregarMedida @dimension = 66.17, @idTalla = 189, @idUbicacion = 9
+
+exec Producto.agregarMedida @dimension = 64.50, @idTalla = 190, @idUbicacion = 17
+exec Producto.agregarMedida @dimension = 47.02, @idTalla = 190, @idUbicacion = 12
+exec Producto.agregarMedida @dimension = 47.33, @idTalla = 190, @idUbicacion = 6
+exec Producto.agregarMedida @dimension = 86.13, @idTalla = 190, @idUbicacion = 8
+
+exec Producto.agregarMedida @dimension = 87.19, @idTalla = 191, @idUbicacion = 8
+exec Producto.agregarMedida @dimension = 110.41, @idTalla = 191, @idUbicacion = 2
+exec Producto.agregarMedida @dimension = 111.75, @idTalla = 191, @idUbicacion = 1
+exec Producto.agregarMedida @dimension = 76.32, @idTalla = 191, @idUbicacion = 17
 
 EXEC agregarColor 'Azul'
 EXEC agregarColor 'Amarillo'
@@ -4674,7 +5605,15 @@ EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, 104, 6, 49;
 EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, 115, 4, 50;
 
 --Backup de la BDD
-CREATE PROCEDURE CrearBackup --BDD
+CREATE PROCEDURE CrearBackupFULL
+AS
+	BACKUP DATABASE CollegeCentralAmerica_LaLibertad TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
+	WITH INIT;
+GO
+
+EXEC CrearBackupFULL
+
+CREATE PROCEDURE CrearBackup -- Backuo Diferencial
 AS
     DECLARE @fecha DATE
     DECLARE @name VARCHAR(100)
@@ -4682,10 +5621,7 @@ AS
     SET @fecha = GETDATE()
     SET @name  = 'C:\Backup\Proyecto-'+CONVERT(VARCHAR(MAX),@fecha, 105)+'.bak'
 
-	BACKUP DATABASE Fedisal TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
-	WITH INIT;
-
-    BACKUP DATABASE Fedisal TO DISK = @name
+    BACKUP DATABASE CollegeCentralAmerica_LaLibertad TO DISK = @name
     WITH DIFFERENTIAL;
 ;
 GO
@@ -4719,8 +5655,7 @@ AS
 		@name = 'Base_Backup',
 		@freq_type= 4,
 		@freq_interval = 1, 
-		@active_start_date = 'CONVERT(date, CURRENT_TIMESTAMP)',
-		@active_start_time = '202500'
+		@active_start_time = 000000
 	;
 
 	-- Agregando el trabajo al servidor
