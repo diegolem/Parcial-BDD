@@ -4676,7 +4676,15 @@ EXEC Produccion.agregarOrdenVentaTalla 45, 15.6, 104, 6, 49;
 EXEC Produccion.agregarOrdenVentaTalla 25, 20.2, 115, 4, 50;
 
 --Backup de la BDD
-CREATE PROCEDURE CrearBackup --BDD
+CREATE PROCEDURE CrearBackupFULL
+AS
+	BACKUP DATABASE CollegeCentralAmerica_LaLibertad TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
+	WITH INIT;
+GO
+
+EXEC CrearBackupFULL
+
+CREATE PROCEDURE CrearBackup -- Backuo Diferencial
 AS
     DECLARE @fecha DATE
     DECLARE @name VARCHAR(100)
@@ -4684,10 +4692,7 @@ AS
     SET @fecha = GETDATE()
     SET @name  = 'C:\Backup\Proyecto-'+CONVERT(VARCHAR(MAX),@fecha, 105)+'.bak'
 
-	BACKUP DATABASE Fedisal TO DISK = 'C:\Backup\Proyecto-FULL.bak' --Backup FULL
-	WITH INIT;
-
-    BACKUP DATABASE Fedisal TO DISK = @name
+    BACKUP DATABASE CollegeCentralAmerica_LaLibertad TO DISK = @name
     WITH DIFFERENTIAL;
 ;
 GO
@@ -4721,8 +4726,7 @@ AS
 		@name = 'Base_Backup',
 		@freq_type= 4,
 		@freq_interval = 1, 
-		@active_start_date = 'CONVERT(date, CURRENT_TIMESTAMP)',
-		@active_start_time = '202500'
+		@active_start_time = 000000
 	;
 
 	-- Agregando el trabajo al servidor
