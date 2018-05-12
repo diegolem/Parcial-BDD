@@ -527,13 +527,14 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 			odv.monto AS [Monto de la orden],
 			clr.nombre AS [Color]
 		FROM Produccion.ordenVenta AS odv
+		INNER JOIN Produccion.estadoOrden AS estadoO ON estadoO.idEstadoOrden = odv.idEstado
 		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
 		INNER JOIN Produccion.flujoTrabajo AS fto ON fto.idFlujo = odv.idFlujo
 		INNER JOIN Produccion.tipoVariante AS tve ON tve.idVariante = fto.idVariante
 		INNER JOIN color AS clr ON clr.idColor = odv.idColor
 		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
 		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
-		WHERE DATEDIFF(DAY, CURRENT_TIMESTAMP, fa.finishedDate) <= -1;
+		WHERE DATEDIFF(DAY, CURRENT_TIMESTAMP, fa.finishedDate) <= -1 AND estadoO.idEstadoOrden = 1;
 
 -- Creacion de errores //////////////////////////////////////////////////////////////////////////////
 exec sp_dropmessage 50018
