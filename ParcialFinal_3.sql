@@ -379,11 +379,15 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 
 -- Vistas
 --1. Vista completa de los productos de inventario.
+	DROP VIEW productos
 	CREATE VIEW productos AS	
-		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] 
+		SELECT MT.nombre AS [Tipo de Producto], M.Descripcion AS [Producto] , clr.nombre
 		FROM Bodega.MateriaPrima M 	
 		INNER JOIN Bodega.TipoMateriaPrima MT ON M.idTipoMateriaPrima = MT.idTipoMateriaPrima
+		INNER JOIN color AS clr ON clr.idColor = m.idColor
 	;
+	
+	SELECT * FROM productos
 -- 2. Vista completa de los trabajos en proceso.
 	CREATE VIEW trabajosProceso AS	
 		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
@@ -395,6 +399,8 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
 		WHERE E.idEstadoOrden = 1
 	; --Por ejemplo si en el id 1 es "En proceso";
+
+	SELECT * FROM trabajosProceso
 -- 3. Vista de los trabajos que aún no han sido implementados.
 	CREATE VIEW trabajosPendientes AS	
 		SELECT O.cantidad AS [Cantidad de prendas], Color.nombre AS [Color], O.monto AS  [Monto ($)], C.nombre AS [Cliente]	, 
@@ -406,6 +412,9 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Venta.Clientes C ON F.idCliente	= C.idCliente	
 		WHERE E.idEstadoOrden = 3
 	; --Por ejemplo si en el id 1 es "pendiente";
+
+	SELECT * FROM trabajosPendientes;
+	EXEC Produccion.agregarOrdenVenta 1, 5, 1, 42, 3; 
 -- 4. Vista de los productos que están en fase de desabastecimiento junto con los proveedores y sus
 --    datos de contacto.
 	CREATE VIEW productosNecesitados AS	
@@ -417,6 +426,8 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Compra.Proveedor P ON	MP.idProveedor = P.idProveedor 
 		WHERE EC.idEstadoCompras != 3
 	; -- Donde 1 es 'Realizada', los otros pueden ser 'urgente'etc.
+
+	SELECT * FROM productosNecesitados
 -- 5. Vista de total piezas que se han trabajado por módulo, agrupadas por medio de su categoría.
 	CREATE VIEW piezasModulo AS
 		SELECT P.nombre AS [Categoría], M.nombre AS [Módulo], SUM(OT.cantidad) AS [Cantidad] 
@@ -426,6 +437,8 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Producto.prenda P ON P.idPrenda = T.idPrenda
 		GROUP BY P.nombre, M.nombre
 	;
+
+	SELECT  * FROM piezasModulo
 -- 6. Vista de total de compras realizadas por clientes a lo largo de cada año.
 	CREATE VIEW comprasCliente AS	
 		SELECT TC.nombre AS [Tipo De Cliente], C.nombre AS [Nombre], COUNT(*) AS [N° de Compras], DATEPART(yyyy, F.orderDate) AS [Año]
@@ -434,6 +447,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Venta.tipoCliente TC ON C.idTipo = TC.idTipo
 		GROUP BY TC.nombre, C.nombre, DATEPART(yyyy, F.orderDate)
 	;
+	SELECT * FROM comprasCliente
 -- 7. Vista de Trabajos y Sales Orders asignadas a cada módulo.
 	CREATE VIEW ordenModulos AS
 		SELECT M.idModulo, M.nombre, COUNT(*) AS [Ordenes Asignadas] FROM Produccion.ordenVenta OV
@@ -441,6 +455,8 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Produccion.modulo M ON OVT.idModulo = M.idModulo
 		GROUP BY M.idModulo, M.nombre
 	;
+
+	SELECT * FROM ordenModulos
 -- 8. Vista de Telas (Todos los datos junto con el nombre del proveedor) en Inventario.
 	CREATE VIEW telasMateriaPrima AS
 		SELECT 
@@ -473,6 +489,10 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Compra.Proveedor AS pr
 		ON pr.idProveedor = mp.idProveedor 
 		WHERE tmp.nombre = 'Cordones'
+
+	SELECT * FROM telasMateriaPrima
+	SELECT * FROM hilosMateriaPrima
+	SELECT * FROM cordonerMateriaPrima
 -- 11. Vista de las Sales Order con categoría BLANKS.
 	CREATE VIEW ordenesBlanks AS
 		SELECT 
@@ -490,7 +510,7 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
 		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
 		WHERE tve.nombre = 'BLANKS';
-
+	SELECT * FROM ordenesBlanks;
 -- 12. Vista de las Sales Order con categoría SCREEN PRINTING.
 	CREATE VIEW ordenesScreenPrinting AS
 		SELECT 
@@ -520,6 +540,9 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
 		INNER JOIN Venta.factura AS fa ON fa.idFactura = odv.idFactura
 		WHERE tve.nombre = 'Sublimation';
+
+		SELECT * FROM ordenesScreenPrinting
+		SELECT * FROM ordenesSublimation
 -- 14.  Vista de las Sales Order que tienen un tiempo de retraso en la fecha de Finalización.
 	CREATE VIEW ordenesConRetraso AS
 		SELECT
@@ -538,6 +561,8 @@ ALTER SCHEMA Producto TRANSFER object::dbo.medida
 		INNER JOIN Producto.estilo AS eo ON eo.idEstilo = odv.idEstilo
 		INNER JOIN Producto.prenda AS pa ON pa.idPrenda = eo.idPrenda
 		WHERE DATEDIFF(DAY, CURRENT_TIMESTAMP, fa.finishedDate) <= -1 AND estadoO.idEstadoOrden = 1;
+
+	SELECT * FROM ordenesConRetraso
 
 -- Creacion de errores //////////////////////////////////////////////////////////////////////////////
 exec sp_dropmessage 50018
@@ -2813,6 +2838,7 @@ que tenga la capacidad de realizar este proceso de forma correcta TENIENDO EN CU
 LAS CONSIDERACIONES QUE SE HAN ESPECIFICADO ANTERIORMENTE EN ESTE PROCESO.*/
 
 --PROCEDURE #3
+exec Produccion.asignarModuloOrdenVenta 52, 107, 1
 create procedure Produccion.asignarModuloOrdenVenta @idOrdenVenta int, @idTalla int, @cantidad int
 as
 	-- cantidad de talla extra
@@ -3169,7 +3195,29 @@ WITH DEFAULT_SCHEMA = Bodega
 GRANT CREATE VIEW,CREATE TABLE,CREATE PROC
 TO DiegoDiaz
 GO
---4. Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
+--5.Administrador Usuario de Ventas
+DROP LOGIN AdminVentas
+DROP USER LuisMiguel
+CREATE LOGIN AdminVentas
+WITH PASSWORD = '12345'
+CREATE USER LuisMiguel FOR LOGIN AdminVentas
+WITH DEFAULT_SCHEMA = Venta
+GRANT EXECUTE
+ON SCHEMA :: Venta
+TO LuisMiguel
+GO
+--6.Administrador Usuario de Producto
+DROP LOGIN AdminProducto
+DROP USER RafaelSol
+CREATE LOGIN AdminProducto
+WITH PASSWORD = '12345'
+CREATE USER RafaelSol FOR LOGIN AdminProducto
+WITH DEFAULT_SCHEMA = Producto
+GRANT EXECUTE
+ON SCHEMA :: Producto
+TO RafaelSol
+GO
+--7. Usuario Administrador que tendrá control total sobre TODA LA BASE DE DATOS Y TODOS
 --SUS OBJETOS.
 DROP LOGIN Administrador
 DROP USER BrandonLee
@@ -5549,6 +5597,11 @@ EXEC Produccion.agregarOrdenVenta 48, 8, 1, 5, 1;
 EXEC Produccion.agregarOrdenVenta 49, 26, 2, 6, 1;
 EXEC Produccion.agregarOrdenVenta 50, 29, 3, 5, 1;
 
+EXEC Produccion.agregarOrdenVenta 50, 27, 3, 5, 1;
+EXEC Produccion.agregarOrdenVentaTalla 20, 60, 17, 5, 52;
+
+SELECT * FROM Produccion.OrdenVenta
+
 EXEC Produccion.agregarOrdenVentaTalla 20, 10.5, 17, 5, 1;
 EXEC Produccion.agregarOrdenVentaTalla 20, 50, 20, 1, 2;
 EXEC Produccion.agregarOrdenVentaTalla 26, 47.8, 37, 2, 3;
@@ -5593,7 +5646,7 @@ EXEC Produccion.agregarOrdenVentaTalla 7, 6, 177, 1, 41;
 EXEC Produccion.agregarOrdenVentaTalla 20, 48, 180, 9, 42;
 EXEC Produccion.agregarOrdenVentaTalla 20, 25, 146, 8, 43;
 EXEC Produccion.agregarOrdenVentaTalla 16, 14, 151, 7, 44;
-EXEC Produccion.agregarOrdenVentaTalla 17, 16, 56, 9, 45;
+EXEC Produccion.agregarOrdenVentaTalla 17, 16, 56, 9, 45;	
 EXEC Produccion.agregarOrdenVentaTalla 26, 18.6, 67, 6, 46;
 EXEC Produccion.agregarOrdenVentaTalla 47, 25.6, 25, 7, 47;
 EXEC Produccion.agregarOrdenVentaTalla 59, 14.3, 31, 5, 48;
@@ -5625,6 +5678,7 @@ GO
 USE msdb;
 GO
 
+DROP PROCEDURE CreandoJob
 CREATE PROCEDURE CreandoJob
 AS
 	DECLARE @fecha DATE
